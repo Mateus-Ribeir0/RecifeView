@@ -1,0 +1,29 @@
+.lista {
+  display: grid;
+  gap: var(--espaco-2);
+  padding: var(--espaco-4);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-fundo-alternativo);
+  font-size: var(--texto-apoio);
+}
+
+.requisito {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--cor-texto-secundario);
+}
+
+.marcador {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.atendido {
+  color: var(--cor-sucesso);
+}
+
+.faltando {
+  color: var(--cor-erro);
+}

@@ -1,0 +1,22 @@
+.pagina {
+  display: grid;
+  place-content: center;
+  gap: var(--espaco-5);
+  min-height: 100vh;
+  padding: var(--espaco-7) var(--margem-lateral);
+  text-align: center;
+}
+
+.pagina > * {
+  justify-self: center;
+}
+
+.titulo {
+  font-size: var(--texto-pagina);
+  font-weight: 700;
+}
+
+.texto {
+  max-width: 44ch;
+  color: var(--cor-texto-secundario);
+}

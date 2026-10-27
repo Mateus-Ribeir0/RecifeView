@@ -1,0 +1,15 @@
+.duvidas {
+  display: grid;
+  gap: var(--espaco-5);
+  margin-top: var(--espaco-6);
+}
+
+.duvidas dt {
+  font-weight: 600;
+}
+
+.duvidas dd {
+  margin-top: var(--espaco-1);
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}

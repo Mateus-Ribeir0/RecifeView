@@ -62,7 +62,8 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 
 | Tela | O que mostra | Router da API |
 |---|---|---|
-| Login | Autenticação do gestor | Autenticação |
+| Página inicial (`/`, pública) | O problema, os primeiros achados, as telas previstas, as fontes e o projeto | Nenhum (conteúdo estático e a malha dos bairros) |
+| Entrar, ajuda e definir senha | Autenticação do gestor, orientação de acesso, troca da senha temporária | Autenticação |
 | Visão Geral | KPIs-síntese e alertas | Indicadores |
 | Mapa por Bairro/RPA | Demanda per capita e reincidência por território; dois mapas de prioridade (serviço urbano e emergência) | Território |
 | Prazos | Mediana e p90 por serviço e órgão; estoque aberto | Prazos |
@@ -107,9 +108,11 @@ O Processor é a versão de produção do pipeline que já existe no Drive (`Dad
 ## Segurança
 
 - O app real exige login. Só gestores autenticados veem o painel.
+- Senhas com hash Argon2; bloqueio de 15 minutos depois de 5 tentativas erradas seguidas; senha temporária trocada no primeiro acesso.
+- Token de acesso de 15 minutos só na memória do navegador; sessão de 12 horas num cookie `httpOnly` e `SameSite=Strict`, revogável no servidor. Detalhes e alternativas na [ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md) (proposta).
 - O texto da SEDEC não tem rota, não entra em resposta e não vai para log.
 - O sal do `id_local` fica no gerenciador de segredos (proposta: AWS Secrets Manager) e nunca no repositório nem no banco.
-- Toda consulta é auditada: usuário, rota, filtros e horário.
+- Os acessos são auditados (entrada, recusa, bloqueio, saída, troca de senha) sem IP e sem o e-mail digitado. As consultas aos dados também serão auditadas, com usuário, rota, filtros e horário.
 - Os segredos de cada container chegam por variável de ambiente, e cada pasta tem um `.env.example` sem valores reais.
 
 ## Organização do repositório
