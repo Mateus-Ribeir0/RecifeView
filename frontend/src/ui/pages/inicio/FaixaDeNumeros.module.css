@@ -1,0 +1,44 @@
+.faixa {
+  padding-block: var(--espaco-6);
+  border-block: 1px solid var(--cor-borda);
+}
+
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-5) var(--espaco-4);
+}
+
+.item {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--espaco-1);
+}
+
+@media (min-width: 900px) {
+  .numeros {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .item + .item {
+    padding-left: var(--espaco-5);
+    border-left: 1px solid var(--cor-borda);
+  }
+}
+
+.valor {
+  font-size: clamp(24px, 3.4vw, 40px);
+  white-space: nowrap;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--cor-azul-marinho);
+}
+
+.rotulo {
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}
+
+.nota {
+  margin-top: var(--espaco-5);
+}

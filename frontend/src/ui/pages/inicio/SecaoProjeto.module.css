@@ -1,0 +1,50 @@
+.grade {
+  display: grid;
+  gap: var(--espaco-7);
+}
+
+@media (min-width: 900px) {
+  .grade {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--espaco-8);
+    align-items: start;
+  }
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3) var(--espaco-5);
+  margin-top: var(--espaco-5);
+  font-weight: 600;
+}
+
+.aviso {
+  max-width: 60ch;
+  margin-top: var(--espaco-5);
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}
+
+.equipe {
+  display: grid;
+  gap: var(--espaco-3);
+  padding: var(--espaco-6);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+}
+
+.equipe h3 {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.equipe h3:not(:first-child) {
+  margin-top: var(--espaco-3);
+}
+
+.equipe ul {
+  display: grid;
+  gap: var(--espaco-1);
+}

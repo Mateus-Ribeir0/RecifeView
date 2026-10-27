@@ -1,0 +1,66 @@
+.rolagem {
+  margin-top: var(--espaco-6);
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: var(--texto-apoio);
+}
+
+.tabela th,
+.tabela td {
+  padding: var(--espaco-3) var(--espaco-4) var(--espaco-3) 0;
+  border-bottom: 1px solid var(--cor-borda);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tabela thead th {
+  border-bottom: 2px solid var(--cor-preto);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.tabela tbody th {
+  font-weight: 600;
+}
+
+.tabela .numerica {
+  padding-right: 0;
+  text-align: right;
+}
+
+.tabela tfoot th,
+.tabela tfoot td {
+  border-bottom: 0;
+  font-weight: 700;
+}
+
+.privacidade {
+  margin-top: var(--espaco-7);
+  padding: var(--espaco-5) var(--espaco-6);
+  border-left: 4px solid var(--cor-azul-principal);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-azul-claro);
+}
+
+.privacidade h3 {
+  font-size: var(--texto-subtitulo);
+  font-weight: 700;
+}
+
+.privacidade ul {
+  display: grid;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-3);
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.nota {
+  margin-top: var(--espaco-5);
+}

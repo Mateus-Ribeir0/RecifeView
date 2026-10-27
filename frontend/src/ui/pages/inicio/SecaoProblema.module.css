@@ -1,0 +1,73 @@
+.colunas {
+  display: grid;
+  gap: var(--espaco-7);
+  margin-top: var(--espaco-7);
+}
+
+@media (min-width: 900px) {
+  .colunas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espaco-8);
+  }
+}
+
+.coluna {
+  display: grid;
+  gap: var(--espaco-4);
+  align-content: start;
+}
+
+.subtitulo {
+  font-size: var(--texto-subtitulo);
+  font-weight: 700;
+}
+
+.relato {
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.ficcao {
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-terciario);
+}
+
+.portas {
+  border-top: 1px solid var(--cor-borda);
+}
+
+.portas li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espaco-1) var(--espaco-4);
+  padding-block: var(--espaco-3);
+  border-bottom: 1px solid var(--cor-borda);
+  font-size: var(--texto-apoio);
+}
+
+.portas strong {
+  font-weight: 600;
+}
+
+.portas span {
+  color: var(--cor-texto-secundario);
+}
+
+.lacuna {
+  padding: var(--espaco-4) var(--espaco-5);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-azul-claro);
+  font-weight: 500;
+}
+
+.citacao {
+  max-width: 36ch;
+  margin-top: var(--espaco-8);
+  padding-left: var(--espaco-5);
+  border-left: 4px solid var(--cor-azul-principal);
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--cor-azul-marinho);
+}

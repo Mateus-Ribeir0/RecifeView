@@ -1,0 +1,49 @@
+.rodape {
+  padding-block: var(--espaco-7) var(--espaco-5);
+  background: var(--cor-azul-marinho);
+  color: var(--cor-branco);
+}
+
+.rodape a {
+  color: var(--cor-branco);
+}
+
+.grade {
+  display: grid;
+  gap: var(--espaco-6);
+}
+
+@media (min-width: 800px) {
+  .grade {
+    grid-template-columns: 2fr 2fr 1.5fr;
+    gap: var(--espaco-7);
+  }
+}
+
+.grade p {
+  font-size: var(--texto-apoio);
+  color: rgb(255 255 255 / 0.85);
+}
+
+.marca p {
+  max-width: 34ch;
+  margin-top: var(--espaco-3);
+}
+
+.titulo {
+  margin-bottom: var(--espaco-2);
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-7);
+  padding-top: var(--espaco-5);
+  border-top: 1px solid rgb(255 255 255 / 0.2);
+  font-size: var(--texto-legenda);
+  color: rgb(255 255 255 / 0.85);
+}

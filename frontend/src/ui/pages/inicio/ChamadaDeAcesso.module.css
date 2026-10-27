@@ -1,0 +1,30 @@
+.chamada {
+  padding-block: var(--espaco-8);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+}
+
+.grade {
+  display: grid;
+  gap: var(--espaco-5);
+  align-items: center;
+}
+
+@media (min-width: 800px) {
+  .grade {
+    grid-template-columns: 1fr auto;
+    gap: var(--espaco-7);
+  }
+}
+
+.titulo {
+  font-size: clamp(28px, 4vw, var(--texto-secao));
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.texto {
+  max-width: 56ch;
+  margin-top: var(--espaco-3);
+  font-size: var(--texto-abertura);
+}

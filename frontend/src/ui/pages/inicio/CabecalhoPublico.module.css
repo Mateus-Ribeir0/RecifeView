@@ -1,0 +1,46 @@
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--cor-branco);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-6);
+  min-height: var(--altura-do-cabecalho);
+}
+
+.marca {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-right: auto;
+}
+
+.navegacao {
+  display: none;
+}
+
+.navegacao ul {
+  display: flex;
+  gap: var(--espaco-5);
+}
+
+.navegacao a {
+  font-size: var(--texto-apoio);
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+  text-decoration: none;
+}
+
+.navegacao a:hover {
+  color: var(--cor-azul-principal);
+}
+
+@media (min-width: 1040px) {
+  .navegacao {
+    display: block;
+  }
+}
