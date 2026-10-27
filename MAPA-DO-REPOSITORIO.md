@@ -63,6 +63,8 @@ Uma tarefa típica de código passa por eles nesta ordem:
 | [docs/adr/0001-stack-do-projeto.md](docs/adr/0001-stack-do-projeto.md) | React, FastAPI, PostgreSQL e Processor no EventBridge |
 | [docs/adr/0002-leaflet-para-mapa-coropletico.md](docs/adr/0002-leaflet-para-mapa-coropletico.md) | Leaflet no mapa por bairro |
 | [docs/adr/0003-clean-architecture-e-clean-code.md](docs/adr/0003-clean-architecture-e-clean-code.md) | Camadas, regra da dependência e práticas de Clean Code |
+| [docs/adr/0004-ferramentas-complementares.md](docs/adr/0004-ferramentas-complementares.md) | TypeScript, Vite, uv, Ruff, Alembic, Docker Compose e o resto das ferramentas confirmadas |
+| [docs/adr/0005-autenticacao-com-jwt-proprio.md](docs/adr/0005-autenticacao-com-jwt-proprio.md) | Proposta: JWT próprio atrás de portas, com o funcionamento da sessão e o caminho para trocar pelo Cognito |
 
 As ADRs alimentam a Documentação Final (N9), que pede o histórico de decisões.
 
