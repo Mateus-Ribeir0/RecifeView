@@ -1,0 +1,53 @@
+# --- Dados e segredos: nunca versionar (ver docs/dados.md) ---
+data/
+*.csv
+*.csv.xz
+*.xz
+*.zip
+*.parquet
+*.feather
+*.sqlite
+*.db
+*.dump
+*.sql.gz
+.salt_id_local
+*.salt
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# --- Node / frontend ---
+node_modules/
+frontend/dist/
+.vite/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+
+# --- Notebooks ---
+.ipynb_checkpoints/
+
+# --- Editores e sistema ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# --- Claude Code: configuração pessoal fica fora, skills entram ---
+.claude/settings.local.json
