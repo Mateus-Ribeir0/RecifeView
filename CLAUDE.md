@@ -42,6 +42,7 @@ As ferramentas complementares (TypeScript, Vite, uv, Ruff, Alembic etc.) estão 
 1. **Privacidade dos dados.**
    - O texto da SEDEC (coluna `texto` das linhas `SEDEC_CHAMADOS`) nunca sai do grupo. Ele não aparece em resposta de API, fixture, log, print de tela, issue nem commit. O mascaramento dele é heurístico.
    - O sal do `id_local` (`.salt_id_local`) e qualquer outro segredo nunca entram no repositório. Segredo vem de variável de ambiente ou de gerenciador de segredos.
+   - Exceção documentada: credenciais que só valem em desenvolvimento local (o usuário `recifeview` do PostgreSQL local e a conta de demonstração do README) podem aparecer nos documentos, sempre marcadas como locais. Elas nunca podem ser usadas num banco compartilhado ou num ambiente publicado.
    - Arquivos de dados (CSV, XZ, ZIP, Parquet, dumps) não entram no git. Eles ficam no Drive (ver [docs/dados.md](docs/dados.md)).
    - Se encontrar dado pessoal em claro em qualquer lugar, pare e avise. Não copie o registro.
 2. **Nada se apaga sem autorização.** No Drive, quem apaga é o Gustavo. Arquivo já entregue no Classroom não se edita. No repositório, remover arquivo exige motivo no commit.
@@ -115,8 +116,11 @@ Isso vale para a interface, a documentação e os commits. O detalhe está em [d
 ## Estado atual (26/10/2026)
 
 - Repositório público no GitHub: https://github.com/Mateus-Ribeir0/RecifeView, branch principal `main`.
-- O repositório tem só documentação e estrutura de pastas. Ainda não há código.
+- Prontos: página inicial pública, entrada, ajuda de acesso, troca de senha (obrigatória no primeiro acesso), sessão com renovação e saída, e a casca do painel (`/painel`). Backend com autenticação, auditoria de acessos e linha de comando para criar contas.
+- Ainda não existem as telas de dados nem o Processor. A autenticação está como proposta na [ADR 0005](docs/adr/0005-autenticacao-com-jwt-proprio.md).
+- Para apresentar o painel, use a conta de demonstração do [README](README.md#conta-de-demonstração).
 - A próxima entrega é a da Semana 13, em 30/10. Pela ordem da lista de AVD, deve ser a N4 (Dashboard Interativo, versão inicial). Confirme o enunciado no Classroom.
+- Antes de dar código como pronto, rode as verificações dos dois lados: `uv run ruff check . && uv run mypy app tests && uv run lint-imports && uv run pytest` no backend, e `npm run lint && npm run typecheck && npm test` no frontend.
 - Se o git de uma máquina não tiver nome e e-mail configurados, os commits falham. Nesse caso, avise em vez de configurar uma identidade por conta própria.
 
 Atualize esta seção sempre que o estado mudar.

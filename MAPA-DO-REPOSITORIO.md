@@ -72,11 +72,11 @@ As ADRs alimentam a Documentação Final (N9), que pede o histórico de decisõe
 
 | Arquivo | Para quê |
 |---|---|
-| [frontend/README.md](frontend/README.md) | Telas, como rodar a SPA, variáveis, comandos e estrutura em camadas |
-| [backend/README.md](backend/README.md) | Rotas, regra de privacidade, como rodar a API, banco e migrações |
+| [frontend/README.md](frontend/README.md) | Telas, como rodar a SPA, variáveis, comandos, malha dos bairros e estrutura em camadas |
+| [backend/README.md](backend/README.md) | Como rodar a API, contas de acesso pela linha de comando, variáveis, comandos, rotas e banco |
 | [processor/README.md](processor/README.md) | Etapas da ingestão, decisões em aberto, segredos, como rodar a carga |
 
-Enquanto não há código, as seções de execução estão marcadas com "a preencher". Elas são completadas no mesmo commit que trouxer algo executável.
+O frontend e o backend já têm os passos completos para rodar. O README do processor continua com as seções de execução marcadas como "a preencher", completadas no mesmo commit que trouxer o primeiro código dele.
 
 ## Skills (`.claude/skills/`)
 
@@ -113,6 +113,7 @@ Configurações pessoais ficam em `.claude/settings.local.json`, que o `.gitigno
 | [.github/pull_request_template.md](.github/pull_request_template.md) | Modelo de PR com o checklist da definição de pronto |
 | [.gitignore](.gitignore) | Bloqueia dados, segredos (`.env`, `.salt_id_local`) e arquivos gerados |
 | [.editorconfig](.editorconfig) | UTF-8, LF, indentação de 2 espaços (4 no Python) |
+| [docker-compose.yml](docker-compose.yml) | PostgreSQL 17 local para quem usa Docker |
 | [docs/assets/logo-recifeview.png](docs/assets/logo-recifeview.png) | Logo usado no README |
 
 ## Como adicionar um item novo

@@ -22,8 +22,9 @@ O projeto responde ao desafio [Fragmentação do Tratamento de Denúncias Recebi
 | Fase | Situação |
 |---|---|
 | Pesquisa, dados, EDA (N1 a N3) | Concluída. Os entregáveis estão no Drive do grupo. |
-| Repositório | Estrutura e padrões definidos. Ainda não há código. |
-| Próxima entrega | Semana 13 (30/10/2026) |
+| Página inicial e acesso | Prontos: página pública, entrada, troca de senha, sessão e saída |
+| Telas de dados do painel | Em desenvolvimento, uma por entrega a partir da Semana 13 (30/10/2026) |
+| Processor | Ainda não começou |
 
 ## Arquitetura
 
@@ -43,8 +44,8 @@ O detalhamento (níveis C1 a C3, decisões em aberto) está em [docs/arquitetura
 
 | Camada | Tecnologia |
 |---|---|
-| Frontend | React, Recharts, Leaflet |
-| Backend | Python, FastAPI |
+| Frontend | React, TypeScript, Vite, React Router, Recharts, Leaflet |
+| Backend | Python, FastAPI, SQLAlchemy, Alembic |
 | Banco | PostgreSQL |
 | Processor | Python agendado com AWS EventBridge |
 
@@ -59,12 +60,11 @@ A versão de cada ferramenta e o que ainda está em discussão ficam em [docs/st
 ├── processor/     Ingestão e transformação dos dados (job agendado)
 ├── docs/          Contexto, arquitetura, padrões, design system e ADRs
 ├── .claude/       Skills e hooks do assistente de código (ver MAPA-DO-REPOSITORIO.md)
-└── .github/       Modelo de pull request
+├── .github/       Modelo de pull request
+└── docker-compose.yml   PostgreSQL local para quem usa Docker
 ```
 
 ## Como rodar
-
-Ainda não há código para rodar. Esta seção é atualizada no mesmo commit que adicionar algo executável.
 
 ### Obter o código
 
@@ -75,7 +75,47 @@ cd RecifeView
 
 ### Pré-requisitos
 
-A definir quando o primeiro container for criado. Versões previstas em [docs/stack.md](docs/stack.md).
+| Ferramenta | Versão | Para quê |
+|---|---|---|
+| Node.js | 22 LTS | Frontend |
+| uv | 0.13 ou superior (instala o Python 3.12 sozinho) | Backend |
+| PostgreSQL | 17, pelo Docker (`docker compose up -d banco`) ou instalado | Banco |
+
+### Do zero até o painel
+
+```bash
+docker compose up -d banco                     # ou um PostgreSQL 17 local
+
+cd backend
+uv sync && cp .env.example .env                # troque API_SEGREDO_JWT no .env
+uv run alembic upgrade head
+uv run recifeview cadastrar-usuario --email voce@recife.pe.gov.br --nome "Seu Nome"
+uv run uvicorn app.main:criar_aplicacao --factory --reload --port 8000
+
+cd ../frontend                                 # em outro terminal
+npm install && npm run dev
+```
+
+Abra http://localhost:5173, clique em **Entrar** e use o e-mail e a senha temporária que o comando `cadastrar-usuario` mostrou. No primeiro acesso, o painel pede uma senha nova. Detalhes de cada parte nos READMEs abaixo.
+
+### Conta de demonstração
+
+Para apresentar o painel, o grupo usa sempre a mesma conta de gestão:
+
+| E-mail | Senha |
+|---|---|
+| `gestora.demo@recifeview.dev` | `1234@abcD@12` |
+
+A conta existe só no banco de quem a criou. Para ter a mesma conta na sua máquina:
+
+```bash
+cd backend
+uv run recifeview cadastrar-usuario --email gestora.demo@recifeview.dev --nome "Gestora de Demonstração"
+```
+
+Entre com a senha temporária que o comando mostrar e, no primeiro acesso, defina `1234@abcD@12`.
+
+> **Só para desenvolvimento local.** O repositório é público, então esta senha também é. Nunca crie esta conta num banco compartilhado ou num ambiente publicado.
 
 ### Dados
 
