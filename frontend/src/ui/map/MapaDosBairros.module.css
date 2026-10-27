@@ -1,0 +1,39 @@
+.mapa {
+  width: 100%;
+  height: auto;
+}
+
+.bairro {
+  fill-rule: evenodd;
+  stroke-width: 1;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: fill 120ms ease;
+}
+
+.claro .bairro {
+  fill: var(--cor-mapa-1);
+  stroke: var(--cor-mapa-3);
+  stroke-width: 0.75;
+}
+
+.claro .bairro[data-destaque] {
+  fill: var(--cor-mapa-2);
+  stroke: var(--cor-branco);
+}
+
+.claro .bairro[data-foco] {
+  fill: var(--cor-azul-principal);
+  stroke: var(--cor-branco);
+}
+
+.sobreAzul .bairro {
+  fill: rgb(255 255 255 / 0.06);
+  stroke: rgb(255 255 255 / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bairro {
+    transition: none;
+  }
+}
