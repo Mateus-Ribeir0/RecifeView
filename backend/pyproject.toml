@@ -1,0 +1,71 @@
+[project]
+name = "recifeview-api"
+version = "0.1.0"
+description = "API REST do RecifeView: acesso dos gestores e indicadores do painel."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.1",
+    "argon2-cffi>=25.1.0",
+    "fastapi>=0.162.0",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.16.1",
+    "pyjwt>=2.15.1",
+    "sqlalchemy>=2.1.6",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+recifeview = "app.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "app"
+module-root = ""
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "RUF", "S", "PT"]
+# N818 pede o sufixo "Error" em exceções; os nomes do domínio são em português.
+ignore = ["N818"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.importlinter]
+root_package = "app"
+
+[[tool.importlinter.contracts]]
+name = "Camadas da Clean Architecture"
+type = "layers"
+layers = [
+    "app.main | app.cli",
+    "app.api",
+    "app.infrastructure",
+    "app.application",
+    "app.domain",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.0",
+    "import-linter>=2.15",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
