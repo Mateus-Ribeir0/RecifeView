@@ -110,13 +110,13 @@ frontend/src/
     classes.ts           Quebra em quantis para o mapa
     fontes.ts            Rótulo e cor fixa de cada fonte
   application/
+    autenticacao/        Porta ServicoDeAutenticacao, ProvedorDeSessao e useSessao
     filtros/             Estado dos filtros globais
     consultas/           Hooks de caso de uso: useDemandaPorBairro, usePrazosPorServico...
   infrastructure/
-    api/                 Cliente HTTP, tipos das respostas e conversão para os tipos do domínio
-    sessao/              Token, renovação, armazenamento da sessão
+    api/                 Cliente HTTP (token e renovação), serviços que implementam as portas
   ui/
-    app/                 Shell, rotas, provedores (ponto de montagem)
+    app/                 Rotas, guardas de rota e provedores (ponto de montagem)
     pages/               Uma pasta por tela: visao-geral/, mapa/, prazos/, recorrencias/, fluxo-camara/
     components/          Componentes reutilizáveis: KpiCard, BarraDeFiltros, NotaDeFonte...
     charts/              Únicos arquivos que importam o Recharts
@@ -126,10 +126,11 @@ frontend/src/
 
 Regras:
 
-- Página não chama `fetch` nem conhece URL. Ela usa um hook de `application/consultas`, que usa o cliente de `infrastructure/api`.
+- Página não chama `fetch` nem conhece URL. Ela usa um hook de `application`, e o hook fala com uma porta (uma `interface`). A implementação da porta mora em `infrastructure/api` e é entregue pelo ponto de montagem (`ui/app`), que é o único lugar da interface que conhece a infraestrutura. Exemplo pronto: `ServicoDeAutenticacao`, implementado em `infrastructure/api/autenticacao.ts` e entregue ao `ProvedorDeSessao` em `ui/app/App.tsx`.
 - Componente recebe tipos do domínio, nunca o JSON cru da API. Se a API mudar, a quebra acontece num lugar só: a conversão em `infrastructure/api`.
 - Recharts só é importado em `ui/charts` e Leaflet só em `ui/map`. As páginas usam `GraficoSerieTemporal` e `MapaCoropletico`, não as bibliotecas direto. Trocar de biblioteca, ou ajustar o tema, mexe numa pasta só.
-- `domain/` não importa React.
+- `domain/` não importa React nem qualquer biblioteca externa.
+- O ESLint confere tudo isso com o eslint-plugin-boundaries: a configuração está em `frontend/eslint.config.js`.
 
 ## Quando criar uma porta
 
@@ -167,4 +168,4 @@ A maior parte dos testes deve estar no domínio e na aplicação.
 ## Como garantir
 
 - **Revisão:** a checagem da skill `codigo-limpo` e o checklist do PR.
-- **Automático (proposta):** `import-linter` no Python e `eslint-plugin-boundaries` no frontend, com as regras de importação da tabela acima. Ver [stack.md](stack.md).
+- **Automático:** `uv run lint-imports` no backend (contrato no `pyproject.toml`) e `npm run lint` no frontend (eslint-plugin-boundaries no `eslint.config.js`). Os dois falham quando uma camada importa o que não pode.
