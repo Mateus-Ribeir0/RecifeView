@@ -1,0 +1,64 @@
+:root {
+  --cor-azul-principal: #0f62fe;
+  --cor-azul-claro: #eaf2ff;
+  --cor-preto: #000000;
+  --cor-branco: #ffffff;
+
+  --cor-azul-marinho: #062a5f;
+  --cor-azul-escuro: #0043ce;
+
+  --cor-texto-secundario: #525252;
+  --cor-texto-terciario: #6f6f6f;
+  --cor-borda-de-campo: #8d8d8d;
+  --cor-contexto: #c6c6c6;
+  --cor-borda: #e0e0e0;
+  --cor-fundo-alternativo: #f4f4f4;
+
+  --cor-sucesso: #198038;
+  --cor-sucesso-fundo: #defbe6;
+  --cor-alerta-texto: #8e6a00;
+  --cor-alerta-fundo: #fcf4d6;
+  --cor-erro: #da1e28;
+  --cor-erro-fundo: #fff1f1;
+
+  --cor-mapa-1: #eaf2ff;
+  --cor-mapa-2: #a6c8ff;
+  --cor-mapa-3: #4589ff;
+  --cor-mapa-4: #0f62fe;
+  --cor-mapa-5: #062a5f;
+
+  --fonte-base: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --texto-destaque: 52px;
+  --texto-secao: 36px;
+  --texto-pagina: 28px;
+  --texto-subtitulo: 20px;
+  --texto-abertura: 18px;
+  --texto-corpo: 16px;
+  --texto-apoio: 14px;
+  --texto-legenda: 12px;
+
+  --espaco-1: 4px;
+  --espaco-2: 8px;
+  --espaco-3: 12px;
+  --espaco-4: 16px;
+  --espaco-5: 24px;
+  --espaco-6: 32px;
+  --espaco-7: 48px;
+  --espaco-8: 64px;
+  --espaco-9: 96px;
+
+  --raio-de-campo: 4px;
+  --raio-de-cartao: 8px;
+  --sombra-flutuante: 0 8px 24px rgb(0 0 0 / 0.12);
+
+  --largura-do-conteudo: 1200px;
+  --margem-lateral: 16px;
+  --altura-do-cabecalho: 72px;
+}
+
+@media (min-width: 720px) {
+  :root {
+    --margem-lateral: 32px;
+  }
+}

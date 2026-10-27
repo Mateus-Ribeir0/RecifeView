@@ -1,0 +1,7 @@
+.verificando {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}

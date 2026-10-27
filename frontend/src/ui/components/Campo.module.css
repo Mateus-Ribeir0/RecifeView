@@ -1,0 +1,71 @@
+.campo {
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+.rotulo {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.caixa {
+  position: relative;
+}
+
+.entrada {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--espaco-4);
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-branco);
+  font-size: var(--texto-corpo);
+}
+
+.entrada:hover {
+  border-color: var(--cor-preto);
+}
+
+.entrada:focus-visible {
+  outline: 2px solid var(--cor-azul-escuro);
+  outline-offset: 0;
+  border-color: var(--cor-azul-escuro);
+}
+
+.entrada[aria-invalid='true'] {
+  border: 2px solid var(--cor-erro);
+}
+
+.comAlternador {
+  padding-right: 96px;
+}
+
+.alternador {
+  position: absolute;
+  inset: 4px 4px 4px auto;
+  min-width: 80px;
+  padding: 0 var(--espaco-3);
+  border: 0;
+  border-radius: var(--raio-de-campo);
+  background: transparent;
+  color: var(--cor-azul-principal);
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.alternador:hover {
+  background: var(--cor-azul-claro);
+  color: var(--cor-azul-escuro);
+}
+
+.dica {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.erro {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cor-erro);
+}

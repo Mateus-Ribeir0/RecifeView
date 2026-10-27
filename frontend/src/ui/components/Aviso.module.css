@@ -1,0 +1,32 @@
+.aviso {
+  display: grid;
+  gap: var(--espaco-1);
+  padding: var(--espaco-3) var(--espaco-4);
+  border-left: 4px solid;
+  border-radius: var(--raio-de-campo);
+  font-size: var(--texto-apoio);
+}
+
+.titulo {
+  font-weight: 600;
+}
+
+.erro {
+  background: var(--cor-erro-fundo);
+  border-color: var(--cor-erro);
+}
+
+.alerta {
+  background: var(--cor-alerta-fundo);
+  border-color: var(--cor-alerta-texto);
+}
+
+.info {
+  background: var(--cor-azul-claro);
+  border-color: var(--cor-azul-principal);
+}
+
+.sucesso {
+  background: var(--cor-sucesso-fundo);
+  border-color: var(--cor-sucesso);
+}

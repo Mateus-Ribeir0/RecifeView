@@ -1,0 +1,17 @@
+.link {
+  position: absolute;
+  top: var(--espaco-2);
+  left: var(--espaco-2);
+  z-index: 100;
+  padding: var(--espaco-2) var(--espaco-4);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+  font-weight: 600;
+  border-radius: var(--raio-de-campo);
+  transform: translateY(-200%);
+}
+
+.link:focus {
+  transform: none;
+  color: var(--cor-branco);
+}

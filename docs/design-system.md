@@ -34,6 +34,7 @@ Como o RecifeView se parece e como ele fala. A identidade oficial vem do Drive (
 |---|---|---|---|
 | `cinza-texto-secundario` | `#525252` | Subtítulos, descrições, texto sobre `azul-claro` | 7,8:1 |
 | `cinza-texto-terciario` | `#6F6F6F` | Rótulos de eixo, notas de fonte | 5,0:1 |
+| `cinza-borda-de-campo` | `#8D8D8D` | Borda de campo de formulário e de botão de filtro | 3,3:1, passa o mínimo de 3:1 para componentes |
 | `cinza-contexto` | `#C6C6C6` | Séries de contexto (fora de foco), "sem dado" no mapa | 1,7:1, só para elementos gráficos |
 | `cinza-borda` | `#E0E0E0` | Bordas de cartão, linhas de grade | 1,3:1, só decorativo |
 | `cinza-fundo` | `#F4F4F4` | Fundo de tabela zebrada, área desabilitada | |
@@ -44,10 +45,14 @@ Use só para estado, nunca como decoração.
 
 | Token | Hex | Uso |
 |---|---|---|
-| `sucesso` | `#198038` | Confirmação de ação |
+| `sucesso` | `#198038` | Confirmação de ação, requisito atendido |
+| `sucesso-fundo` | `#DEFBE6` | Fundo de aviso de sucesso |
 | `alerta-texto` | `#8E6A00` | Texto de aviso (dado parcial, cobertura baixa) |
 | `alerta-fundo` | `#FCF4D6` | Fundo de faixa de aviso |
-| `erro` | `#DA1E28` | Erro de carregamento, falha de login |
+| `erro` | `#DA1E28` | Erro de carregamento, falha de login, mensagem de campo |
+| `erro-fundo` | `#FFF1F1` | Fundo de aviso de erro (o texto continua `preto`) |
+
+Os tokens estão implementados em `frontend/src/ui/theme/tokens.css`, com o prefixo `--cor-`.
 
 Uma variação percentual não é boa nem ruim por si só. Mais pedidos ao 156 pode ser mais problema ou mais confiança no canal. Não pinte variação de verde ou vermelho a menos que a direção desejada seja inequívoca, como "prazo p90 caiu".
 
@@ -86,6 +91,11 @@ Escala sequencial de 5 classes, do claro ao escuro, toda dentro da família de a
 - `azul-principal` sobre `branco`: 5,0:1. Pode ser usado em texto de qualquer tamanho.
 - `azul-principal` sobre `azul-claro`: 4,4:1. **Não passa** para texto pequeno; só para texto de 19px ou mais em negrito.
 - `cinza-texto-terciario` sobre `azul-claro`: 4,5:1, no limite. Sobre `azul-claro`, use `cinza-texto-secundario`.
+- Rótulo de seção sobre `azul-claro`: use `azul-escuro` (6,9:1), não `azul-principal`.
+- `sucesso` e `erro` sobre `cinza-fundo`: 4,6:1 e 4,5:1. Passam, mas no limite: não clareie esses fundos.
+- `alerta-texto` sobre `alerta-fundo`: 4,5:1.
+- `branco` sobre `azul-principal`: 5,0:1. Texto em faixa azul sempre em branco puro, sem transparência.
+- `branco` a 85% sobre `azul-marinho`: 10,4:1. Pode ser usado para texto secundário no cabeçalho e no rodapé.
 
 ## Tipografia
 
@@ -101,16 +111,26 @@ Montserrat, carregada do Google Fonts com os pesos 400, 500, 600 e 700.
 | Legenda e eixo | 12px | 500 | Rótulos de eixo, legenda, nota de fonte |
 | Número de KPI | 32px | 700 | Valor principal do cartão |
 
+Na página inicial pública, que é lida e não operada, a escala cresce:
+
+| Papel | Tamanho | Peso | Token |
+|---|---|---|---|
+| Título de abertura | 52px (34px no celular) | 700 | `--texto-destaque` |
+| Título de seção | 36px (28px no celular) | 700 | `--texto-secao` |
+| Texto de abertura | 18px | 400 | `--texto-abertura` |
+| Corpo | 16px | 400 | `--texto-corpo` |
+
 - Números em tabela, KPI e eixo usam algarismos tabulares (`font-variant-numeric: tabular-nums`), para alinharem em coluna.
 - Altura de linha: 1,5 no corpo e 1,2 nos títulos.
 - Nada em caixa alta corrida, exceto siglas.
 
 ## Espaço, forma e profundidade
 
-- Espaçamento em múltiplos de 4px: 4, 8, 12, 16, 24, 32, 48, 64.
+- Espaçamento em múltiplos de 4px: 4, 8, 12, 16, 24, 32, 48, 64, e 96 só entre seções da página inicial.
 - Raio: 4px em campos e botões, 8px em cartões. Nada de cantos muito arredondados.
 - Profundidade com borda `cinza-borda` de 1px, não com sombra. Sombra só em elemento flutuante (tooltip, menu aberto), e discreta.
-- Grade de 12 colunas, com 24px entre colunas. Largura máxima do conteúdo: 1440px.
+- Grade de 12 colunas, com 24px entre colunas. Largura máxima do conteúdo: 1440px no painel e 1200px na página inicial, para as linhas de texto não ficarem longas demais.
+- Margem lateral de 16px no celular e 32px a partir de 720px.
 
 ## Layout do painel
 
@@ -184,6 +204,15 @@ Não use: pizza com mais de 3 fatias, rosca, gráfico 3D, gauge, eixo duplo e gr
 - Hover mostra o nome do bairro, o valor e a RPA. O clique seleciona o bairro no filtro global.
 - Ao lado do mapa vai sempre uma tabela ordenada com os mesmos valores. Ela é a alternativa acessível e o jeito mais rápido de ler os extremos.
 - Os dois mapas de prioridade (serviço urbano e emergência) ficam lado a lado, com a mesma escala de cores e legendas independentes.
+
+### Mapa sem dado (página inicial e telas de acesso)
+
+Fora das telas de dados, o mapa dos bairros é só referência geográfica, desenhado em SVG (`ui/map/MapaDosBairros.tsx`), sem Leaflet e sem mapa de fundo:
+
+- **Sobre branco:** preenchimento `azul-claro` com traço `#4589FF` de 0,75px, como um desenho de linhas. RPA escolhida em `#A6C8FF` e bairro sob o mouse em `azul-principal`, os dois com traço branco.
+- **Sobre `azul-principal`:** preenchimento branco a 6% e traço branco a 40%, puramente decorativo (`aria-hidden`).
+- Nunca pinte esse mapa com a escala sequencial por RPA ou por qualquer categoria: quem vê cor graduada lê quantidade.
+- A legenda diz que a malha é da Prefeitura do Recife, Portal de Dados Abertos, licença ODbL.
 
 ## Texto e voz
 
