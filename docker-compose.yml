@@ -1,0 +1,19 @@
+# PostgreSQL para desenvolvimento local. Usuário e senha valem só nesta máquina.
+services:
+  banco:
+    image: postgres:17.10
+    environment:
+      POSTGRES_USER: recifeview
+      POSTGRES_PASSWORD: recifeview_local
+      POSTGRES_DB: recifeview
+    ports:
+      - "5432:5432"
+    volumes:
+      - dados-do-banco:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U recifeview -d recifeview"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  dados-do-banco:
