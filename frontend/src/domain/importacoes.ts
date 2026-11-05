@@ -1,3 +1,6 @@
+import { nomeDaFonte } from './fontes'
+import { contar } from './formatacao'
+
 export type StatusDaImportacao =
   | 'ANALISANDO'
   | 'AGUARDANDO_COLUNAS'
@@ -245,4 +248,55 @@ export interface RegistroImportado {
 export interface PaginaDeRegistros {
   itens: readonly RegistroImportado[]
   total: number
+}
+
+const LAYOUT_COM_VARIAS_FONTES = 'dataset'
+
+export function descreverFonte({
+  fonte,
+  layout,
+}: Pick<ResumoDaImportacao, 'fonte' | 'layout'>): string {
+  if (fonte || layout === LAYOUT_COM_VARIAS_FONTES) return nomeDaFonte(fonte)
+  return 'fonte a definir'
+}
+
+const ROTULOS_DAS_ESCOLHAS: Readonly<Record<string, string>> = {
+  atualizar: 'atualizar',
+  manter_atuais: 'manter os atuais',
+  inserir_como_novos: 'inserir como novos',
+  manter_todos: 'manter todos',
+  manter_um: 'manter só um de cada',
+  deixar_vazia: 'deixar vazia',
+  descartar_linha: 'descartar a linha',
+  iso: 'ano-mês-dia',
+  ano_barra: 'ano/mês/dia',
+  dia_mes_ano: 'dia/mês/ano',
+  mes_dia_ano: 'mês/dia/ano',
+}
+
+const ROTULOS_DOS_CAMPOS_DECIDIDOS: Readonly<Record<string, string>> = {
+  bairro: 'Bairro',
+  categoria: 'Categoria',
+  orgao: 'Órgão',
+  situacao: 'Situação',
+}
+
+function descreverEscolha(titulo: string, escolha: string | null): string[] {
+  return escolha ? [`${titulo}: ${ROTULOS_DAS_ESCOLHAS[escolha] ?? escolha}`] : []
+}
+
+export function descreverDecisoes(decisoes: DecisoesDaImportacao): string[] {
+  const valores = Object.entries(decisoes.substituicoes).flatMap(([campo, substituicoes]) => {
+    const quantidade = Object.keys(substituicoes).length
+    if (quantidade === 0) return []
+    const rotulo = ROTULOS_DOS_CAMPOS_DECIDIDOS[campo] ?? campo
+    return [`${rotulo}: ${contar(quantidade, 'valor decidido', 'valores decididos')}`]
+  })
+  return [
+    ...descreverEscolha('Registros já na base', decisoes.repetidosNaBase),
+    ...descreverEscolha('Repetidos no arquivo', decisoes.repetidosNoArquivo),
+    ...descreverEscolha('Datas inválidas', decisoes.datasInvalidas),
+    ...descreverEscolha('Ordem das datas', decisoes.formatoDeData),
+    ...valores,
+  ]
 }

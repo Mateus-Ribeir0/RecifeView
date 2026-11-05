@@ -92,6 +92,10 @@ export function formatarPeriodo(inicio: number, fim: number): string {
   return inicio === fim ? String(inicio) : `${inicio} a ${fim}`
 }
 
+export function contar(quantidade: number, singular: string, plural: string): string {
+  return `${formatarNumero(quantidade)} ${quantidade === 1 ? singular : plural}`
+}
+
 export function formatarTamanho(bytes: number): string {
   const megabytes = bytes / BYTES_POR_KB / BYTES_POR_KB
   if (megabytes >= 1) return `${formatarNumero(megabytes, 1)} MB`
