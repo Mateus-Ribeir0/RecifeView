@@ -1,7 +1,20 @@
-from datetime import datetime
+from datetime import date, datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Identity, String, func
+from sqlalchemy import (
+    BigInteger,
+    Date,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Integer,
+    SmallInteger,
+    String,
+    Text,
+    func,
+)
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.db.base import Base
@@ -43,3 +56,41 @@ class EventoDeAcessoModelo(Base):
     usuario_id: Mapped[UUID | None] = mapped_column(ForeignKey(UsuarioModelo.id), index=True)
     tipo: Mapped[str] = mapped_column(String(30))
     ocorrido_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+
+class ImportacaoModelo(Base):
+    __tablename__ = "importacao"
+
+    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
+    nome_do_arquivo: Mapped[str] = mapped_column(Text)
+    tamanho_em_bytes: Mapped[int] = mapped_column(BigInteger)
+    hash_do_arquivo: Mapped[str] = mapped_column(String(64), index=True)
+    usuario_id: Mapped[UUID | None] = mapped_column(ForeignKey(UsuarioModelo.id))
+    status: Mapped[str] = mapped_column(String(30))
+    progresso: Mapped[int] = mapped_column(SmallInteger, default=0)
+    fonte: Mapped[str | None] = mapped_column(String(30))
+    layout: Mapped[str | None] = mapped_column(String(30))
+    data_do_retrato: Mapped[date | None] = mapped_column(Date)
+    periodo_inicio: Mapped[date | None] = mapped_column(Date)
+    periodo_fim: Mapped[date | None] = mapped_column(Date)
+    carga_inicial: Mapped[bool] = mapped_column(default=False)
+    arquivo_guardado: Mapped[bool] = mapped_column(default=True)
+    estrutura: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    decisoes: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    pendencias: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    resultado: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    mensagem_de_erro: Mapped[str | None] = mapped_column(Text)
+    criada_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    concluida_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    desfeita_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    desfeita_por: Mapped[UUID | None] = mapped_column(ForeignKey(UsuarioModelo.id))
+
+
+class ConsultaAuditadaModelo(Base):
+    __tablename__ = "consulta_auditada"
+
+    id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
+    usuario_id: Mapped[UUID] = mapped_column(ForeignKey(UsuarioModelo.id))
+    rota: Mapped[str] = mapped_column(Text)
+    filtros: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    ocorrida_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
