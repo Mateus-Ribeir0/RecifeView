@@ -3,27 +3,59 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import Depends, Request
+from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.casos_de_uso.entrar import Entrar
 from app.application.casos_de_uso.identificar_usuario import IdentificarUsuario
+from app.application.casos_de_uso.importacoes.servicos import ServicosDeImportacao
 from app.application.casos_de_uso.renovar_acesso import RenovarAcesso
 from app.application.casos_de_uso.sair import Sair
 from app.application.casos_de_uso.trocar_senha import TrocarSenha
 from app.application.portas.acessos import RegistroDeAcessos
+from app.application.portas.painel import (
+    CatalogoRepository,
+    PrazoRepository,
+    PrioridadeRepository,
+    RecorrenciaRepository,
+    ReferenciaRepository,
+    RegistroDeConsultas,
+    RetornoRepository,
+    SobreRepository,
+    TerritorioRepository,
+    VisaoGeralRepository,
+    WarRoomRepository,
+)
 from app.application.portas.relogio import Relogio
 from app.application.portas.seguranca import EmissorDeTokenDeAcesso, HashDeSenha
 from app.application.portas.sessoes import SessaoRepository
 from app.application.portas.usuarios import UsuarioRepository
 from app.application.sessoes import GestaoDeSessoes
+from app.domain.auditoria import ConsultaAuditada
 from app.domain.erros import ErroDeDominio, SessaoInvalida
+from app.domain.filtros import ANO_FINAL_PADRAO, ANO_INICIAL_PADRAO, Filtros
 from app.domain.usuario import Usuario
 from app.infrastructure.repositories.acessos import RegistroDeAcessosSql
+from app.infrastructure.repositories.catalogos import (
+    CatalogoRepositorySql,
+    ReferenciaRepositorySql,
+)
+from app.infrastructure.repositories.consultas import RegistroDeConsultasSql
+from app.infrastructure.repositories.prazos import PrazoRepositorySql
+from app.infrastructure.repositories.prioridade import PrioridadeRepositorySql
+from app.infrastructure.repositories.recorrencias import RecorrenciaRepositorySql
+from app.infrastructure.repositories.retorno import RetornoRepositorySql
 from app.infrastructure.repositories.sessoes import SessaoRepositorySql
+from app.infrastructure.repositories.sobre import SobreRepositorySql
+from app.infrastructure.repositories.territorio import TerritorioRepositorySql
 from app.infrastructure.repositories.usuarios import UsuarioRepositorySql
+from app.infrastructure.repositories.visao_geral import VisaoGeralRepositorySql
+from app.infrastructure.repositories.war_room import WarRoomRepositorySql
 from app.infrastructure.settings import Configuracao
+
+PADRAO_DO_PERIODO = r"^\d{4}-\d{2}$"
+TAMANHO_DO_ANO = 4
 
 
 @dataclass(frozen=True)
@@ -41,6 +73,20 @@ class Repositorios:
     acessos: RegistroDeAcessos
 
 
+@dataclass(frozen=True)
+class RepositoriosDoPainel:
+    catalogo: CatalogoRepository
+    referencia: ReferenciaRepository
+    visao_geral: VisaoGeralRepository
+    retorno: RetornoRepository
+    recorrencias: RecorrenciaRepository
+    prazos: PrazoRepository
+    territorio: TerritorioRepository
+    prioridade: PrioridadeRepository
+    war_room: WarRoomRepository
+    sobre: SobreRepository
+
+
 def obter_configuracao(request: Request) -> Configuracao:
     configuracao: Configuracao = request.app.state.configuracao
     return configuracao
@@ -49,6 +95,11 @@ def obter_configuracao(request: Request) -> Configuracao:
 def obter_seguranca(request: Request) -> Seguranca:
     seguranca: Seguranca = request.app.state.seguranca
     return seguranca
+
+
+def obter_servicos_de_importacao(request: Request) -> ServicosDeImportacao:
+    servicos: ServicosDeImportacao = request.app.state.servicos_de_importacao
+    return servicos
 
 
 def abrir_transacao(request: Request) -> Iterator[Session]:
@@ -77,6 +128,7 @@ def obter_repositorios(sessao: Annotated[Session, Depends(abrir_transacao)]) -> 
 
 ConfiguracaoDep = Annotated[Configuracao, Depends(obter_configuracao)]
 SegurancaDep = Annotated[Seguranca, Depends(obter_seguranca)]
+ServicosDeImportacaoDep = Annotated[ServicosDeImportacao, Depends(obter_servicos_de_importacao)]
 RepositoriosDep = Annotated[Repositorios, Depends(obter_repositorios)]
 
 
@@ -137,8 +189,67 @@ def obter_usuario_atual(
     return identificar.executar(credenciais.credentials)
 
 
+def obter_repositorios_do_painel(
+    sessao: Annotated[Session, Depends(abrir_transacao)],
+) -> RepositoriosDoPainel:
+    return RepositoriosDoPainel(
+        catalogo=CatalogoRepositorySql(sessao),
+        referencia=ReferenciaRepositorySql(sessao),
+        visao_geral=VisaoGeralRepositorySql(sessao),
+        retorno=RetornoRepositorySql(sessao),
+        recorrencias=RecorrenciaRepositorySql(sessao),
+        prazos=PrazoRepositorySql(sessao),
+        territorio=TerritorioRepositorySql(sessao),
+        prioridade=PrioridadeRepositorySql(sessao),
+        war_room=WarRoomRepositorySql(sessao),
+        sobre=SobreRepositorySql(sessao),
+    )
+
+
+def obter_registro_de_consultas(
+    sessao: Annotated[Session, Depends(abrir_transacao)],
+) -> RegistroDeConsultas:
+    return RegistroDeConsultasSql(sessao)
+
+
+def _ano_do_periodo(valor: str) -> int:
+    return int(valor[:TAMANHO_DO_ANO])
+
+
+def obter_filtros(
+    periodo_inicio: Annotated[str, Query(pattern=PADRAO_DO_PERIODO)] = f"{ANO_INICIAL_PADRAO}-01",
+    periodo_fim: Annotated[str, Query(pattern=PADRAO_DO_PERIODO)] = f"{ANO_FINAL_PADRAO}-12",
+    rpa: Annotated[list[str] | None, Query()] = None,
+    bairro: Annotated[list[str] | None, Query()] = None,
+    categoria: Annotated[list[str] | None, Query()] = None,
+) -> Filtros:
+    return Filtros(
+        _ano_do_periodo(periodo_inicio),
+        _ano_do_periodo(periodo_fim),
+        tuple(rpa or ()),
+        tuple(bairro or ()),
+        tuple(categoria or ()),
+    )
+
+
 EntrarDep = Annotated[Entrar, Depends(obter_entrar)]
 RenovarAcessoDep = Annotated[RenovarAcesso, Depends(obter_renovar_acesso)]
 SairDep = Annotated[Sair, Depends(obter_sair)]
 TrocarSenhaDep = Annotated[TrocarSenha, Depends(obter_trocar_senha)]
 UsuarioAtualDep = Annotated[Usuario, Depends(obter_usuario_atual)]
+FiltrosDep = Annotated[Filtros, Depends(obter_filtros)]
+PainelDep = Annotated[RepositoriosDoPainel, Depends(obter_repositorios_do_painel)]
+
+
+def auditar_consulta(
+    request: Request,
+    usuario: UsuarioAtualDep,
+    consultas: Annotated[RegistroDeConsultas, Depends(obter_registro_de_consultas)],
+    seguranca: SegurancaDep,
+) -> None:
+    parametros: dict[str, list[str]] = {}
+    for chave, valor in request.query_params.multi_items():
+        parametros.setdefault(chave, []).append(valor)
+    consultas.registrar(
+        ConsultaAuditada(usuario.id, request.url.path, parametros, seguranca.relogio.agora())
+    )

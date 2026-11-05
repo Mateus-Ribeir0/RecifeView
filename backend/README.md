@@ -1,6 +1,6 @@
 # Backend
 
-API REST do RecifeView. Ela autentica o gestor, aplica as permissões, registra a auditoria dos acessos e vai devolver os indicadores já calculados (agregações, percentis, per capita, reincidência e priorização) para o frontend.
+API REST do RecifeView. Ela autentica o gestor, registra a auditoria de acessos e consultas, devolve os indicadores já calculados (agregações, percentis, per capita, reincidência e priorização) e recebe arquivos novos pela importação.
 
 **Stack:** Python 3.12, FastAPI, SQLAlchemy 2, Alembic e PostgreSQL 17. As versões ficam no `uv.lock`; o porquê de cada ferramenta está em [docs/stack.md](../docs/stack.md#backend) e na [ADR 0004](../docs/adr/0004-ferramentas-complementares.md).
 
@@ -36,6 +36,18 @@ Com Docker, o banco de testes precisa ser criado uma vez:
 docker compose exec banco createdb -U recifeview recifeview_teste
 ```
 
+## Carregar os dados
+
+O painel lê a base analítica do PostgreSQL. Depois das migrações, baixe o dataset do grupo para `data/` (ver [docs/dados.md](../docs/dados.md#como-obter-os-dados)) e rode:
+
+```bash
+uv run recifeview importar \
+  --arquivo ../data/recifeview_demandas_recife_2012_2026.csv.xz \
+  --data-do-retrato 2026-10-07 --carga-inicial
+```
+
+A carga completa leva alguns minutos, ocupa cerca de 1 GB de disco e aparece como a primeira linha do histórico de importações. O mesmo comando sem `--carga-inicial` importa outro arquivo pelo terminal, e para com aviso se houver algo para decidir: nesse caso, responda pelo painel.
+
 ## Contas de acesso
 
 Não existe cadastro aberto. A administração cria as contas pela linha de comando, e cada conta nasce com uma senha temporária que precisa ser trocada no primeiro acesso.
@@ -62,6 +74,9 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `API_HORAS_DA_SESSAO` | Validade da sessão (cookie) | `12` |
 | `API_COOKIE_SEGURO` | `true` exige HTTPS para o cookie de sessão. Localmente, `false` | `false` |
 | `API_ORIGENS_PERMITIDAS` | Origens que podem chamar a API direto, em JSON | `[]` |
+| `API_PASTA_DAS_IMPORTACOES` | Pasta local dos arquivos enviados. Fica fora do git | `../data/importacoes` |
+| `API_TAMANHO_MAXIMO_DA_IMPORTACAO_MB` | Limite de tamanho de um arquivo enviado | `800` |
+| `API_SAL_DO_ID_LOCAL` | Sal do pseudônimo de endereço. Vazio: registros novos ficam fora da reincidência | vem do grupo, nunca do repositório |
 | `API_URL_DO_BANCO_DE_TESTE` | Banco dos testes de integração. Sem ela, esses testes são pulados | `postgresql+psycopg://...@localhost:5432/recifeview_teste` |
 
 ## Comandos
@@ -76,7 +91,8 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `uv run ruff check .` | Lint |
 | `uv run mypy app tests` | Checagem de tipos (modo estrito) |
 | `uv run lint-imports` | Confere a regra da dependência entre as camadas |
-| `uv run recifeview --help` | Administração de contas |
+| `uv run recifeview importar --arquivo ... --data-do-retrato AAAA-MM-DD` | Importa um arquivo pelo terminal |
+| `uv run recifeview --help` | Administração de contas e importação |
 
 ## Rotas
 
@@ -91,7 +107,31 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `GET /autenticacao/eu` | Devolve o usuário do token de acesso |
 | `POST /autenticacao/trocar-senha` | Troca a senha, derruba as outras sessões e abre uma nova |
 
-As rotas de dados (indicadores, território, prazos, recorrências, fluxo da Câmara, catálogos e modelos) entram uma por tela, como previsto em [docs/arquitetura.md](../docs/arquitetura.md#telas-e-rotas-da-api).
+| `GET /catalogos/filtros` | Anos, RPAs, bairros, categorias e fontes para os filtros |
+| `GET /indicadores/visao-geral` | Início: KPIs e volume por fonte |
+| `GET /retorno/indicacoes` | Funil, canal de envio, destinos e caminhos das indicações |
+| `GET /retorno/ouvidoria` | Canais de entrada e prazo da Ouvidoria |
+| `GET /recorrencias` | Local repetido, intervalos e pontos crônicos. `sem_generico=true` tira endereços genéricos |
+| `GET /prazos` | Percentis, faixas, categorias e estoque aberto. `sem_mesmo_dia=true` tira os fechados no dia |
+| `GET /territorio/bairros` | Taxas por bairro, faixas e tendência |
+| `GET /prioridade/criterios` | Critérios do índice e julgamentos propostos pelo grupo |
+| `POST /prioridade/indice` | Pesos, razão de consistência, índice dos bairros e sensibilidade |
+| `POST /prioridade/fila` | Registros em aberto classificados, com sorteio |
+| `GET /war-room/calendario` | Dias disponíveis para a War Room |
+| `GET /war-room/dia` | Estado de um dia: entradas, estoque, fila e alertas |
+| `GET /sobre` | Cobertura por fonte e ano e correções aplicadas |
+| `GET /importacoes` | Histórico, com busca e filtros |
+| `POST /importacoes?nome=...` | Recebe um arquivo. O corpo da requisição é o próprio arquivo |
+| `GET /importacoes/campos` | Campos da base para o mapeamento |
+| `GET /importacoes/{id}` | Colunas, pendências, prévia e relatório de uma importação |
+| `PUT /importacoes/{id}/colunas` | Define a fonte, a data do retrato e o mapeamento |
+| `PUT /importacoes/{id}/pendencias` | Responde o que não bateu e valida de novo |
+| `POST /importacoes/{id}/confirmar` | Grava na base e atualiza as views |
+| `POST /importacoes/{id}/cancelar` | Cancela antes da carga |
+| `POST /importacoes/{id}/desfazer` | Desfaz a importação mais recente |
+| `GET /importacoes/{id}/registros` | Registros tratados, paginados |
+
+Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
 
 Como a autenticação funciona, e por que ela ainda é uma proposta, está na [ADR 0005](../docs/adr/0005-autenticacao-com-jwt-proprio.md).
 
@@ -101,9 +141,11 @@ Camadas `domain`, `application`, `infrastructure` e `api`, conforme [docs/clean-
 
 ```
 app/
-  domain/           usuario, sessao, email, senha, acesso, erros
-  application/      portas/, casos_de_uso/, sessoes.py
-  infrastructure/   db/, repositories/, auth/ (Argon2 e JWT), settings.py, relogio.py
+  domain/           usuario, sessao, senha, acesso, ahp, prioridade, filtros, uma regra por tela
+    importacao/     campos, layouts, privacidade, normalizador, correções, pendências, chaves
+  application/      portas/, sessoes.py
+    casos_de_uso/   acesso, importacoes/ (um caso de uso por passo), painel/ (um por tela)
+  infrastructure/   db/, repositories/, auth/, importacao/ (leitores, armazenamento, fila)
   api/              routers/, schemas/, dependencias.py, erros.py, cookies.py
   main.py           monta a aplicação
   cli.py            administração de contas
@@ -113,8 +155,13 @@ tests/              unidade/, api/, integracao/
 
 ## Regra de privacidade
 
-Nenhuma rota devolve o texto da SEDEC nem o hash da senha. Os schemas de resposta são explícitos justamente para que uma coluna nova no banco não vaze por acidente. A auditoria guarda o tipo do evento, o usuário e o horário, sem IP e sem o e-mail digitado. Ver [docs/dados.md](../docs/dados.md#privacidade-lgpd).
+Nenhuma rota devolve o texto da SEDEC, `id_local`, coordenada, endereço nem o hash da senha. Os schemas de resposta são explícitos justamente para que uma coluna nova no banco não vaze por acidente. Na importação, colunas com dado pessoal são reconhecidas pelo nome e pelo conteúdo, ficam bloqueadas e não têm os valores exibidos; arquivo com esse tipo de coluna é apagado depois da carga, e a API nunca devolve o original. A auditoria guarda o tipo do evento, o usuário e o horário, sem IP e sem o e-mail digitado. Ver [docs/dados.md](../docs/dados.md#privacidade-lgpd) e a [ADR 0007](../docs/adr/0007-importacao-de-arquivos-pelo-painel.md).
 
 ## Banco de dados
 
-As migrações ficam nesta pasta, para que o esquema tenha um dono só. As tabelas de acesso ficam no schema `app`: `usuario`, `sessao` e `evento_de_acesso`. Convenções de nomes em [docs/padroes-de-codigo.md](../docs/padroes-de-codigo.md#banco-de-dados-postgresql).
+As migrações ficam nesta pasta, para que o esquema tenha um dono só. Convenções de nomes em [docs/padroes-de-codigo.md](../docs/padroes-de-codigo.md#banco-de-dados-postgresql).
+
+- Schema `app`: `usuario`, `sessao`, `evento_de_acesso`, `importacao` e `consulta_auditada`.
+- Schema `ouro`: `dim_bairro`, `fato_demanda`, `fato_demanda_substituida` (versão anterior das linhas atualizadas, para desfazer) e as views materializadas `mv_*`, que reproduzem as tabelas do protótipo em Streamlit ([ADR 0006](../docs/adr/0006-modelo-analitico-no-postgresql.md)).
+
+As views são atualizadas depois de cada importação, com o painel no ar.
