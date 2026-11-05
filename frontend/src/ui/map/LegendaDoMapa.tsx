@@ -27,12 +27,23 @@ export function LegendaDoMapa({ titulo, faixas, casas = 1 }: Propriedades) {
               style={{ background: corDaFaixa(indice, faixas.length) }}
               aria-hidden="true"
             />
-            {formatarNumero(faixa.inicio, casas)} a {formatarNumero(faixa.fim, casas)}
+            <span className={estilos.limites}>
+              <span>
+                <span className="visualmente-oculto">de </span>
+                {formatarNumero(faixa.inicio, casas)}
+              </span>
+              {indice === faixas.length - 1 && (
+                <span>
+                  <span className="visualmente-oculto">a </span>
+                  {formatarNumero(faixa.fim, casas)}
+                </span>
+              )}
+            </span>
           </li>
         ))}
-        <li>
+        <li className={estilos.semDadoItem}>
           <span className={`${estilos.marca} ${estilos.semDado}`} aria-hidden="true" />
-          sem dado
+          <span className={estilos.limites}>sem dado</span>
         </li>
       </ul>
     </div>

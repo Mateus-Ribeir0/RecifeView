@@ -54,9 +54,11 @@ export function BarrasHorizontais({
     return <CaixaDeDica titulo={barra.rotulo} linhas={linhas} />
   }
 
+  const haSelecao = dados.some((item) => item.chave === selecionada)
+
   function corDaBarra(item: BarraDoGrafico): string {
     if (item.cor) return item.cor
-    if (!selecionada) return COR.principal
+    if (!haSelecao) return COR.principal
     return selecionada === item.chave ? COR.principal : COR.claro
   }
 
