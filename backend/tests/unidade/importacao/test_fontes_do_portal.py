@@ -1,6 +1,7 @@
 from datetime import date
 
 from app.domain.fontes import Fonte
+from app.domain.importacao.chaves import OrdemPorConteudo
 from app.domain.importacao.decisoes import Decisoes
 from app.domain.importacao.layouts import (
     AUXILIAR_DATA_DA_ACAO,
@@ -78,7 +79,7 @@ def normalizador_de(
     decisoes: Decisoes,
 ) -> NormalizadorDeLinhas:
     plano = PlanoDeNormalizacao(colunas, layout, decisoes, "arquivo_2024", date(2026, 11, 5), 1)
-    return NormalizadorDeLinhas(plano, Referencias({"AFOGADOS": "5"}, {}))
+    return NormalizadorDeLinhas(plano, Referencias({"AFOGADOS": "5"}, {}), OrdemPorConteudo())
 
 
 def ouvidoria() -> NormalizadorDeLinhas:

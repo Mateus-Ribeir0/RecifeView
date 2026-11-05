@@ -33,7 +33,7 @@ class CarregarImportacao:
 
     def _carregar(self, importacao: Importacao) -> tuple[RelatorioDeLinhas, ResultadoDaCarga]:
         tabela = self.servicos.abrir_tabela(importacao)
-        normalizador = self.servicos.criar_normalizador(importacao, tabela)
+        normalizador = self.servicos.preparar_normalizador(importacao, tabela)
         politica = importacao.decisoes.repetidos_na_base or PoliticaDeRepetidos.MANTER_ATUAIS
         carga = self.servicos.carregador.carregar(
             importacao.id, registros_validos(tabela, normalizador), politica

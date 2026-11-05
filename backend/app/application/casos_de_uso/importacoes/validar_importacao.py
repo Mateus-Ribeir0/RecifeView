@@ -205,9 +205,9 @@ class ValidarImportacao:
         tabela = self.servicos.abrir_tabela(importacao)
         decisoes = _decidir_formato_de_data(tabela, importacao.decisoes)
         importacao = replace(importacao, decisoes=decisoes)
-        normalizador = self.servicos.criar_normalizador(importacao, tabela)
+        normalizador = self.servicos.preparar_normalizador(importacao, tabela)
         comparacao = self.servicos.carregador.comparar_com_a_base(
-            self._assinaturas(importacao, tabela, normalizador)
+            self._assinaturas(tabela, normalizador)
         )
         referencias = self.servicos.referencias.carregar()
         relatorio = normalizador.relatorio
@@ -218,13 +218,13 @@ class ValidarImportacao:
         ]
         previa = montar_previa(
             tabela,
-            self.servicos.criar_normalizador(importacao, tabela),
+            self.servicos.criar_normalizador_da_previa(importacao, tabela),
             colunas_visiveis_na_previa(importacao),
         )
         self._concluir(importacao, itens, previa, (relatorio, comparacao))
 
     def _assinaturas(
-        self, importacao: Importacao, tabela: TabelaDoArquivo, normalizador: NormalizadorDeLinhas
+        self, tabela: TabelaDoArquivo, normalizador: NormalizadorDeLinhas
     ) -> Iterator[tuple[int, int]]:
         for linha in tabela.linhas():
             registro = normalizador.normalizar(linha)
