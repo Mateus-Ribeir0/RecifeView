@@ -22,7 +22,7 @@ Guardar os registros em `ouro.fato_demanda`, com a dimensão `ouro.dim_bairro`, 
 
 - A tabela fato leva só as colunas que o painel usa. Não entram: texto da SEDEC, ementa, coordenadas, autoria, protocolo nem endereço.
 - `id_local` fica no banco para medir reincidência e nunca sai por rota.
-- A chave `chave_registro` identifica a linha entre arquivos e torna a carga idempotente. Ela é um hash dos campos que definem o registro em cada fonte. Registros com os mesmos campos se separam pela posição do conteúdo, não pela linha do arquivo: assim, o mesmo arquivo com as linhas em outra ordem não parece alterado.
+- A chave `chave_registro` identifica a linha entre arquivos e torna a carga idempotente. Ela é um hash dos campos que definem o registro em cada fonte, incluindo o ano do arquivo. O arquivo de um ano traz pedidos abertos em anos anteriores e, sem protocolo, não dá para saber se duas linhas de anos diferentes são o mesmo pedido. Por isso um arquivo só atualiza linhas do mesmo ano de arquivo, e um pedido que aparece em dois arquivos anuais conta duas vezes, como no dataset e no protótipo em Streamlit. Registros com os mesmos campos se separam pela posição do conteúdo, não pela linha do arquivo: assim, o mesmo arquivo com as linhas em outra ordem não parece alterado.
 - A data de referência do estoque vem da `data_do_retrato` de cada importação, em vez de ficar fixa em 07/10/2026.
 - "Arquivos recentes" são os dois arquivos anuais mais novos de cada fonte, que reproduz 2025 e 2026 no 156 e 2024 e 2025 na Ouvidoria.
 

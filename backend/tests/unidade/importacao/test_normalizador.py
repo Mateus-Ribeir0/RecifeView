@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from app.domain.fontes import Fonte
-from app.domain.importacao.chaves import OrdemPorConteudo
+from app.domain.importacao.chaves import OrdemPorConteudo, chave_base
 from app.domain.importacao.datas import FormatoDeData
 from app.domain.importacao.decisoes import (
     ACEITAR_COMO_NOVO,
@@ -346,6 +346,20 @@ def test_mesma_chave_com_conteudo_diferente_nao_e_repetida() -> None:
     assert segunda is not None
     assert primeira.chave_registro != segunda.chave_registro
     assert normalizador.relatorio.repetidas_no_arquivo == 0
+
+
+def test_o_arquivo_anual_faz_parte_da_identidade_do_registro() -> None:
+    partes = {
+        "servico_codigo": "77",
+        "data_abertura": date(2025, 12, 30),
+        "bairro_oficial": "IPSEP",
+    }
+    fonte = Fonte.CENTRAL_156.value
+
+    no_arquivo_de_2025 = chave_base(fonte, {**partes, "ano_do_arquivo": 2025})
+    no_arquivo_de_2026 = chave_base(fonte, {**partes, "ano_do_arquivo": 2026})
+
+    assert no_arquivo_de_2025 != no_arquivo_de_2026
 
 
 def test_a_ordem_das_linhas_no_arquivo_nao_muda_quem_e_quem() -> None:

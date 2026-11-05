@@ -379,8 +379,10 @@ class NormalizadorDeLinhas:
         complemento: tuple[object, ...],
     ) -> RegistroDeDemanda:
         fonte = str(principal[INDICE_DA_FONTE])
+        ano_do_arquivo = self._ano_do_registro(valores)
         partes: dict[str, object] = {
             **valores,
+            "ano_do_arquivo": ano_do_arquivo,
             "data_abertura": principal[INDICE_DA_ABERTURA],
             "data_ult_movimento": principal[INDICE_DO_MOVIMENTO],
             "bairro_oficial": principal[INDICE_DO_BAIRRO],
@@ -395,7 +397,7 @@ class NormalizadorDeLinhas:
                 self._resolver_numero_informado(valores),
                 *complemento,
                 valores.get("arquivo_origem") or self._plano.arquivo_origem,
-                self._ano_do_registro(valores),
+                ano_do_arquivo,
             )
         )
 
