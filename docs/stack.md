@@ -50,6 +50,7 @@ Fonte tipográfica: Montserrat, pelo Google Fonts (ver [design-system.md](design
 | Uvicorn | 0.54 | Definido | Servidor ASGI |
 | argon2-cffi | 25 | Definido ([ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md)) | Hash das senhas |
 | PyJWT | 2 | Definido ([ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md)) | Token de acesso |
+| openpyxl | 3 | Definido ([ADR 0007](adr/0007-importacao-de-arquivos-pelo-painel.md)) | Ler planilhas XLSX na importação de arquivos |
 | pytest + httpx2 | 9 / 2 | Definido | Testes de unidade, de API (TestClient) e de integração |
 
 ## Processor
