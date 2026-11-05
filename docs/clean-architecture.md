@@ -40,17 +40,19 @@ O ponto de montagem (composition root) é o único lugar que conhece todas as im
 ```
 backend/app/
   domain/
-    filtros.py           Filtros globais como objeto de valor (período, bairro, rpa, serviço...)
+    importacao/          Campos, layouts, privacidade, normalizador, correções, pendências e chaves
+    filtros.py           Filtros globais como objeto de valor (período, bairro, rpa, categoria...)
     prazos.py            Regras de prazo: o que conta como defeito, censura, percentis
     territorio.py        Per capita, limiar de população mínima
     recorrencias.py      Duplicidade × reincidência
     privacidade.py       O que pode e o que não pode sair
   application/
-    portas/              Protocols: PrazoRepository, TerritorioRepository, AuditoriaRepository, ProvedorIdentidade
-    casos_de_uso/        listar_prazos_por_servico.py, calcular_demanda_por_bairro.py, ...
+    portas/              Protocols: repositórios do painel, importacoes.py (armazenamento, fila, leitor, carregador)
+    casos_de_uso/        painel/ (um por tela), importacoes/ (um por passo), acesso
   infrastructure/
     db/                  sessão SQLAlchemy, modelos ORM
     repositories/        implementações das portas com SQLAlchemy
+    importacao/          leitores de arquivo, armazenamento local, fila em processo, montagem
     auth/                implementação do ProvedorIdentidade (JWT próprio ou Cognito, conforme a ADR)
     settings.py          Pydantic Settings
   api/
@@ -112,13 +114,14 @@ frontend/src/
   application/
     autenticacao/        Porta ServicoDeAutenticacao, ProvedorDeSessao e useSessao
     filtros/             Estado dos filtros globais
-    consultas/           Hooks de caso de uso: useDemandaPorBairro, usePrazosPorServico...
+    consultas/           Porta do painel, cache, useConsulta, usePainel, useWarRoom
+    importacoes/         Porta das importações, useHistorico, useImportacao
   infrastructure/
     api/                 Cliente HTTP (token e renovação), serviços que implementam as portas
   ui/
     app/                 Rotas, guardas de rota e provedores (ponto de montagem)
-    pages/               Uma pasta por tela: visao-geral/, mapa/, prazos/, recorrencias/, fluxo-camara/
-    components/          Componentes reutilizáveis: KpiCard, BarraDeFiltros, NotaDeFonte...
+    pages/               painel/ (uma pasta por tela, lateral e filtros), importacoes/, inicio/, entrar/...
+    components/          Componentes reutilizáveis: KpiCard, Cartao, Tabela, EstadoDaConsulta...
     charts/              Únicos arquivos que importam o Recharts
     map/                 Únicos arquivos que importam o Leaflet
     theme/               Tokens do design system
@@ -128,7 +131,7 @@ Regras:
 
 - Página não chama `fetch` nem conhece URL. Ela usa um hook de `application`, e o hook fala com uma porta (uma `interface`). A implementação da porta mora em `infrastructure/api` e é entregue pelo ponto de montagem (`ui/app`), que é o único lugar da interface que conhece a infraestrutura. Exemplo pronto: `ServicoDeAutenticacao`, implementado em `infrastructure/api/autenticacao.ts` e entregue ao `ProvedorDeSessao` em `ui/app/App.tsx`.
 - Componente recebe tipos do domínio, nunca o JSON cru da API. Se a API mudar, a quebra acontece num lugar só: a conversão em `infrastructure/api`.
-- Recharts só é importado em `ui/charts` e Leaflet só em `ui/map`. As páginas usam `GraficoSerieTemporal` e `MapaCoropletico`, não as bibliotecas direto. Trocar de biblioteca, ou ajustar o tema, mexe numa pasta só.
+- Recharts só é importado em `ui/charts` e Leaflet só em `ui/map`. As páginas usam `GraficoDeLinhas` e `MapaCoropletico`, não as bibliotecas direto. Trocar de biblioteca, ou ajustar o tema, mexe numa pasta só.
 - `domain/` não importa React nem qualquer biblioteca externa.
 - O ESLint confere tudo isso com o eslint-plugin-boundaries: a configuração está em `frontend/eslint.config.js`.
 
@@ -155,15 +158,15 @@ A maior parte dos testes deve estar no domínio e na aplicação.
 
 ## Exemplo de ponta a ponta: tela de Prazos
 
-1. A página `ui/pages/prazos` lê os filtros globais e chama `usePrazosPorServico(filtros)`.
-2. O hook chama o cliente em `infrastructure/api`, que faz `GET /api/v1/prazos/servicos?...` e converte a resposta para `PrazoPorServico[]`.
+1. A página `ui/pages/painel/prazos` lê os filtros globais e chama o hook da tela em `application/consultas/usePainel.ts`.
+2. O hook pede os dados pela porta do painel. A implementação em `infrastructure/api/painel.ts` faz `GET /api/v1/prazos?...` e converte a resposta para os tipos do domínio.
 3. Na API, o router `api/routers/prazos.py` valida os parâmetros com um schema e monta o objeto `Filtros` do domínio.
-4. O router chama o caso de uso `listar_prazos_por_servico(filtros, repositorio)`.
-5. O caso de uso pede ao `PrazoRepository` os percentis, passando a regra do domínio (excluir prazo negativo, tratar pedido aberto como censurado).
-6. A implementação SQLAlchemy consulta a view materializada `mv_prazos_servico`.
+4. O router chama o caso de uso da tela, em `application/casos_de_uso/painel/`.
+5. O caso de uso pede ao repositório os percentis, passando a regra do domínio (excluir prazo negativo, tratar pedido aberto como censurado).
+6. A implementação SQLAlchemy consulta a view materializada `ouro.mv_prazos_156`.
 7. O caso de uso aplica as regras finais do domínio (por exemplo, marcar serviços com n abaixo do mínimo) e devolve entidades.
 8. O router converte as entidades no schema de resposta, com o bloco `meta` (fonte, período, filtros, n).
-9. A página entrega os dados a `GraficoPercentis` (`ui/charts`), que desenha com o Recharts e o tema.
+9. A página entrega os dados aos gráficos de `ui/charts`, que desenham com o Recharts e o tema.
 
 ## Como garantir
 

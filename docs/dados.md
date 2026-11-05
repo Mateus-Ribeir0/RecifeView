@@ -91,16 +91,22 @@ Versão completa no README do dataset. Estes são os que mais afetam o código:
 10. **Viés de notificação:** mais pedido não quer dizer mais problema. Use taxa por mil habitantes e filtre bairros com menos de 1.000 moradores (Recife e Santo Antônio distorcem).
 11. **As três grafias:** o mesmo serviço aparece com grafias diferentes no 156. A N3 unificou as de terraplenagem (5.213 registros). Use o código do serviço, não o texto.
 
-## Correções da N3 que ainda precisam ir para o pipeline
+## Correções da N3 no pipeline
 
-Hoje elas existem só no notebook da EDA (`Entregaveis/EntregaSemana12/N3_EDA_RecifeView_P5G8.ipynb`). O Processor deve reproduzi-las:
+Elas nasceram no notebook da EDA (`Entregaveis/EntregaSemana12/N3_EDA_RecifeView_P5G8.ipynb`). A importação do backend já as aplica, como regras em `backend/app/domain/importacao/`, e conta cada uma no relatório da importação. Quando existir, o Processor deve reaproveitar essas regras em vez de reescrevê-las.
 
-- Bairro da Câmara recuperado pelo texto da ementa.
-- Nomes de órgão da Ouvidoria harmonizados.
-- Grafias de categoria do 156 unificadas.
-- 1.460 coordenadas fora do Recife e 3.976 prazos negativos anulados, com uma coluna marcando a anulação.
-- Marcar os pedidos fechados no mesmo dia, pôr um teto por local na reincidência e tratar a situação dos pedidos antigos do 156 como retrato da época.
-- Harmonizar a situação entre as fontes.
+| Correção | Onde está |
+|---|---|
+| Bairro da Câmara recuperado pelo texto da ementa | Normalização |
+| Nomes de órgão da Ouvidoria harmonizados | Normalização |
+| Grafias de categoria do 156 unificadas | Normalização |
+| 3.976 prazos negativos anulados, com a coluna `prazo_negativo` marcando a anulação | Normalização |
+| Pedidos fechados no mesmo dia marcados | Normalização, com a alternância na tela de Prazos |
+| Teto por local na reincidência | Alternância "endereços genéricos" na tela de Reincidência |
+| Situação dos pedidos antigos do 156 como retrato da época | Regra dos arquivos recentes (ver as métricas abaixo) |
+| 1.460 coordenadas fora do Recife anuladas | Não se aplica: a base analítica não guarda coordenadas |
+
+Continua pendente harmonizar a situação entre as fontes. Hoje só as situações equivalentes do 156 são unificadas.
 
 ## Definições de métricas
 
@@ -108,10 +114,14 @@ Toda métrica exibida no painel precisa de uma definição única, registrada aq
 
 | Métrica | Definição | Situação |
 |---|---|---|
-| Reincidência | Hoje convivem três definições: 38,6% (156, 2026, logradouro + número + serviço, antes de deduplicar), 36,3% (156, 2026, depois de deduplicar, n = 54.755, usada no SR1) e 53,3% (156, 2015 a 2025, só com número no endereço, dataset único, H3 da N1/N3) | **Em aberto.** O grupo precisa escolher uma |
+| Reincidência | Hoje convivem três definições: 38,6% (156, 2026, logradouro + número + serviço, antes de deduplicar), 36,3% (156, 2026, depois de deduplicar, n = 54.755, usada no SR1) e 53,3% (156, 2015 a 2025, só com número no endereço, dataset único, H3 da N1/N3) | **Em aberto.** O grupo precisa escolher uma. O painel usa a terceira, chamada de "local repetido", e escreve a definição na tela |
 | Duplicidade × reincidência | A N3 separa: repetição em até 7 dias é duplicidade; em 30 dias ou mais é reincidência | Proposta da N3 |
 | Prazo | Mediana e p90 de `dias_ate_movimento`, excluindo valores negativos. Pedido sem conclusão é tempo censurado, não zero nem descarte | Definido na N2 |
 | Demanda per capita | Pedidos por mil habitantes por ano, só em bairros com 1.000 moradores ou mais | Definido na N2 |
 | Resposta da Câmara | Percentual de indicações com `camara_desfecho = ENVIADO E COM RESPOSTA REGISTRADA` | Definido na N1 |
+| Data de referência do estoque | A maior `data_do_retrato` entre as importações concluídas (`ouro.vw_referencia`). Antes era fixa em 07/10/2026 | Proposta ([ADR 0006](adr/0006-modelo-analitico-no-postgresql.md)) |
+| Arquivos recentes | Os dois arquivos anuais mais novos de cada fonte. Reproduz 2025 e 2026 no 156 e 2024 e 2025 na Ouvidoria. Estoque aberto e fila só olham esses arquivos, porque a situação dos antigos é retrato da época | Proposta ([ADR 0006](adr/0006-modelo-analitico-no-postgresql.md)) |
+| Identidade do registro | Sem protocolo, o registro se identifica pelo ano do arquivo, pelos campos da fonte e pela posição do conteúdo. Um arquivo só atualiza linhas do mesmo ano de arquivo; um pedido que aparece em dois arquivos anuais conta duas vezes, como no dataset | Proposta ([ADR 0006](adr/0006-modelo-analitico-no-postgresql.md)) |
+| Índice de prioridade | AHP com quatro critérios por bairro. Os julgamentos entre os critérios são proposta do grupo, não validada pela Prefeitura, e podem ser mudados na tela | Proposta |
 
 Ao mudar uma definição, atualize esta tabela, o serviço que a calcula e o texto da tela que a explica, no mesmo PR.

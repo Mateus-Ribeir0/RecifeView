@@ -16,8 +16,8 @@ Quando uma proposta for confirmada, troque o status aqui e crie a ADR correspond
 | Camada | Tecnologia | Status | Papel |
 |---|---|---|---|
 | Frontend | React 19 | Definido | SPA do painel e página inicial |
-| Frontend | Recharts | Definido | Gráficos (séries, barras, dispersão, funil, Sankey). Entra com a primeira tela de dados |
-| Frontend | Leaflet | Definido | Mapa coroplético dos 94 bairros. Entra com a tela do mapa |
+| Frontend | Recharts | Definido | Gráficos das telas do painel (linhas, barras, dispersão, histograma). Só em `ui/charts` |
+| Frontend | Leaflet | Definido | Mapa coroplético dos 94 bairros, sem mapa de fundo. Só em `ui/map` |
 | Backend | Python 3.12 + FastAPI | Definido | API REST |
 | Banco | PostgreSQL 17 | Definido | Camadas tratada e analítica, usuários, auditoria |
 | Processor | Python | Definido | Ingestão e transformação dos dados da Prefeitura |
@@ -34,8 +34,9 @@ Quando uma proposta for confirmada, troque o status aqui e crie a ADR correspond
 | eslint-plugin-boundaries | 7 | Definido | Barra importação que fere a regra da dependência |
 | Prettier | 3 | Definido | Formatação |
 | Vitest + Testing Library + jsdom | 5 / 16 / 30 | Definido | Testes de domínio, cliente HTTP, sessão e telas |
-| TanStack Query | | Proposta | É o "cache de consultas" do C3. Confirmar com o grupo quando entrar a primeira tela de dados |
-| react-leaflet | | Proposta | Integração do Leaflet com o React |
+| @types/leaflet | 1 | Definido | Tipos do Leaflet, que não traz os próprios |
+| TanStack Query | | Proposta | É o "cache de consultas" do C3. Não instalado: o hook próprio `useConsulta` cobre o cache enquanto o grupo não confirma |
+| react-leaflet | | Proposta | Integração do Leaflet com o React. Não instalado: o Leaflet é usado direto em `ui/map` |
 
 Fonte tipográfica: Montserrat, pelo Google Fonts (ver [design-system.md](design-system.md#tipografia)).
 

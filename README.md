@@ -23,7 +23,8 @@ O projeto responde ao desafio [Fragmentação do Tratamento de Denúncias Recebi
 |---|---|
 | Pesquisa, dados, EDA (N1 a N3) | Concluída. Os entregáveis estão no Drive do grupo. |
 | Página inicial e acesso | Prontos: página pública, entrada, troca de senha, sessão e saída |
-| Telas de dados do painel | Em desenvolvimento, uma por entrega a partir da Semana 13 (30/10/2026) |
+| Telas de dados do painel | Prontas na branch `feat/painel-e-importacoes`: Início, War Room, Retorno, Reincidência, Prazos, Território, Prioridade e Sobre os dados |
+| Importação de arquivos | Pronta na mesma branch: envio, normalização, decisões, histórico e desfazer |
 | Processor | Ainda não começou |
 
 ## Arquitetura
@@ -119,7 +120,7 @@ Entre com a senha temporária que o comando mostrar e, no primeiro acesso, defin
 
 ### Dados
 
-Os dados não ficam no repositório. Para baixar o dataset e saber onde colocá-lo, leia [docs/dados.md](docs/dados.md#como-obter-os-dados).
+Os dados não ficam no repositório. Para baixar o dataset e saber onde colocá-lo, leia [docs/dados.md](docs/dados.md#como-obter-os-dados). Para carregá-lo no banco, siga [backend/README.md](backend/README.md#carregar-os-dados): sem essa carga, as telas do painel abrem vazias.
 
 ### Frontend
 

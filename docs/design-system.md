@@ -70,6 +70,8 @@ Quando várias fontes aparecem juntas, cada uma tem sempre a mesma cor, em todas
 
 O amarelo da Câmara (`#B28600`) tem contraste de 3,3:1: serve para barra e linha, mas não para texto pequeno. Num rótulo, use `preto` ao lado de uma marca de cor.
 
+Essas cores são os tokens `--cor-fonte-*` de `tokens.css`. Medidas com o validador de paleta, elas não passam em tudo: Defesa Civil e SEDEC ficam a Delta E 12,3 (o mínimo é 15) e a Ouvidoria tem pouco croma. Enquanto o grupo não trocar a paleta, identidade por fonte nunca fica só na cor: as séries usam marcadores de formas diferentes e sempre têm legenda.
+
 ### Escala do mapa coroplético (derivada)
 
 Escala sequencial de 5 classes, do claro ao escuro, toda dentro da família de azuis da marca:
@@ -138,23 +140,26 @@ O mockup 04 da pasta `MockupsDashboard` serve de referência de estrutura. Os n�
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ logo · navegação entre telas                       usuário   │  cabeçalho
-├──────────────────────────────────────────────────────────────┤
-│ Período · RPA · Bairro · Serviço · Situação · Fonte          │  filtros globais (fixos)
-├──────────────────────────────────────────────────────────────┤
-│ Título da tela                                               │
-│ A pergunta que a tela responde, em uma linha                 │
-│                                                              │
-│ [KPI] [KPI] [KPI] [KPI]                                      │  no máximo 4
-│                                                              │
-│ ┌──────────────────────────┐ ┌─────────────────────────────┐ │
-│ │ gráfico principal        │ │ gráfico de apoio            │ │
-│ └──────────────────────────┘ └─────────────────────────────┘ │
-│ Fonte: ... · Período: ... · n = ...                          │
-└──────────────────────────────────────────────────────────────┘
+│ logo                                               usuário   │  cabeçalho
+├───────────────┬──────────────────────────────────────────────┤
+│ Painel        │ Título da tela                               │
+│ Importações   │ A pergunta que a tela responde, em uma linha │
+│               │ Resumo do recorte: RPA 3 · 2021 a 2025       │
+│ Telas por     │                                              │
+│ grupo         │ [KPI] [KPI] [KPI] [KPI]         no máximo 4  │
+│               │                                              │
+│ Período       │ ┌───────────────────┐ ┌────────────────────┐ │
+│ RPA           │ │ gráfico principal │ │ gráfico de apoio   │ │
+│ Bairro        │ └───────────────────┘ └────────────────────┘ │
+│ Categoria     │ Fonte: ... · Período: ... · n = ...          │
+│ Limpar        │                                              │
+└───────────────┴──────────────────────────────────────────────┘
 ```
 
-- A barra de filtros fica fixa no topo e vale para todas as telas. Filtro aplicado mostra um resumo legível ("RPA 3 · 2021 a 2025") e um jeito de limpar.
+- A barra lateral (fundo `azul-claro`, largura no token `--largura-da-lateral`) tem uma chave de duas partes no topo: Painel e Importações. Na parte do Painel ficam as telas por grupo e os filtros globais; a decisão está na [ADR 0008](adr/0008-navegacao-lateral-com-filtros.md) (proposta).
+- A lateral recolhe, para a War Room ocupar a tela, e vira gaveta em telas menores.
+- Os filtros valem para todas as telas e persistem na navegação. O cabeçalho da tela mostra um resumo legível ("RPA 3 · 2021 a 2025"), e a lateral tem um jeito de limpar. Quando uma tela não consegue aplicar um filtro, ela diz qual e por quê.
+- A War Room é a única exceção ao limite de 4 KPIs: ela mantém as 9 placas, porque o quadro inteiro é a leitura do dia.
 - O público é um gestor no computador. Desenhe primeiro para 1280px ou mais e garanta leitura em tablet. No celular, basta que os KPIs e as tabelas sejam legíveis.
 
 ## Componentes
@@ -201,7 +206,7 @@ Não use: pizza com mais de 3 fatias, rosca, gráfico 3D, gauge, eixo duplo e gr
 - 5 classes por quantis, com os limites escritos na legenda ("12 a 30 por mil hab.").
 - Mapa de fundo claro e discreto (estilo Positron), ou nenhum. Mantenha a atribuição (OpenStreetMap e o provedor do mapa base).
 - Contorno dos bairros em `branco` com 1px; bairro em foco com contorno `preto` de 2px.
-- Hover mostra o nome do bairro, o valor e a RPA. O clique seleciona o bairro no filtro global.
+- Hover mostra o nome do bairro, o valor e a RPA. O clique abre o detalhe do bairro ao lado do mapa, sem mudar o filtro global.
 - Ao lado do mapa vai sempre uma tabela ordenada com os mesmos valores. Ela é a alternativa acessível e o jeito mais rápido de ler os extremos.
 - Os dois mapas de prioridade (serviço urbano e emergência) ficam lado a lado, com a mesma escala de cores e legendas independentes.
 

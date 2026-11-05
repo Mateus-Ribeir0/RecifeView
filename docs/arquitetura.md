@@ -29,7 +29,7 @@ flowchart TB
     gestor -->|HTTPS| spa
     spa -->|JSON/HTTPS| api
     api -->|valida identidade| idp
-    api -->|lê indicadores, grava auditoria| db
+    api -->|lê indicadores, grava auditoria e importações| db
     eb -->|dispara a cada X min/h/dia| proc
     proc -->|coleta HTTPS, CSV, HTML| fontes
     proc -->|arquiva originais| raw
@@ -39,7 +39,7 @@ flowchart TB
 | Container | Responsabilidade | Não faz |
 |---|---|---|
 | SPA | Telas, filtros globais, gráficos, mapa, sessão do usuário | Não calcula indicador; só exibe o que a API devolve |
-| API | Autenticação, autorização por rota, auditoria de consulta, agregações, percentis, per capita, reincidência, priorização | Não coleta dado externo; nunca devolve o texto da SEDEC |
+| API | Autenticação, autorização por rota, auditoria de consulta, agregações, percentis, per capita, reincidência, priorização, importação de arquivos enviados pelo painel ([ADR 0007](adr/0007-importacao-de-arquivos-pelo-painel.md)) | Não coleta dado externo; nunca devolve o texto da SEDEC |
 | Banco | Camada tratada (fato unificado e dimensões), usuários, auditoria, registro de execuções do Processor | |
 | Processor | Coleta, limpeza, pseudonimização, unificação e carga idempotente | Não serve dados a usuários |
 | Agendador | Regra do EventBridge que dispara o Processor | |
@@ -51,10 +51,11 @@ flowchart TB
 | Componente | Papel |
 |---|---|
 | Shell da aplicação | React Router, layout e proteção de rotas (exige sessão válida) |
-| Filtros globais | Período, bairro/RPA, serviço e situação. Estado compartilhado; todas as telas reagem a ele |
-| Biblioteca de gráficos | Recharts: séries, barras, dispersão, funil, Sankey. Boxplot e heatmap feitos sob medida |
+| Filtros globais | Período, RPA, bairro e categoria, na barra lateral ([ADR 0008](adr/0008-navegacao-lateral-com-filtros.md)). Estado compartilhado; cada tela diz quais não consegue aplicar e por quê |
+| Biblioteca de gráficos | Recharts: linhas, barras, dispersão, histograma. O fluxo (Sankey) e o mapa de calor são feitos sob medida em `ui/charts` |
 | Mapa coroplético | Leaflet com o GeoJSON dos 94 bairros oficiais ([ADR 0002](adr/0002-leaflet-para-mapa-coropletico.md)) |
-| Sessão e cliente da API | Login, token e renovação, chamadas à API e cache de consultas |
+| Sessão e cliente da API | Login, token e renovação, chamadas à API e cache de consultas (hook próprio `useConsulta`, porque o TanStack Query segue como proposta) |
+| Importações | Envio, passos de decisão, histórico e detalhe, com o estado salvo no servidor |
 
 ### Telas e rotas da API
 
@@ -64,12 +65,16 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 |---|---|---|
 | Página inicial (`/`, pública) | O problema, os primeiros achados, as telas previstas, as fontes e o projeto | Nenhum (conteúdo estático e a malha dos bairros) |
 | Entrar, ajuda e definir senha | Autenticação do gestor, orientação de acesso, troca da senha temporária | Autenticação |
-| Visão Geral | KPIs-síntese e alertas | Indicadores |
-| Mapa por Bairro/RPA | Demanda per capita e reincidência por território; dois mapas de prioridade (serviço urbano e emergência) | Território |
-| Prazos | Mediana e p90 por serviço e órgão; estoque aberto | Prazos |
-| Recorrências | Duplicidade e reincidência por local | Recorrências |
-| Fluxo Câmara → Prefeitura | Funil e Sankey de envio e resposta | Fluxo Câmara → Prefeitura |
-| (apoio a todas) | Listas de serviços, bairros e órgãos para os filtros | Catálogos e filtros |
+| Início (`/painel`) | KPIs-síntese e volume por fonte | Indicadores |
+| War Room (`/painel/war-room`) | Estado de um dia simulado: entradas, estoque, fila e alertas | War Room |
+| Retorno e fragmentação (`/painel/retorno`) | Funil, canais, destinos e caminhos das indicações; canais e prazo da Ouvidoria | Retorno |
+| Reincidência (`/painel/reincidencia`) | Local repetido, intervalos e pontos crônicos | Recorrências |
+| Prazos (`/painel/prazos`) | Percentis, faixas, categorias e estoque aberto | Prazos |
+| Território (`/painel/territorio`) | Taxas por bairro, faixas e tendência, com mapa e tabela | Território |
+| Prioridade (`/painel/prioridade`) | Índice AHP com seis comparações, mapa, ranking, sensibilidade e fila de ocorrências | Prioridade |
+| Sobre os dados (`/painel/sobre-os-dados`) | Cobertura por fonte e ano, glossário e correções aplicadas | Sobre |
+| Importações (`/painel/importacoes`, `/nova` e `/:id`) | Histórico, envio de arquivo, decisões, relatório e desfazer | Importações |
+| (apoio a todas) | Anos, RPAs, bairros, categorias e fontes para os filtros | Catálogos |
 | (bônus) | Demanda esperada e classificador | Modelos |
 
 ### API
@@ -80,6 +85,7 @@ Componentes do C3:
 2. **Controle de acesso e auditoria:** dependências do FastAPI. Perfil e permissão por rota; registra quem consultou o quê.
 3. **Serviços de análise:** casos de uso e regras de negócio (agregações, percentis, per capita, reincidência, priorização). É aqui que se garante que o texto da SEDEC nunca sai.
 4. **Repositórios:** SQLAlchemy e SQL parametrizado, views materializadas e paginação.
+5. **Importação:** leitores de arquivo, normalização no domínio, fila em processo e carga por `COPY`, tudo atrás de portas. Depois da carga, as views são atualizadas com o painel no ar. Enquanto o Processor não existe, é por aqui que os dados entram ([ADR 0007](adr/0007-importacao-de-arquivos-pelo-painel.md)).
 
 Esses componentes se distribuem nas camadas da Clean Architecture (`api`, `application`, `domain`, `infrastructure`). A correspondência está em [clean-architecture.md](clean-architecture.md#backend-fastapi).
 
@@ -103,7 +109,7 @@ O Processor é a versão de produção do pipeline que já existe no Drive (`Dad
 |---|---|---|
 | Bruta (bronze) | Arquivos como foram publicados | A decidir: S3 ou schema `raw` no PostgreSQL ([pendente](adr/README.md#decisões-em-aberto)) |
 | Tratada (prata) | Uma tabela por fonte, limpa e pseudonimizada | Schema do PostgreSQL |
-| Analítica (ouro) | Fato unificado, dimensões, views materializadas para as telas | Schema do PostgreSQL |
+| Analítica (ouro) | Fato unificado, dimensões, views materializadas para as telas ([ADR 0006](adr/0006-modelo-analitico-no-postgresql.md)) | Schema `ouro` do PostgreSQL |
 
 ## Segurança
 
@@ -112,7 +118,7 @@ O Processor é a versão de produção do pipeline que já existe no Drive (`Dad
 - Token de acesso de 15 minutos só na memória do navegador; sessão de 12 horas num cookie `httpOnly` e `SameSite=Strict`, revogável no servidor. Detalhes e alternativas na [ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md) (proposta).
 - O texto da SEDEC não tem rota, não entra em resposta e não vai para log.
 - O sal do `id_local` fica no gerenciador de segredos (proposta: AWS Secrets Manager) e nunca no repositório nem no banco.
-- Os acessos são auditados (entrada, recusa, bloqueio, saída, troca de senha) sem IP e sem o e-mail digitado. As consultas aos dados também serão auditadas, com usuário, rota, filtros e horário.
+- Os acessos são auditados (entrada, recusa, bloqueio, saída, troca de senha) sem IP e sem o e-mail digitado. As consultas aos dados também são auditadas, com usuário, rota, filtros e horário.
 - Os segredos de cada container chegam por variável de ambiente, e cada pasta tem um `.env.example` sem valores reais.
 
 ## Organização do repositório

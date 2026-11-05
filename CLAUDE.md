@@ -113,13 +113,14 @@ Isso vale para a interface, a documentação e os commits. O detalhe está em [d
 - Não use emoji, travessão, gradientes roxos, glassmorphism, ícone decorativo em todo título, frase de efeito ("Insights poderosos"), boas-vindas genéricas nem dado de exemplo apresentado como se fosse real.
 - O texto deve ser direto e específico do Recife e dos dados. Cada gráfico informa fonte, período e o que mostra.
 
-## Estado atual (26/10/2026)
+## Estado atual (05/11/2026)
 
 - Repositório público no GitHub: https://github.com/Mateus-Ribeir0/RecifeView, branch principal `main`.
-- Prontos: página inicial pública, entrada, ajuda de acesso, troca de senha (obrigatória no primeiro acesso), sessão com renovação e saída, e a casca do painel (`/painel`). Backend com autenticação, auditoria de acessos e linha de comando para criar contas.
-- Ainda não existem as telas de dados nem o Processor. A autenticação está como proposta na [ADR 0005](docs/adr/0005-autenticacao-com-jwt-proprio.md).
-- Para apresentar o painel, use a conta de demonstração do [README](README.md#conta-de-demonstração).
-- A próxima entrega é a da Semana 13, em 30/10. Pela ordem da lista de AVD, deve ser a N4 (Dashboard Interativo, versão inicial). Confirme o enunciado no Classroom.
+- Prontos: página inicial pública, entrada, ajuda de acesso, troca de senha (obrigatória no primeiro acesso), sessão com renovação e saída. Backend com autenticação, auditoria de acessos e de consultas e linha de comando para contas e importação.
+- Na branch `feat/painel-e-importacoes`, ainda sem merge: as oito telas do painel (paridade com o protótipo em Streamlit) e a importação de arquivos, com histórico e desfazer.
+- Ainda não existe o Processor: os dados entram pela importação. Autenticação, modelo analítico, importação e navegação lateral estão como proposta nas ADRs [0005](docs/adr/0005-autenticacao-com-jwt-proprio.md), [0006](docs/adr/0006-modelo-analitico-no-postgresql.md), [0007](docs/adr/0007-importacao-de-arquivos-pelo-painel.md) e [0008](docs/adr/0008-navegacao-lateral-com-filtros.md).
+- Para ter dados no painel, faça a carga inicial descrita no [README do backend](backend/README.md#carregar-os-dados). Para apresentar, use a conta de demonstração do [README](README.md#conta-de-demonstração).
+- Confirme a próxima entrega no Classroom.
 - Antes de dar código como pronto, rode as verificações dos dois lados: `uv run ruff check . && uv run mypy app tests && uv run lint-imports && uv run pytest` no backend, e `npm run lint && npm run typecheck && npm test` no frontend.
 - Se o git de uma máquina não tiver nome e e-mail configurados, os commits falham. Nesse caso, avise em vez de configurar uma identidade por conta própria.
 

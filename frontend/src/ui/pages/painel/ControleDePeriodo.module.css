@@ -1,0 +1,83 @@
+.periodo {
+  display: grid;
+  gap: var(--espaco-1);
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.rotulo {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.valor {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cor-azul-escuro);
+}
+
+.trilho {
+  position: relative;
+  height: 24px;
+}
+
+.trilho::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cor-contexto);
+}
+
+.faixa {
+  position: absolute;
+  top: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cor-azul-principal);
+}
+
+.trilho input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  background: none;
+  pointer-events: none;
+  appearance: none;
+}
+
+.trilho input::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--cor-branco);
+  border-radius: 50%;
+  background: var(--cor-azul-principal);
+  cursor: pointer;
+  pointer-events: auto;
+  appearance: none;
+}
+
+.trilho input::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--cor-branco);
+  border-radius: 50%;
+  background: var(--cor-azul-principal);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.extremos {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-secundario);
+}
