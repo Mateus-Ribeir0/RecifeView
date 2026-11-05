@@ -20,8 +20,9 @@ const CODIGOS_CONHECIDOS: ReadonlySet<string> = new Set<CodigoDeErro>([
 ])
 
 export interface Requisicao {
-  metodo?: 'GET' | 'POST'
+  metodo?: 'GET' | 'POST' | 'PUT'
   corpo?: unknown
+  arquivo?: Blob
   autenticada?: boolean
 }
 
@@ -73,6 +74,7 @@ export class ClienteHttp {
   private async executar(caminho: string, requisicao: Requisicao): Promise<Response> {
     const cabecalhos = new Headers({ Accept: 'application/json' })
     if (requisicao.corpo !== undefined) cabecalhos.set('Content-Type', 'application/json')
+    if (requisicao.arquivo) cabecalhos.set('Content-Type', 'application/octet-stream')
     if (requisicao.autenticada && this.tokenDeAcesso) {
       cabecalhos.set('Authorization', `Bearer ${this.tokenDeAcesso}`)
     }
@@ -80,7 +82,7 @@ export class ClienteHttp {
       return await this.buscar(`${this.urlBase}${caminho}`, {
         method: requisicao.metodo ?? 'GET',
         headers: cabecalhos,
-        body: requisicao.corpo === undefined ? undefined : JSON.stringify(requisicao.corpo),
+        body: requisicao.arquivo ?? serializar(requisicao.corpo),
         credentials: 'include',
       })
     } catch {
@@ -102,6 +104,10 @@ export class ClienteHttp {
     if (resposta.ok) return corpo as T
     throw converterErro(resposta.status, corpo as CorpoDeErro | null)
   }
+}
+
+function serializar(corpo: unknown): string | undefined {
+  return corpo === undefined ? undefined : JSON.stringify(corpo)
 }
 
 function converterErro(status: number, corpo: CorpoDeErro | null): ErroDoRecifeView {

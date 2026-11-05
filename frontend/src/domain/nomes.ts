@@ -1,0 +1,117 @@
+// As fontes publicam nomes em maiúsculas e sem acento. Para exibir, devolvemos os acentos.
+const ACENTOS: Readonly<Record<string, string>> = {
+  ACAO: 'ação',
+  ACESSIBILIDADE: 'acessibilidade',
+  AGENCIA: 'agência',
+  AGUA: 'água',
+  ANIMAIS: 'animais',
+  AREAS: 'áreas',
+  ARVORE: 'árvore',
+  ARVORES: 'árvores',
+  ARBORIZACAO: 'arborização',
+  ASFALTICO: 'asfáltico',
+  ASSISTENCIA: 'assistência',
+  ATENCAO: 'atenção',
+  BASICA: 'básica',
+  CALCADAS: 'calçadas',
+  CAPINACAO: 'capinação',
+  CONSERVACAO: 'conservação',
+  CORRIMAO: 'corrimão',
+  CREDITO: 'crédito',
+  CRITICO: 'crítico',
+  DENUNCIA: 'denúncia',
+  DENUNCIAS: 'denúncias',
+  EDUCACAO: 'educação',
+  EMLURB: 'Emlurb',
+  EMPREL: 'Emprel',
+  ERRADICACAO: 'erradicação',
+  FISCALIZACAO: 'fiscalização',
+  FITOSSANITARIO: 'fitossanitário',
+  HABITACAO: 'habitação',
+  ILUMINACAO: 'iluminação',
+  IMPLANTACAO: 'implantação',
+  INFORMACAO: 'informação',
+  INSTALACAO: 'instalação',
+  LAMPADA: 'lâmpada',
+  LAMPADAS: 'lâmpadas',
+  LICITACAO: 'licitação',
+  LUMINARIA: 'luminária',
+  LUMINARIAS: 'luminárias',
+  MANUTENCAO: 'manutenção',
+  MEDICA: 'médica',
+  MOBILIARIO: 'mobiliário',
+  MUDANCA: 'mudança',
+  NAO: 'não',
+  NECROPOLES: 'necrópoles',
+  OPERACAO: 'operação',
+  ORGAO: 'órgão',
+  PARALELEPIPEDO: 'paralelepípedo',
+  PAVIMENTACAO: 'pavimentação',
+  POCO: 'poço',
+  POLITICAS: 'políticas',
+  PONTILHOES: 'pontilhões',
+  PRACA: 'praça',
+  PRACAS: 'praças',
+  PRE: 'pré',
+  'PRE-MOLDADOS': 'pré-moldados',
+  PREVIDENCIA: 'previdência',
+  PROTECAO: 'proteção',
+  PROVISORIA: 'provisória',
+  PUBLICA: 'pública',
+  PUBLICAS: 'públicas',
+  PUBLICO: 'público',
+  PUBLICOS: 'públicos',
+  RECIFE: 'Recife',
+  RECLAMACAO: 'reclamação',
+  RECUPERACAO: 'recuperação',
+  REFERENCIA: 'referência',
+  REGULARIZACAO: 'regularização',
+  REMOCAO: 'remoção',
+  REPOSICAO: 'reposição',
+  SAUDE: 'saúde',
+  SEGURANCA: 'segurança',
+  SEMAFOROS: 'semáforos',
+  SERVICOS: 'serviços',
+  SINALIZACAO: 'sinalização',
+  SOCIOAMBIENTAL: 'socioambiental',
+  SOLICITACAO: 'solicitação',
+  SUGESTAO: 'sugestão',
+  TECNICA: 'técnica',
+  TRANSITO: 'trânsito',
+  URBANISTICO: 'urbanístico',
+  VAO: 'vão',
+  VARRICAO: 'varrição',
+  VEGETACAO: 'vegetação',
+  VEICULO: 'veículo',
+  VIOLACAO: 'violação',
+}
+
+const SIGLAS: ReadonlySet<string> = new Set([
+  'EMLURB',
+  'URB',
+  'CTTU',
+  'SEINFRA',
+  'SEDEC',
+  'COMPESA',
+  'SEGOV',
+  'EMPREL',
+  'CONVIVA',
+  'RECIPREV',
+  'COMDICA',
+])
+
+const ROTULO_DESCONHECIDO = 'não informado'
+
+export function nomeDaCategoria(texto: string | null | undefined): string {
+  if (!texto) return ROTULO_DESCONHECIDO
+  const frase = texto
+    .trim()
+    .replace(/[A-Z]+(?:-[A-Z]+)?/g, (palavra) => ACENTOS[palavra] ?? palavra.toLowerCase())
+  return frase.charAt(0).toUpperCase() + frase.slice(1)
+}
+
+export function nomeDoOrgao(texto: string | null | undefined): string {
+  if (!texto) return ROTULO_DESCONHECIDO
+  const primeiro = (texto.split('/')[0] ?? texto).trim()
+  return SIGLAS.has(primeiro) ? primeiro : nomeDaCategoria(primeiro)
+}
