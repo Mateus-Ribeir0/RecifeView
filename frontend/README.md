@@ -30,11 +30,11 @@ O painel fica em http://localhost:5173. Em desenvolvimento, o Vite repassa tudo 
 | `/definir-senha`         | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária    | Gestor             |
 | `/painel`                | Início: principais indicadores e volume por fonte                                 | Gestor             |
 | `/painel/war-room`       | Estado de um dia: o que está parado e por onde começar                            | Gestor             |
-| `/painel/retorno`        | Para onde vai cada tipo de pedido e quanto volta                                  | Gestor             |
+| `/painel/retorno`        | Abas da Câmara e da Ouvidoria: para onde vai cada pedido e quanto volta           | Gestor             |
 | `/painel/reincidencia`   | Local repetido, intervalos e pontos crônicos                                      | Gestor             |
 | `/painel/prazos`         | Percentis, faixas, categorias e estoque aberto                                    | Gestor             |
 | `/painel/territorio`     | Mapa, tabela e tendência por bairro                                               | Gestor             |
-| `/painel/prioridade`     | Índice AHP, mapa, ranking, sensibilidade e fila                                   | Gestor             |
+| `/painel/prioridade`     | Abas: índice AHP com mapa e ranking, ocorrências, método e sensibilidade          | Gestor             |
 | `/painel/sobre-os-dados` | Cobertura, glossário e correções aplicadas                                        | Gestor             |
 | `/painel/importacoes`    | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório       | Gestor             |
 
@@ -77,9 +77,9 @@ src/
   ui/
     app/            rotas, guardas de rota e montagem (único lugar que conhece a infraestrutura)
     pages/          inicio/, entrar/, ajuda-de-acesso/, definir-senha/, painel/, importacoes/, nao-encontrada/
-    components/     logo, botões, campos, avisos, KPIs, cartões, tabela, estados da consulta
-    charts/         gráficos (únicos arquivos que importam o Recharts)
-    map/            mapa SVG dos bairros, mapa coroplético (Leaflet) e a malha
+    components/     logo, botões, campos, avisos, KPIs, cartões, abas, ícones, tabela, estados da consulta
+    charts/         gráficos: os do Recharts (únicos que o importam) e funil, sparkline e composição em HTML e SVG
+    map/            mapa SVG dos bairros, minimapa das RPAs, mapa coroplético (Leaflet) e a malha
     conteudo/       textos compartilhados entre páginas
     theme/          tokens do design system e estilos base
   main.tsx          ponto de entrada

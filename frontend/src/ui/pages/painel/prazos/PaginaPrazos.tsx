@@ -15,12 +15,14 @@ import { BarrasVerticais } from '../../../charts/BarrasVerticais'
 import { COR } from '../../../charts/estilo'
 import { GraficoDeLinhas } from '../../../charts/GraficoDeLinhas'
 import { PrazoPorCategoriaGrafico } from '../../../charts/PrazoPorCategoriaGrafico'
+import { Sparkline } from '../../../charts/Sparkline'
 import { Alternador } from '../../../components/Alternador'
 import { CabecalhoDaTela } from '../../../components/CabecalhoDaTela'
 import { Cartao } from '../../../components/Cartao'
 import { EstadoDaConsulta } from '../../../components/EstadoDaConsulta'
 import { GradeDeKpis } from '../../../components/GradeDeKpis'
 import { KpiCard } from '../../../components/KpiCard'
+import { Medidor } from '../../../components/Medidor'
 import { Colunas, Secao } from '../../../components/Secao'
 import estilos from './PaginaPrazos.module.css'
 
@@ -79,57 +81,79 @@ function ConteudoDosPrazos({ dados, nota }: ConteudoProps) {
           valor={formatarDias(resumo.mediana)}
           contexto="mediana"
           ajuda={`Mediana dos dias até a última movimentação, em ${formatarNumero(resumo.pedidos)} pedidos atendidos.`}
+          visual={
+            <Sparkline
+              valores={dados.porAno.map((item) => item.mediana ?? 0)}
+              rotulo="Mediana do prazo por ano"
+            />
+          }
         />
         <KpiCard
           rotulo="1 em cada 10 leva mais de"
           valor={formatarDias(resumo.p90)}
           contexto="p90"
           ajuda="Percentil 90: o limite da cauda longa. É o número que mais piorou nos últimos anos."
+          visual={
+            <Sparkline
+              valores={dados.porAno.map((item) => item.p90 ?? 0)}
+              rotulo="Prazo p90 por ano"
+            />
+          }
         />
         <KpiCard
           rotulo="Fechados no mesmo dia"
           valor={formatarPorcentagem(resumo.pctMesmoDia)}
           contexto="prazo de zero dias"
           ajuda="Use a opção acima para tirá-los da conta e ver só os prazos de execução."
+          visual={
+            <Medidor
+              porcentagem={resumo.pctMesmoDia ?? 0}
+              rotulo="Parte dos pedidos fechados no mesmo dia"
+            />
+          }
         />
         <KpiCard
           rotulo="Mais de 90 dias"
           valor={formatarPorcentagem(resumo.pctAcimaDe90Dias, 1)}
           contexto="dos pedidos atendidos"
           ajuda="Parcela dos atendidos que levou mais de três meses."
+          visual={
+            <Medidor
+              porcentagem={resumo.pctAcimaDe90Dias ?? 0}
+              rotulo="Parte dos pedidos com mais de 90 dias"
+            />
+          }
         />
       </GradeDeKpis>
-      <Secao titulo="Como o prazo se comporta">
-        <Colunas>
-          <Cartao
-            titulo="O prazo piorou na cauda"
-            ajuda="Mediana (metade dos pedidos sai antes) e p90 (9 em cada 10 saem antes) dos dias até atender, por ano."
-            leitura="A mediana quase não se move; o p90 sobe a partir de 2021. Em 2024 a 2026 a cauda ainda está incompleta: pedidos abertos há muito tempo só entram aqui quando forem atendidos."
-            nota={nota}
-          >
-            <GraficoDeLinhas
-              dados={dados.porAno.map((item) => ({ ...item, ano: String(item.ano) }))}
-              eixoX="ano"
-              series={SERIES_DO_PRAZO}
-              rotuloDoEixo="dias até atender"
-              formatar={formatarDias}
-              altura={300}
-            />
-          </Cartao>
-          <Cartao
-            titulo="Em quanto tempo os pedidos são atendidos"
-            ajuda="% dos pedidos atendidos em cada faixa de dias."
-            leitura="A distribuição é muito assimétrica: a maior parte se resolve em uma semana, e uma fatia pequena leva meses ou anos (obras como escadaria e macrodrenagem)."
-            nota={nota}
-          >
-            <BarrasVerticais
-              dados={colunasDasFaixas(dados.faixas)}
-              rotuloDoEixo="% dos atendidos"
-              altura={320}
-            />
-          </Cartao>
-        </Colunas>
-      </Secao>
+      <Colunas>
+        <Cartao
+          titulo="O prazo piorou na cauda"
+          ajuda="Mediana (metade dos pedidos sai antes) e p90 (9 em cada 10 saem antes) dos dias até atender, por ano."
+          leitura="A mediana quase não se move; o p90 sobe a partir de 2021. Em 2024 a 2026 a cauda ainda está incompleta: pedidos abertos há muito tempo só entram aqui quando forem atendidos."
+          nota={nota}
+        >
+          <GraficoDeLinhas
+            dados={dados.porAno.map((item) => ({ ...item, ano: String(item.ano) }))}
+            eixoX="ano"
+            series={SERIES_DO_PRAZO}
+            rotuloDoEixo="dias até atender"
+            formatar={formatarDias}
+            altura={300}
+          />
+        </Cartao>
+        <Cartao
+          titulo="Em quanto tempo os pedidos são atendidos"
+          ajuda="% dos pedidos atendidos em cada faixa de dias."
+          leitura="A distribuição é muito assimétrica: a maior parte se resolve em uma semana, e uma fatia pequena leva meses ou anos (obras como escadaria e macrodrenagem)."
+          nota={nota}
+        >
+          <BarrasVerticais
+            dados={colunasDasFaixas(dados.faixas)}
+            rotuloDoEixo="% dos atendidos"
+            altura={320}
+          />
+        </Cartao>
+      </Colunas>
       <Secao
         titulo="Cada categoria tem o seu prazo"
         ajuda="Mediana e p90 dos dias até atender em cada categoria. Escala log: cada marca é muito maior que a anterior."
@@ -159,7 +183,7 @@ function ConteudoDosPrazos({ dados, nota }: ConteudoProps) {
           <Colunas proporcao="larga">
             <Cartao
               titulo="As 12 categorias com mais pedidos atrasados"
-              leitura="O prazo típico é o da própria categoria. Onde ele é curto (iluminação, limpeza), quase todo pedido ainda aberto já passou dele; em drenagem, cujo p90 chega perto de três anos, quase nenhum passou."
+              ajuda="O prazo típico é o da própria categoria: onde ele é curto, quase todo pedido aberto já passou dele."
               nota="Fonte: Central 156, dois arquivos anuais mais recentes. O filtro de período não se aplica ao estoque."
             >
               <BarrasEmpilhadas
@@ -179,13 +203,14 @@ function ConteudoDosPrazos({ dados, nota }: ConteudoProps) {
                 rotulo="Passaram do prazo típico"
                 valor={formatarPorcentagem(estoque.pctAcimaDoPrazo)}
                 contexto={`${formatarNumero(estoque.acimaDoPrazo)} pedidos`}
-                ajuda="Idade do pedido na data do retrato maior que o p90 dos atendidos da mesma categoria (2021 a 2025)."
+                ajuda="Idade do pedido na data do retrato maior que o p90 dos atendidos da mesma categoria (2021 a 2025). Este estoque alimenta o critério Atraso do índice de prioridade."
+                visual={
+                  <Medidor
+                    porcentagem={estoque.pctAcimaDoPrazo ?? 0}
+                    rotulo="Parte dos abertos além do prazo típico"
+                  />
+                }
               />
-              <p className={estilos.leitura}>
-                Só os arquivos mais recentes entram: em arquivos antigos, o pedido aberto pode ter
-                só congelado no retrato do ano. Este estoque alimenta o critério Atraso do índice de
-                prioridade.
-              </p>
             </div>
           </Colunas>
         )}
@@ -205,21 +230,22 @@ export function PaginaPrazos() {
       <CabecalhoDaTela
         titulo="Prazos"
         fontes={['156_EMLURB']}
-        ignorados={[
-          'Base: pedidos atendidos do 156; os abertos não têm tempo final e entram só no estoque, no fim da tela.',
+        notas={[
+          'Base: pedidos atendidos do 156. Os abertos não têm tempo final e entram só no estoque, no fim da tela.',
+          'O prazo aparece em percentis e por categoria porque a média engana.',
         ]}
         atualizando={consulta.atualizando}
+        acoes={
+          <Alternador
+            rotulo="Sem fechados no mesmo dia"
+            ajuda="Prazo de zero dias costuma ser encerramento administrativo (cancelado, repassado ou fechado na triagem), não execução."
+            ligado={semMesmoDia}
+            aoMudar={definirSemMesmoDia}
+          />
+        }
       >
-        Quem demora está demorando mais. A maioria dos pedidos do 156 é atendida em poucos dias, mas
-        a cauda longa cresceu. Por isso o prazo aparece em percentis e por categoria: a média
-        engana.
+        Quem demora está demorando mais: a cauda longa cresceu.
       </CabecalhoDaTela>
-      <Alternador
-        rotulo="Tirar os pedidos fechados no mesmo dia"
-        ajuda="Prazo de zero dias costuma ser encerramento administrativo (cancelado, repassado ou fechado na triagem), não execução."
-        ligado={semMesmoDia}
-        aoMudar={definirSemMesmoDia}
-      />
       <EstadoDaConsulta
         consulta={consulta}
         estaVazia={({ dados }) => dados.resumo.pedidos === 0}

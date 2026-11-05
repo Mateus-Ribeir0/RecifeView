@@ -20,6 +20,7 @@ import { Botao } from '../../../components/Botao'
 import { Cartao } from '../../../components/Cartao'
 import { EstadoDaConsulta } from '../../../components/EstadoDaConsulta'
 import { KpiCard } from '../../../components/KpiCard'
+import { Medidor } from '../../../components/Medidor'
 import { Colunas } from '../../../components/Secao'
 import { Tabela, type ColunaDaTabela } from '../../../components/Tabela'
 import { CORES_DOS_CRITERIOS } from './cores'
@@ -244,14 +245,19 @@ function ResultadoDaFila({ fila, opcao, aoSortear, criterios }: ResultadoProps) 
               valor={formatarPorcentagem(fila.pctNotaAlta, 1)}
               contexto={`${formatarNumero(fila.comNotaAlta)} de ${formatarNumero(fila.classificados)} ${opcao.registro}`}
               ajuda="Com os pesos atuais. Seria o primeiro lote de uma fila de atendimento."
+              visual={<Medidor porcentagem={fila.pctNotaAlta ?? 0} rotulo="Parte com nota alta" />}
             />
           </div>
         </Colunas>
       )}
-      <p className={estilos.leitura}>
-        {LEITURAS[fila.fonte]} É um exemplo: os tetos e os pesos precisam ser validados com quem
-        opera cada serviço.
-      </p>
+      <details className={estilos.detalhes}>
+        <summary>Como ler a nota</summary>
+        <p className={estilos.leitura}>
+          O índice de bairro vira aqui uma nota de 0 a 10 para {opcao.explica}{' '}
+          {LEITURAS[fila.fonte]} É um exemplo: os tetos e os pesos precisam ser validados com quem
+          opera cada serviço.
+        </p>
+      </details>
       <details className={estilos.detalhes}>
         <summary>A fila inteira: os 20 de maior nota</summary>
         <Tabela
@@ -300,10 +306,6 @@ export function FilaDeOcorrencias({ julgamentos, criterios }: Propriedades) {
           </label>
         ))}
       </fieldset>
-      <p className={estilos.leitura}>
-        O índice acima é do bairro. Aqui o mesmo AHP, com os mesmos pesos, dá uma nota de 0 a 10 a{' '}
-        {opcao.explica}
-      </p>
       {naoSeAplica && (
         <p className={estilos.leitura}>
           Os filtros de território e de categoria não valem aqui: a Ouvidoria não tem bairro nem a

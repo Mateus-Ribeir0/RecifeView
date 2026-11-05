@@ -1,13 +1,3 @@
-.corpo {
-  margin-top: var(--espaco-5);
-}
-
-.leitura {
-  margin-top: var(--espaco-3);
-  font-size: 13px;
-  color: var(--cor-texto-secundario);
-}
-
 .link {
   font-size: var(--texto-apoio);
   font-weight: 600;
@@ -32,4 +22,44 @@
 
 .tabela > :last-child {
   width: 100%;
+}
+
+.detalhe {
+  margin-top: var(--espaco-4);
+  padding: var(--espaco-4);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-azul-claro);
+}
+
+.topoDoDetalhe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2) var(--espaco-4);
+  margin-bottom: var(--espaco-3);
+}
+
+.topoDoDetalhe h2 {
+  margin-right: auto;
+  font-size: var(--texto-subtitulo);
+  font-weight: 700;
+}
+
+.topoDoDetalhe h2 span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+}
+
+.fechar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-branco);
+  cursor: pointer;
 }

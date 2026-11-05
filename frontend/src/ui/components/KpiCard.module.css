@@ -1,7 +1,9 @@
 .kpi {
   display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  row-gap: 0;
   align-content: start;
-  gap: var(--espaco-1);
   min-width: 0;
   padding: var(--espaco-4);
   border: 1px solid var(--cor-borda);
@@ -9,23 +11,48 @@
   background: var(--cor-branco);
 }
 
-.alerta {
-  border-left: 4px solid var(--cor-alerta-texto);
-}
-
 .rotulo {
   font-size: 13px;
   font-weight: 500;
+  line-height: 1.3;
   color: var(--cor-texto-secundario);
 }
 
+.marcaDeAlerta {
+  display: inline-flex;
+  margin-right: var(--espaco-1);
+  vertical-align: -2px;
+  color: var(--cor-alerta-texto);
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--cor-azul-escuro);
+  text-decoration: underline;
+}
+
 .valor {
-  font-size: 32px;
+  margin-top: var(--espaco-2);
+  font-size: 30px;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 
 .contexto {
+  margin-top: var(--espaco-1);
   font-size: var(--texto-legenda);
   color: var(--cor-texto-terciario);
+}
+
+.visual {
+  align-self: end;
+  min-width: 0;
+}
+
+.visual:not(:empty) {
+  margin-top: var(--espaco-3);
 }

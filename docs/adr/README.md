@@ -28,7 +28,7 @@ Cada decisão técnica que muda a forma do sistema ganha um arquivo curto aqui: 
 | [0005](0005-autenticacao-com-jwt-proprio.md) | Autenticação com JWT próprio atrás de uma porta | Proposta | 26/10/2026 |
 | [0006](0006-modelo-analitico-no-postgresql.md) | Base analítica numa tabela fato com views materializadas | Proposta | 05/11/2026 |
 | [0007](0007-importacao-de-arquivos-pelo-painel.md) | Importação de arquivos pelo painel, com a normalização no backend | Proposta | 05/11/2026 |
-| [0008](0008-navegacao-lateral-com-filtros.md) | Navegação e filtros do painel na barra lateral | Proposta | 05/11/2026 |
+| [0008](0008-navegacao-lateral-com-filtros.md) | Lateral recolhível e filtros numa linha acima do conteúdo | Proposta | 05/11/2026 |
 
 ## Decisões em aberto
 

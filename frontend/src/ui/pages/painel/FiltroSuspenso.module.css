@@ -1,0 +1,55 @@
+.filtro {
+  position: relative;
+}
+
+.gatilho {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  max-width: 260px;
+  height: 36px;
+  padding: 0 var(--espaco-2) 0 var(--espaco-3);
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-branco);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.gatilho:hover {
+  border-color: var(--cor-preto);
+}
+
+.gatilho[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.ativo {
+  border-color: var(--cor-azul-principal);
+  background: var(--cor-azul-claro);
+}
+
+.rotulo {
+  color: var(--cor-texto-secundario);
+}
+
+.valor {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.painel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + var(--espaco-1));
+  left: 0;
+  width: max-content;
+  min-width: 240px;
+  max-width: min(420px, calc(100vw - 2 * var(--margem-lateral)));
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+  box-shadow: var(--sombra-flutuante);
+}

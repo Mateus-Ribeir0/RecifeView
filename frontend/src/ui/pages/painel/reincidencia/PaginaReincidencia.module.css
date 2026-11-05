@@ -1,0 +1,5 @@
+.subtitulo {
+  margin-block: var(--espaco-4) var(--espaco-2);
+  font-size: 13px;
+  font-weight: 600;
+}

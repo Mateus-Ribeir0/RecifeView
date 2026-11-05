@@ -1,60 +1,96 @@
-import type { ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 
 import { useCatalogo } from '../../application/consultas/usePainel'
-import { useFiltrosGlobais } from '../../application/filtros/contexto'
-import { resumirRecorte } from '../../domain/filtros'
 import { formatarNumero } from '../../domain/formatacao'
-import { nomeDaFonte } from '../../domain/fontes'
+import { NOMES_CURTOS_DAS_FONTES, nomeDaFonte, type CodigoDaFonte } from '../../domain/fontes'
+import { CORES_DAS_FONTES } from '../charts/estilo'
 import estilos from './CabecalhoDaTela.module.css'
+import { Icone } from './Icone'
 import { useTituloDaPagina } from './useTituloDaPagina'
 
 interface Propriedades {
   titulo: string
   children: ReactNode
-  fontes?: readonly string[]
-  ignorados?: readonly string[]
+  fontes?: readonly CodigoDaFonte[]
+  notas?: readonly string[]
   atualizando?: boolean
-  semRecorte?: boolean
+  acoes?: ReactNode
+}
+
+function SeloDaFonte({ fonte, registros }: { fonte: CodigoDaFonte; registros?: number }) {
+  const descricao =
+    registros === undefined
+      ? nomeDaFonte(fonte)
+      : `${nomeDaFonte(fonte)}: ${formatarNumero(registros)} registros`
+  return (
+    <li className={estilos.fonte} title={descricao}>
+      <span
+        className={estilos.marca}
+        style={{ background: CORES_DAS_FONTES[fonte] }}
+        aria-hidden="true"
+      />
+      {NOMES_CURTOS_DAS_FONTES[fonte]}
+    </li>
+  )
 }
 
 export function CabecalhoDaTela({
   titulo,
   children,
-  fontes,
-  ignorados,
+  fontes = [],
+  notas = [],
   atualizando,
-  semRecorte,
+  acoes,
 }: Propriedades) {
   useTituloDaPagina(titulo)
-  const { filtros } = useFiltrosGlobais()
+  const [notasAbertas, definirNotasAbertas] = useState(false)
+  const idDasNotas = useId()
   const { dados: catalogo } = useCatalogo()
-  const nomes = new Map(catalogo?.bairros.map((bairro) => [bairro.bairroOficial, bairro.nome]))
   const registros = new Map(catalogo?.fontes.map((fonte) => [fonte.codigo, fonte.registros]))
-  const rotuloDaFonte = (codigo: string) => {
-    const total = registros.get(codigo)
-    const nome = nomeDaFonte(codigo)
-    return total === undefined ? nome : `${nome} (${formatarNumero(total)} registros)`
-  }
 
   return (
     <header className={estilos.cabecalho}>
-      <h1 className={estilos.titulo}>{titulo}</h1>
-      <p className={estilos.pergunta}>{children}</p>
-      {!semRecorte && (
-        <p className={estilos.recorte} aria-live="polite">
-          Recorte: {resumirRecorte(filtros, (bairro) => nomes.get(bairro) ?? bairro)}
-          {atualizando && <span className={estilos.atualizando}> · atualizando...</span>}
-        </p>
+      <div className={estilos.topo}>
+        <div className={estilos.textos}>
+          <h1 className={estilos.titulo}>{titulo}</h1>
+          <p className={estilos.pergunta}>{children}</p>
+        </div>
+        {acoes && <div className={estilos.acoes}>{acoes}</div>}
+      </div>
+      {(fontes.length > 0 || notas.length > 0) && (
+        <div className={estilos.apoio}>
+          {fontes.length > 0 && (
+            <ul className={estilos.fontes} aria-label="Fontes desta tela">
+              {fontes.map((fonte) => (
+                <SeloDaFonte key={fonte} fonte={fonte} registros={registros.get(fonte)} />
+              ))}
+            </ul>
+          )}
+          {notas.length > 0 && (
+            <button
+              type="button"
+              className={estilos.sobre}
+              aria-expanded={notasAbertas}
+              aria-controls={idDasNotas}
+              onClick={() => definirNotasAbertas((atual) => !atual)}
+            >
+              <Icone nome="informacao" tamanho={16} />
+              Sobre esta tela
+            </button>
+          )}
+          {atualizando && (
+            <span className={estilos.atualizando} role="status">
+              Atualizando
+            </span>
+          )}
+        </div>
       )}
-      {ignorados?.map((texto) => (
-        <p key={texto} className={estilos.recorte}>
-          {texto}
-        </p>
-      ))}
-      {fontes && (
-        <p className={estilos.recorte}>
-          Fontes nesta tela: {fontes.map(rotuloDaFonte).join(' · ')}.
-        </p>
+      {notasAbertas && (
+        <ul id={idDasNotas} className={estilos.notas}>
+          {notas.map((nota) => (
+            <li key={nota}>{nota}</li>
+          ))}
+        </ul>
       )}
     </header>
   )

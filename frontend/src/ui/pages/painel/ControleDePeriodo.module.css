@@ -1,23 +1,37 @@
 .periodo {
   display: grid;
-  gap: var(--espaco-1);
+  gap: var(--espaco-2);
+  width: 300px;
+  padding: var(--espaco-3);
 }
 
-.cabecalho {
+.atalhos {
+  display: grid;
+  gap: 2px;
+  padding-bottom: var(--espaco-2);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.atalho {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  gap: var(--espaco-3);
+  width: 100%;
+  padding: 6px var(--espaco-2);
+  border: 0;
+  border-radius: var(--raio-de-campo);
+  background: none;
+  font-size: 13px;
+  cursor: pointer;
 }
 
-.rotulo {
-  font-size: 13px;
-  font-weight: 600;
+.atalho:hover {
+  background: var(--cor-azul-claro);
 }
 
-.valor {
-  font-size: 13px;
+.atalho[aria-pressed='true'] {
+  background: var(--cor-azul-claro);
   font-weight: 600;
-  color: var(--cor-azul-escuro);
 }
 
 .trilho {

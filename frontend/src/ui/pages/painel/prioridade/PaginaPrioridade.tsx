@@ -14,6 +14,7 @@ import {
   type TesteDeSensibilidade,
 } from '../../../../domain/prioridade'
 import { BarrasHorizontais } from '../../../charts/BarrasHorizontais'
+import { Abas } from '../../../components/Abas'
 import { Aviso } from '../../../components/Aviso'
 import { CabecalhoDaTela } from '../../../components/CabecalhoDaTela'
 import { Cartao } from '../../../components/Cartao'
@@ -30,6 +31,8 @@ import estilos from './PaginaPrioridade.module.css'
 
 const ATRASO_DOS_CONTROLES_EM_MS = 220
 const PESO_MAXIMO_NO_GRAFICO = 70
+const PRIMEIRO_NIVEL_DE_ESTABILIDADE = 5
+const NIVEIS_DA_ESCALA = 5
 
 function comparacoesPadrao({ julgamentosPadrao }: Criterios): Comparacoes {
   return Object.fromEntries(
@@ -99,6 +102,15 @@ function textoDoFator(fator: number): string {
   return `peso × ${formatarNumero(fator, 2).replace(/0$/, '')}`
 }
 
+function CelulaDeEstabilidade({ mantidos }: { mantidos: number }) {
+  const classe = Math.min(Math.max(mantidos - PRIMEIRO_NIVEL_DE_ESTABILIDADE, 1), NIVEIS_DA_ESCALA)
+  return (
+    <span className={estilos.celulaDeEstabilidade} data-nivel={classe}>
+      {mantidos} de 10
+    </span>
+  )
+}
+
 function Sensibilidade({ testes }: { testes: readonly TesteDeSensibilidade[] }) {
   const criterios = [...new Set(testes.map((teste) => teste.criterio))]
   const fatores = [...new Set(testes.map((teste) => teste.fator))]
@@ -112,11 +124,12 @@ function Sensibilidade({ testes }: { testes: readonly TesteDeSensibilidade[] }) 
   return (
     <Cartao
       titulo="Quantos dos 10 primeiros continuam no top 10"
+      ajuda="Cada célula muda o peso de um critério, redistribui o resto e conta quantos dos 10 primeiros continuam no top 10. Mais escuro, mais estável."
       leitura={
         pior &&
-        `Cada célula muda o peso de um critério, redistribui o resto e conta quantos dos 10 primeiros continuam no top 10. Com os pesos atuais, o caso mais sensível é ${pior.criterio} ${textoDoFator(pior.fator)}, que mantém ${pior.mantidosNoTop} de 10. Se quase tudo fica acima de 7, o ranking é estável.`
+        `Com os pesos atuais, o caso mais sensível é ${pior.criterio} ${textoDoFator(pior.fator)}, que mantém ${pior.mantidosNoTop} de 10. Se quase tudo fica acima de 7, o ranking é estável.`
       }
-      nota="AHP não é aprendizado de máquina. Ele torna explícito e auditável um critério que hoje é implícito. Risco e vulnerabilidade andam juntos em parte, então os bairros de morro somam pontos nos dois."
+      nota="AHP não é aprendizado de máquina: ele torna explícito e auditável um critério que hoje é implícito."
     >
       <Tabela
         legenda="Sensibilidade do ranking aos pesos"
@@ -125,7 +138,9 @@ function Sensibilidade({ testes }: { testes: readonly TesteDeSensibilidade[] }) 
           ...fatores.map((fator) => ({
             titulo: textoDoFator(fator),
             numerica: true,
-            valor: (criterio: string) => `${achar(criterio, fator)?.mantidosNoTop ?? 0} de 10`,
+            valor: (criterio: string) => (
+              <CelulaDeEstabilidade mantidos={achar(criterio, fator)?.mantidosNoTop ?? 0} />
+            ),
           })),
         ]}
         linhas={criterios}
@@ -145,11 +160,47 @@ function ConteudoDaPrioridade({ criterios }: { criterios: Criterios }) {
     ({ primeiro, segundo }) => [primeiro, segundo] as const,
   )
 
-  return (
+  const abaDoIndice = (
     <>
+      <Colunas>
+        <Cartao
+          titulo="Compare os critérios dois a dois"
+          ajuda="Para cada par, arraste para o critério que pesa mais. Escala de Saaty: 1 = igual, 3 = moderadamente, 5 = fortemente, 7 = muito, 9 = extremamente."
+        >
+          <ComparacoesDosCriterios
+            criterios={criterios.criterios}
+            pares={pares}
+            comparacoes={comparacoes}
+            aoMudar={(par, opcao) => definirComparacoes((atuais) => ({ ...atuais, [par]: opcao }))}
+            aoRestaurar={() => definirComparacoes(padrao)}
+          />
+        </Cartao>
+        <Cartao
+          titulo="Pesos resultantes"
+          ajuda="Quanto cada critério vale no índice, calculado pelo AHP a partir das comparações ao lado."
+        >
+          <EstadoDaConsulta consulta={consulta}>
+            {(prioridade) => <PesosResultantes prioridade={prioridade} criterios={criterios} />}
+          </EstadoDaConsulta>
+        </Cartao>
+      </Colunas>
       <Secao
+        titulo="Onde agir primeiro"
+        ajuda="O índice de prioridade de cada bairro, de 0 a 10, com os pesos acima."
+      >
+        <EstadoDaConsulta consulta={consulta}>
+          {(prioridade) => (
+            <IndiceDosBairros prioridade={prioridade} criterios={criterios.criterios} />
+          )}
+        </EstadoDaConsulta>
+      </Secao>
+    </>
+  )
+  const abaDoMetodo = (
+    <>
+      <Cartao
         titulo="Os quatro critérios e como cada um é medido"
-        ajuda="O que entra no índice de prioridade, de onde vem cada número e por que ele importa."
+        leitura="Cada bairro recebe, em cada critério, a sua posição relativa entre os bairros com 1.000 moradores ou mais (0 = menor valor, 1 = maior). O índice é a soma ponderada dessas posições, uma nota de 0 a 10. Usar a posição evita que poucos bairros extremos achatem os outros."
       >
         <Tabela
           legenda="Critérios do índice"
@@ -161,57 +212,9 @@ function ConteudoDaPrioridade({ criterios }: { criterios: Criterios }) {
           linhas={criterios.criterios}
           chave={(item) => item.chave}
         />
-        <p className={estilos.leitura}>
-          Cada bairro recebe, em cada critério, a sua posição relativa entre os bairros com 1.000
-          moradores ou mais (0 = menor valor, 1 = maior). O índice é a soma ponderada dessas
-          posições, uma nota de 0 a 10. Usar a posição evita que poucos bairros extremos achatem os
-          outros.
-        </p>
-      </Secao>
-      <Colunas>
-        <Secao
-          titulo="1. Compare os critérios dois a dois"
-          ajuda="Para cada par, arraste para o critério que pesa mais. O número diz quantas vezes mais."
-        >
-          <p className={estilos.leitura}>
-            Quanto um critério é mais importante que o outro para decidir onde agir primeiro (escala
-            de Saaty: 1 = igual, 3 = moderadamente, 5 = fortemente, 7 = muito, 9 = extremamente).
-          </p>
-          <ComparacoesDosCriterios
-            criterios={criterios.criterios}
-            pares={pares}
-            comparacoes={comparacoes}
-            aoMudar={(par, opcao) => definirComparacoes((atuais) => ({ ...atuais, [par]: opcao }))}
-            aoRestaurar={() => definirComparacoes(padrao)}
-          />
-        </Secao>
-        <Secao
-          titulo="2. Pesos resultantes"
-          ajuda="Quanto cada critério vale no índice, calculado pelo AHP a partir das comparações ao lado."
-        >
-          <EstadoDaConsulta consulta={consulta}>
-            {(prioridade) => <PesosResultantes prioridade={prioridade} criterios={criterios} />}
-          </EstadoDaConsulta>
-        </Secao>
-      </Colunas>
+      </Cartao>
       <Secao
-        titulo="3. Onde agir primeiro"
-        ajuda="O índice de prioridade de cada bairro, de 0 a 10, com os pesos acima. Passe o mouse no mapa."
-      >
-        <EstadoDaConsulta consulta={consulta}>
-          {(prioridade) => (
-            <IndiceDosBairros prioridade={prioridade} criterios={criterios.criterios} />
-          )}
-        </EstadoDaConsulta>
-      </Secao>
-      <Secao
-        titulo="4. Exemplo de ocorrências classificadas"
-        ajuda="Registros reais em aberto recebendo a nota de 0 a 10 do AHP, com os pesos acima."
-      >
-        <FilaDeOcorrencias julgamentos={julgamentos} criterios={criterios.criterios} />
-      </Secao>
-      <Secao
-        titulo="5. O resultado depende muito dos pesos?"
+        titulo="O resultado depende muito dos pesos?"
         ajuda="Testa se o ranking muda quando o peso de um critério sobe ou desce."
       >
         <EstadoDaConsulta consulta={consulta}>
@@ -219,6 +222,21 @@ function ConteudoDaPrioridade({ criterios }: { criterios: Criterios }) {
         </EstadoDaConsulta>
       </Secao>
     </>
+  )
+
+  return (
+    <Abas
+      legenda="Partes do índice de prioridade"
+      abas={[
+        { chave: 'indice', rotulo: 'Índice dos bairros', conteudo: abaDoIndice },
+        {
+          chave: 'ocorrencias',
+          rotulo: 'Ocorrências classificadas',
+          conteudo: <FilaDeOcorrencias julgamentos={julgamentos} criterios={criterios.criterios} />,
+        },
+        { chave: 'metodo', rotulo: 'Método e sensibilidade', conteudo: abaDoMetodo },
+      ]}
+    />
   )
 }
 
@@ -230,19 +248,18 @@ export function PaginaPrioridade() {
       <CabecalhoDaTela
         titulo="Prioridade (AHP)"
         fontes={['156_EMLURB', 'DEFESA_CIVIL', 'CAMARA_REQUERIMENTOS', 'OUVIDORIA']}
-        ignorados={[
-          'Período: fixo em 2021 a 2025 (estoque aberto: dois arquivos mais recentes), como na EDA.',
-          'Território: RPA e bairro destacam o mapa e filtram a lista; a posição é sempre na cidade toda. Categoria: vale só para os registros da seção 4.',
+        notas={[
+          'Período fixo em 2021 a 2025 (estoque aberto: dois arquivos mais recentes), como na EDA.',
+          'RPA e bairro destacam o mapa e filtram a lista; a posição é sempre na cidade toda. A categoria vale só para as ocorrências.',
+          'Quem decide compara os critérios dois a dois, e o método calcula os pesos e confere se os julgamentos são coerentes.',
         ]}
       >
-        Onde agir primeiro, com critérios explícitos e ajustáveis. O índice combina quatro critérios
-        que saíram da EDA, com pesos obtidos pelo AHP: quem decide compara os critérios dois a dois,
-        e o método calcula os pesos e confere se os julgamentos são coerentes.
+        Onde agir primeiro, com critérios explícitos e ajustáveis.
       </CabecalhoDaTela>
       <div className={estilos.aviso}>
         <Aviso tipo="info">
-          Os julgamentos que vêm carregados são uma proposta inicial do grupo para discussão, não
-          pesos validados pela Prefeitura. Você pode refazê-los abaixo e ver o mapa mudar.
+          Os julgamentos carregados são uma proposta do grupo para discussão, não pesos validados
+          pela Prefeitura.
         </Aviso>
       </div>
       <EstadoDaConsulta consulta={consulta}>

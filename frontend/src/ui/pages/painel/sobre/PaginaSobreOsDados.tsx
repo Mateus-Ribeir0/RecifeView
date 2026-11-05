@@ -3,11 +3,13 @@ import { formatarDataEHora, formatarNumero } from '../../../../domain/formatacao
 import { ROTULOS_DAS_CORRECOES } from '../../../../domain/importacoes'
 import { nomeDaFonte, ORDEM_DAS_FONTES } from '../../../../domain/fontes'
 import type { SobreOsDados } from '../../../../domain/painel'
+import { BarrasHorizontais } from '../../../charts/BarrasHorizontais'
 import { MapaDeCobertura } from '../../../charts/MapaDeCobertura'
+import { Abas } from '../../../components/Abas'
 import { CabecalhoDaTela } from '../../../components/CabecalhoDaTela'
 import { Cartao } from '../../../components/Cartao'
 import { EstadoDaConsulta } from '../../../components/EstadoDaConsulta'
-import { Secao } from '../../../components/Secao'
+import { Colunas, Secao } from '../../../components/Secao'
 import { Tabela, type ColunaDaTabela } from '../../../components/Tabela'
 import estilos from './PaginaSobreOsDados.module.css'
 
@@ -106,16 +108,20 @@ const GLOSSARIO: readonly [string, string][] = [
   ],
 ]
 
-function ConteudoDoSobre({ dados }: { dados: SobreOsDados }) {
+function FontesECobertura({ dados }: { dados: SobreOsDados }) {
   return (
     <>
-      <Secao
-        titulo="Cobertura: registros por fonte e ano"
-        ajuda="Célula vazia: a fonte não publica aquele ano."
-      >
+      <Tabela
+        legenda="Fontes do painel"
+        colunas={COLUNAS_DAS_FONTES}
+        linhas={FONTES}
+        chave={(item) => item.fonte}
+      />
+      <Secao titulo="Quantos registros cada fonte tem em cada ano">
         <Cartao
-          titulo="Quantos registros cada fonte tem em cada ano"
-          nota="Células vazias: a fonte não publica aquele ano. 2025 e 2026 são parciais: a Ouvidoria de 2025 só traz parte do ano, o arquivo de 2025 da Defesa Civil foi publicado vazio e 2026 vai até a data do retrato."
+          titulo="Cobertura por fonte e ano"
+          ajuda="Célula vazia: a fonte não publica aquele ano."
+          nota="2025 e 2026 são parciais: a Ouvidoria de 2025 só traz parte do ano, o arquivo de 2025 da Defesa Civil foi publicado vazio e 2026 vai até a data do retrato."
         >
           <MapaDeCobertura
             fontes={ORDEM_DAS_FONTES.map((fonte) => ({ chave: fonte, rotulo: nomeDaFonte(fonte) }))}
@@ -123,33 +129,70 @@ function ConteudoDoSobre({ dados }: { dados: SobreOsDados }) {
           />
         </Cartao>
       </Secao>
-      <Secao
-        titulo="O que foi corrigido antes de agregar"
-        ajuda="Ajustes aplicados aos dados, com quantos registros cada um afetou."
-      >
-        <Cartao
-          titulo={`${formatarNumero(dados.registrosNaBase)} registros na base`}
-          nota={`As correções da EDA (N3), somadas em todas as importações. Última atualização: ${formatarDataEHora(dados.atualizadoEm)}.`}
-        >
-          <Tabela
-            legenda="Correções aplicadas"
-            colunas={[
-              {
-                titulo: 'Correção',
-                valor: (item) => ROTULOS_DAS_CORRECOES[item.correcao] ?? item.correcao,
-              },
-              {
-                titulo: 'Registros',
-                numerica: true,
-                valor: (item) => formatarNumero(item.registros),
-              },
-            ]}
-            linhas={dados.correcoes}
-            chave={(item) => item.correcao}
-          />
-        </Cartao>
-      </Secao>
     </>
+  )
+}
+
+function Correcoes({ dados }: { dados: SobreOsDados }) {
+  const barras = dados.correcoes
+    .map((item) => ({
+      chave: item.correcao,
+      rotulo: ROTULOS_DAS_CORRECOES[item.correcao] ?? item.correcao,
+      valor: item.registros,
+      texto: formatarNumero(item.registros),
+      detalhe: 'registros',
+    }))
+    .sort((a, b) => b.valor - a.valor)
+  return (
+    <Cartao
+      titulo={`O que foi corrigido em ${formatarNumero(dados.registrosNaBase)} registros`}
+      ajuda="Ajustes aplicados aos dados antes de agregar, com quantos registros cada um afetou."
+      nota={`As correções da EDA (N3), somadas em todas as importações. Última atualização: ${formatarDataEHora(dados.atualizadoEm)}.`}
+    >
+      <BarrasHorizontais
+        dados={barras}
+        maximo={Math.max(...barras.map((barra) => barra.valor), 1)}
+        larguraDoRotulo={240}
+        rotuloDoValor="registros"
+      />
+    </Cartao>
+  )
+}
+
+function CuidadosEPrivacidade() {
+  return (
+    <Colunas>
+      <Cartao titulo="Cuidados de leitura" ajuda="O que pode enganar na leitura dos números.">
+        <ul className={estilos.lista}>
+          {CUIDADOS.map(([termo, texto]) => (
+            <li key={termo}>
+              <strong>{termo}</strong> {texto}
+            </li>
+          ))}
+        </ul>
+      </Cartao>
+      <Cartao titulo="Privacidade" ajuda="O que nunca aparece no painel e por quê.">
+        <p className={estilos.texto}>
+          O painel só mostra contagens, indicadores e campos que as fontes já publicam. Não saem da
+          base: o texto livre da SEDEC, as ementas, o pseudônimo de endereço (id_local), as
+          coordenadas e a autoria das indicações. A lista de pontos crônicos mostra bairro e
+          serviço, nunca o endereço. Na importação, colunas com dado pessoal são descartadas.
+        </p>
+      </Cartao>
+    </Colunas>
+  )
+}
+
+function Glossario() {
+  return (
+    <dl className={estilos.glossario}>
+      {GLOSSARIO.map(([termo, significado]) => (
+        <div key={termo}>
+          <dt>{termo}</dt>
+          <dd>{significado}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 
@@ -158,48 +201,38 @@ export function PaginaSobreOsDados() {
 
   return (
     <>
-      <CabecalhoDaTela titulo="Sobre os dados" semRecorte>
-        O painel lê a base do RecifeView: registros de cinco portas de entrada, de 2012 a 2026, só
-        do município do Recife, com as correções da EDA (N3).
+      <CabecalhoDaTela titulo="Sobre os dados" fontes={ORDEM_DAS_FONTES}>
+        Registros de cinco portas de entrada, de 2012 a 2026, só do Recife, com as correções da EDA.
       </CabecalhoDaTela>
-      <Secao titulo="Fontes" ajuda="As cinco portas de entrada e o que cada registro representa.">
-        <Tabela
-          legenda="Fontes do painel"
-          colunas={COLUNAS_DAS_FONTES}
-          linhas={FONTES}
-          chave={(item) => item.fonte}
-        />
-      </Secao>
-      <EstadoDaConsulta consulta={consulta}>
-        {(dados) => <ConteudoDoSobre dados={dados} />}
-      </EstadoDaConsulta>
-      <Secao titulo="Cuidados de leitura" ajuda="O que pode enganar na leitura dos números.">
-        <ul className={estilos.lista}>
-          {CUIDADOS.map(([termo, texto]) => (
-            <li key={termo}>
-              <strong>{termo}</strong> {texto}
-            </li>
-          ))}
-        </ul>
-      </Secao>
-      <Secao titulo="Privacidade" ajuda="O que nunca aparece no painel e por quê.">
-        <p className={estilos.texto}>
-          O painel só mostra contagens, indicadores e campos que as fontes já publicam. Não saem da
-          base: o texto livre da SEDEC, as ementas, o pseudônimo de endereço (id_local), as
-          coordenadas e a autoria das indicações. A lista de pontos crônicos mostra bairro e
-          serviço, nunca o endereço. Na importação, colunas com dado pessoal são descartadas.
-        </p>
-      </Secao>
-      <Secao titulo="Glossário" ajuda="Termos usados no painel, em uma linha.">
-        <dl className={estilos.glossario}>
-          {GLOSSARIO.map(([termo, significado]) => (
-            <div key={termo}>
-              <dt>{termo}</dt>
-              <dd>{significado}</dd>
-            </div>
-          ))}
-        </dl>
-      </Secao>
+      <Abas
+        legenda="Partes da documentação dos dados"
+        abas={[
+          {
+            chave: 'fontes',
+            rotulo: 'Fontes e cobertura',
+            conteudo: (
+              <EstadoDaConsulta consulta={consulta}>
+                {(dados) => <FontesECobertura dados={dados} />}
+              </EstadoDaConsulta>
+            ),
+          },
+          {
+            chave: 'correcoes',
+            rotulo: 'Correções',
+            conteudo: (
+              <EstadoDaConsulta consulta={consulta}>
+                {(dados) => <Correcoes dados={dados} />}
+              </EstadoDaConsulta>
+            ),
+          },
+          {
+            chave: 'cuidados',
+            rotulo: 'Cuidados e privacidade',
+            conteudo: <CuidadosEPrivacidade />,
+          },
+          { chave: 'glossario', rotulo: 'Glossário', conteudo: <Glossario /> },
+        ]}
+      />
     </>
   )
 }

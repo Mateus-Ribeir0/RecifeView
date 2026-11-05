@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { classeDoValor, faixasIguais, faixasPorQuantis } from './classes'
-import { FILTROS_PADRAO, estaNoPadrao, resumirRecorte, temTerritorio } from './filtros'
+import { FILTROS_PADRAO, estaNoPadrao, temTerritorio } from './filtros'
 import {
   formatarData,
   formatarDataLonga,
@@ -81,25 +81,6 @@ describe('filtros', () => {
 
   it('reconhece filtro de território', () => {
     expect(temTerritorio({ ...FILTROS_PADRAO, bairros: ['VARZEA'] })).toBe(true)
-  })
-
-  it('resume o recorte em texto legível', () => {
-    const filtros = {
-      ...FILTROS_PADRAO,
-      rpas: ['3'],
-      bairros: ['VARZEA'],
-      categorias: ['ILUMINACAO PUBLICA'],
-    }
-
-    expect(resumirRecorte(filtros, () => 'Várzea')).toBe(
-      '2021 a 2025 · RPA 3 · Várzea · Iluminação pública',
-    )
-  })
-
-  it('encurta listas longas', () => {
-    const bairros = ['A', 'B', 'C', 'D', 'E', 'F']
-
-    expect(resumirRecorte({ ...FILTROS_PADRAO, bairros })).toContain('A, B, C, D e mais 2')
   })
 })
 

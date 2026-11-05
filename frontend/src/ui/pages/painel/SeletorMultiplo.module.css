@@ -1,66 +1,12 @@
-.seletor {
-  position: relative;
-  display: grid;
-  gap: var(--espaco-1);
-}
-
-.rotulo {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.gatilho {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 40px;
-  padding: 0 var(--espaco-3);
-  border: 1px solid var(--cor-borda-de-campo);
-  border-radius: var(--raio-de-campo);
-  background: var(--cor-branco);
-  font-size: 13px;
-  color: var(--cor-texto-secundario);
-  cursor: pointer;
-}
-
-.gatilho:hover {
-  border-color: var(--cor-preto);
-}
-
-.escolhidos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--espaco-1);
-}
-
-.etiqueta {
-  padding: 2px var(--espaco-2);
-  border: 0;
-  border-radius: var(--raio-de-campo);
-  background: var(--cor-azul-principal);
-  color: var(--cor-branco);
-  font-size: var(--texto-legenda);
-  font-weight: 500;
-  cursor: pointer;
-}
-
 .lista {
-  position: absolute;
-  z-index: 30;
-  top: 64px;
-  left: 0;
-  right: 0;
   display: grid;
-  max-height: 280px;
+  max-height: 320px;
   overflow: auto;
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-de-campo);
-  background: var(--cor-branco);
-  box-shadow: var(--sombra-flutuante);
 }
 
 .busca {
   position: sticky;
+  z-index: 1;
   top: 0;
   min-height: 36px;
   padding: 0 var(--espaco-3);

@@ -1,26 +1,105 @@
 .cabecalho {
   display: grid;
+  gap: var(--espaco-2);
+  margin-bottom: var(--espaco-5);
+}
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-3) var(--espaco-5);
+}
+
+.textos {
+  display: grid;
   gap: var(--espaco-1);
+  flex: 1 1 420px;
+  min-width: 0;
 }
 
 .titulo {
   font-size: var(--texto-pagina);
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .pergunta {
-  max-width: 900px;
-  margin-bottom: var(--espaco-1);
+  max-width: 760px;
   font-size: var(--texto-apoio);
   color: var(--cor-texto-secundario);
 }
 
-.recorte {
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.apoio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2) var(--espaco-3);
+}
+
+.fontes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1);
+}
+
+.fonte {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding-inline: var(--espaco-2);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-campo);
   font-size: var(--texto-legenda);
   font-weight: 500;
-  color: var(--cor-texto-terciario);
+}
+
+.marca {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.sobre {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cor-azul-escuro);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sobre:hover {
+  text-decoration: underline;
 }
 
 .atualizando {
+  font-size: var(--texto-legenda);
+  font-weight: 600;
   color: var(--cor-azul-escuro);
+}
+
+.notas {
+  display: grid;
+  gap: var(--espaco-1);
+  max-width: 860px;
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-fundo-alternativo);
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
 }

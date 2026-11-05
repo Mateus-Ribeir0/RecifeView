@@ -1,8 +1,15 @@
 .grade {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--espaco-4);
-  margin-top: var(--espaco-5);
+  gap: 0 var(--espaco-4);
+}
+
+.compacta {
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+}
+
+.grade > * {
+  margin-bottom: var(--espaco-4);
 }
 
 @media (max-width: 1023px) {
