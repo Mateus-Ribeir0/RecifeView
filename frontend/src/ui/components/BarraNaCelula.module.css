@@ -1,0 +1,27 @@
+.celula {
+  display: flex;
+  min-width: 132px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espaco-2);
+}
+
+.trilho {
+  flex: 1 1 72px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--cor-azul-claro);
+}
+
+.parte {
+  display: block;
+  height: 100%;
+  background: var(--cor-azul-principal);
+}
+
+.texto {
+  min-width: 2.5em;
+  font-weight: 600;
+  text-align: right;
+}

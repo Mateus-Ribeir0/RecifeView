@@ -17,6 +17,14 @@ export const NOMES_DAS_FONTES: Readonly<Record<CodigoDaFonte, string>> = {
   CAMARA_REQUERIMENTOS: 'Câmara Municipal',
 }
 
+export const NOMES_CURTOS_DAS_FONTES: Readonly<Record<CodigoDaFonte, string>> = {
+  '156_EMLURB': '156',
+  DEFESA_CIVIL: 'Defesa Civil',
+  OUVIDORIA: 'Ouvidoria',
+  SEDEC_CHAMADOS: 'SEDEC',
+  CAMARA_REQUERIMENTOS: 'Câmara',
+}
+
 export function nomeDaFonte(codigo: string | null | undefined): string {
   if (!codigo) return 'várias fontes'
   return NOMES_DAS_FONTES[codigo as CodigoDaFonte] ?? codigo

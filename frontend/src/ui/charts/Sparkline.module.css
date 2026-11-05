@@ -1,0 +1,21 @@
+.sparkline {
+  position: relative;
+  height: 32px;
+}
+
+.sparkline svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ponto {
+  position: absolute;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--cor-branco);
+  border-radius: 50%;
+  background: var(--cor-azul-principal);
+  transform: translateY(-50%);
+}
