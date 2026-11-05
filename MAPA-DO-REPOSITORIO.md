@@ -65,6 +65,9 @@ Uma tarefa típica de código passa por eles nesta ordem:
 | [docs/adr/0003-clean-architecture-e-clean-code.md](docs/adr/0003-clean-architecture-e-clean-code.md) | Camadas, regra da dependência e práticas de Clean Code |
 | [docs/adr/0004-ferramentas-complementares.md](docs/adr/0004-ferramentas-complementares.md) | TypeScript, Vite, uv, Ruff, Alembic, Docker Compose e o resto das ferramentas confirmadas |
 | [docs/adr/0005-autenticacao-com-jwt-proprio.md](docs/adr/0005-autenticacao-com-jwt-proprio.md) | Proposta: JWT próprio atrás de portas, com o funcionamento da sessão e o caminho para trocar pelo Cognito |
+| [docs/adr/0006-modelo-analitico-no-postgresql.md](docs/adr/0006-modelo-analitico-no-postgresql.md) | Proposta: tabela fato e views materializadas no PostgreSQL |
+| [docs/adr/0007-importacao-de-arquivos-pelo-painel.md](docs/adr/0007-importacao-de-arquivos-pelo-painel.md) | Proposta: importação pelo painel, com decisões humanas, privacidade e desfazer |
+| [docs/adr/0008-navegacao-lateral-com-filtros.md](docs/adr/0008-navegacao-lateral-com-filtros.md) | Proposta: barra lateral com Painel e Importações, cache de consultas próprio e Leaflet direto |
 
 As ADRs alimentam a Documentação Final (N9), que pede o histórico de decisões.
 
