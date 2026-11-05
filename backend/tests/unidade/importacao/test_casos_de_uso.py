@@ -276,7 +276,9 @@ def test_cancelar_remove_o_arquivo() -> None:
 
     CancelarImportacao(servicos).executar(importacao.id)
 
-    assert servicos.obter(importacao.id).status is StatusDaImportacao.CANCELADA
+    cancelada = servicos.obter(importacao.id)
+    assert cancelada.status is StatusDaImportacao.CANCELADA
+    assert cancelada.arquivo_guardado is False
     assert servicos.armazenamento.removidos == ["referencia"]  # type: ignore[attr-defined]
 
 
