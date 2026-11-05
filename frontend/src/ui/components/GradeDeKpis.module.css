@@ -4,3 +4,9 @@
   gap: var(--espaco-4);
   margin-top: var(--espaco-5);
 }
+
+@media (max-width: 1023px) {
+  .grade:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
