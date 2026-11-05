@@ -95,6 +95,30 @@ describe('colunas', () => {
     expect(screen.getByRole('button', { name: 'Conferir os dados' })).toBeEnabled()
   })
 
+  it('não deixa conferir sem escolher a fonte', async () => {
+    const base = criarImportacao()
+    const importacao = criarImportacao({
+      layout: 'manual',
+      fonte: null,
+      decisoes: { ...base.decisoes, fonte: null },
+    })
+    montar(
+      criarServicoDeImportacoesFalso(),
+      <PassoColunas importacao={importacao} aoConcluir={vi.fn()} aoCancelar={vi.fn()} />,
+    )
+
+    expect(screen.getByText('Falta escolher a fonte')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Conferir os dados' })).toBeDisabled()
+
+    await userEvent.selectOptions(
+      screen.getByLabelText('De qual fonte é este arquivo?'),
+      '156_EMLURB',
+    )
+
+    expect(screen.queryByText('Falta escolher a fonte')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Conferir os dados' })).toBeEnabled()
+  })
+
   it('envia a escolha de colunas', async () => {
     const servico = criarServicoDeImportacoesFalso()
     const aoConcluir = vi.fn()
