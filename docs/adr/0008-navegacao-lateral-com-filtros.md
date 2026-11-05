@@ -14,13 +14,13 @@ A primeira versão seguiu o Streamlit, com uma chave Painel e Importações no t
 
 | Opção | A favor | Contra |
 |---|---|---|
-| Lateral só com navegação, filtros numa linha acima do conteúdo | Filtros sempre à vista, inclusive com a lateral recolhida; cada tela mostra só os filtros que aplica; é o padrão do design system e das referências (Carbon, PatternFly) | Muda a dinâmica do Streamlit, que tinha os filtros na lateral |
+| Lateral só com navegação, filtros numa linha acima do conteúdo | Filtros sempre à vista, inclusive com a lateral recolhida; cada tela mostra só os filtros que aplica; é o que o design system já pedia e a prática comum de visualização (uma linha de filtros acima dos gráficos) | Muda a dinâmica do Streamlit, que tinha os filtros na lateral |
 | Lateral com navegação e filtros, como no Streamlit | Mesma dinâmica da N4 | Lateral longa, filtros somem ao recolher, telas cheias de avisos |
 | Navegação e filtros no topo | Mais largura para gráficos | Nove telas não cabem bem numa linha |
 
 ## Decisão
 
-- **Navegação:** barra lateral em `azul-claro`, com ícone e rótulo, que alterna entre aberta e recolhida (só ícones) por um botão de menu no cabeçalho. A preferência fica salva no navegador. Abaixo de 1040px, ela vira gaveta sobre o conteúdo.
+- **Navegação:** barra lateral em `azul-claro`, com ícone e rótulo, que alterna entre aberta e recolhida (só ícones) por um botão de menu no cabeçalho, como no [UI shell do Carbon](https://www.carbondesignsystem.com/components/ui-shell-header/guidelines). A preferência fica salva no navegador. Abaixo de 1040px, ela vira gaveta sobre o conteúdo.
 - **Menus:** quatro grupos: Visão geral, Onde o pedido se perde, Onde agir primeiro e Dados. Importações e Sobre os dados ficam juntos em Dados, no lugar da chave de duas partes. Nova importação é um botão dentro de Importações.
 - **Filtros:** uma linha fixa acima do conteúdo. Cada tela declara quais filtros aplica em `telasDoPainel.ts`. War Room, Importações e Sobre os dados não têm a linha.
 - **Telas longas:** Retorno, Prioridade e Sobre os dados se dividem em abas.
