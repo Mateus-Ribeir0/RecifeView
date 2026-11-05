@@ -43,3 +43,45 @@ class SenhaFraca(ErroDeDominio):
     def __init__(self, motivo: str) -> None:
         super().__init__(motivo)
         self.motivo = motivo
+
+
+class ImportacaoNaoEncontrada(ErroDeDominio):
+    pass
+
+
+class ImportacaoEmEstadoInvalido(ErroDeDominio):
+    pass
+
+
+class ImportacaoNaoPodeSerDesfeita(ErroDeDominio):
+    pass
+
+
+class ArquivoVazio(ErroDeDominio):
+    pass
+
+
+class ArquivoIlegivel(ErroDeDominio):
+    pass
+
+
+class ArquivoGrandeDemais(ErroDeDominio):
+    pass
+
+
+class DecisaoInvalida(ErroDeDominio):
+    def __init__(self, motivo: str) -> None:
+        super().__init__(motivo)
+        self.motivo = motivo
+
+
+class PeriodoInvalido(ErroDeDominio):
+    pass
+
+
+class ValorDeFiltroInvalido(ErroDeDominio):
+    pass
+
+
+class DiaForaDaJanela(ErroDeDominio):
+    pass
