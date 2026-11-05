@@ -1,0 +1,31 @@
+.kpi {
+  display: grid;
+  align-content: start;
+  gap: var(--espaco-1);
+  min-width: 0;
+  padding: var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+}
+
+.alerta {
+  border-left: 4px solid var(--cor-alerta-texto);
+}
+
+.rotulo {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+}
+
+.valor {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.contexto {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}

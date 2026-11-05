@@ -1,0 +1,27 @@
+.secao {
+  display: grid;
+  gap: var(--espaco-4);
+  margin-top: var(--espaco-6);
+}
+
+.titulo {
+  font-size: var(--texto-subtitulo);
+  font-weight: 700;
+}
+
+.colunas,
+.colunasLarga {
+  display: grid;
+  gap: var(--espaco-4);
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .colunas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .colunasLarga {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+}

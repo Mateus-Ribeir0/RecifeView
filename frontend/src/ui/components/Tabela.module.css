@@ -1,0 +1,44 @@
+.rolagem {
+  overflow: auto;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-campo);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tabela th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-bottom: 1px solid var(--cor-borda);
+  background: var(--cor-branco);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela td {
+  height: 40px;
+  padding: var(--espaco-1) var(--espaco-3);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.tabela tbody tr:nth-child(even) {
+  background: var(--cor-fundo-alternativo);
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabela .numerica {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}

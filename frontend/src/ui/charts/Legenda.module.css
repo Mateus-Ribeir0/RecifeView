@@ -1,0 +1,38 @@
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1) var(--espaco-3);
+  margin-top: var(--espaco-2);
+}
+
+.botao,
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding: 2px var(--espaco-1);
+  border: 0;
+  background: none;
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+  color: var(--cor-preto);
+}
+
+.botao {
+  border-radius: var(--raio-de-campo);
+  cursor: pointer;
+}
+
+.botao:hover {
+  background: var(--cor-azul-claro);
+}
+
+.marca {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.apagado {
+  opacity: 0.45;
+}

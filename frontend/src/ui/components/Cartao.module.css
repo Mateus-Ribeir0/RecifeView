@@ -1,0 +1,30 @@
+.cartao {
+  display: grid;
+  align-content: start;
+  gap: var(--espaco-3);
+  min-width: 0;
+  padding: var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+}
+
+.titulo {
+  font-size: var(--texto-corpo);
+  font-weight: 600;
+}
+
+.conteudo {
+  min-width: 0;
+}
+
+.leitura {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.nota {
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+  color: var(--cor-texto-terciario);
+}

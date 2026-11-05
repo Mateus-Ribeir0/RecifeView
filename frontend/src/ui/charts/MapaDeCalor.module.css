@@ -1,0 +1,45 @@
+.rolagem {
+  overflow-x: auto;
+}
+
+.mapa {
+  display: grid;
+  gap: 2px;
+  align-items: stretch;
+  min-width: 460px;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: var(--espaco-1);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--cor-texto-secundario);
+}
+
+.rotulo {
+  padding: var(--espaco-1) var(--espaco-2) var(--espaco-1) 0;
+  border: 0;
+  background: none;
+  font-size: var(--texto-legenda);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rotulo[aria-pressed='true'] {
+  font-weight: 700;
+}
+
+.celula {
+  min-height: 34px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--cor-fundo-alternativo);
+  font-size: var(--texto-legenda);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}

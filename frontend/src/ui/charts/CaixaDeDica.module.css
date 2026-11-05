@@ -1,0 +1,26 @@
+.caixa {
+  max-width: 320px;
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-branco);
+  box-shadow: var(--sombra-flutuante);
+  font-size: var(--texto-legenda);
+}
+
+.titulo {
+  margin-bottom: var(--espaco-1);
+  font-weight: 600;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.marca {
+  flex: 0 0 12px;
+  height: 3px;
+  border-radius: 2px;
+}
