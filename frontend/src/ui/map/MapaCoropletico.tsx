@@ -36,8 +36,9 @@ function criarHachura(mapa: MapaLeaflet, id: string): void {
   const svg = mapa.getPanes().overlayPane.querySelector('svg')
   if (!svg || svg.querySelector(`#${CSS.escape(id)}`)) return
   const contexto = lerToken('--cor-contexto')
+  const branco = lerToken('--cor-branco')
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
-  defs.innerHTML = `<pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="${contexto}"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2"/></pattern>`
+  defs.innerHTML = `<pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="${contexto}"/><line x1="0" y1="0" x2="0" y2="6" stroke="${branco}" stroke-width="2"/></pattern>`
   svg.prepend(defs)
 }
 
