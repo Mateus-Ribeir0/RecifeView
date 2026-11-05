@@ -1,0 +1,26 @@
+.lista {
+  display: grid;
+  gap: var(--espaco-2);
+  font-size: var(--texto-apoio);
+}
+
+.texto {
+  max-width: 900px;
+  font-size: var(--texto-apoio);
+}
+
+.glossario {
+  display: grid;
+  gap: var(--espaco-2);
+  font-size: var(--texto-apoio);
+}
+
+.glossario div {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--espaco-3);
+}
+
+.glossario dt {
+  font-weight: 600;
+}
