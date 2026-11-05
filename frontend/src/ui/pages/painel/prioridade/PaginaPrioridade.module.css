@@ -1,0 +1,165 @@
+.aviso {
+  margin-top: var(--espaco-4);
+}
+
+.leitura {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.comparacoes {
+  display: grid;
+  gap: var(--espaco-3);
+  justify-items: stretch;
+}
+
+.comparacoes > button {
+  justify-self: start;
+}
+
+.comparacao {
+  display: grid;
+  gap: var(--espaco-1);
+}
+
+.comparacao input {
+  width: 100%;
+  accent-color: var(--cor-azul-principal);
+}
+
+.parDeCriterios {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-secundario);
+}
+
+.parDeCriterios strong {
+  font-weight: 600;
+  color: var(--cor-preto);
+}
+
+.pesos {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.fila {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.fontes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: var(--texto-apoio);
+}
+
+.fontes label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  cursor: pointer;
+}
+
+.sorteio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.sorteio p {
+  flex: 1 1 320px;
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+.abas {
+  display: flex;
+  gap: var(--espaco-1);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.abas button {
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.abas button[aria-selected='true'] {
+  border-bottom-color: var(--cor-azul-principal);
+  color: var(--cor-azul-escuro);
+}
+
+.ocorrencias {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.ocorrencia {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+}
+
+.legendaDaNota {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+.nota {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.nota small {
+  font-size: var(--texto-apoio);
+}
+
+.textoDaOcorrencia {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.textoDaOcorrencia h4 {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.contribuicao {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  margin-top: var(--espaco-2);
+}
+
+.contribuicao span {
+  display: block;
+  height: 100%;
+}
+
+.detalhes summary {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.detalhes[open] summary {
+  margin-bottom: var(--espaco-3);
+}
