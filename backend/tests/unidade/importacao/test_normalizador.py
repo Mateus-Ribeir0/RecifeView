@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 
 from app.domain.fontes import Fonte
+from app.domain.importacao.chaves import OrdemPorConteudo
 from app.domain.importacao.datas import FormatoDeData
 from app.domain.importacao.decisoes import (
     ACEITAR_COMO_NOVO,
@@ -19,6 +20,7 @@ from app.domain.importacao.normalizador import (
     PlanoDeNormalizacao,
     Referencias,
 )
+from app.domain.importacao.registro import RegistroDeDemanda
 from app.domain.importacao.relatorio import Correcao, MotivoDeDescarte
 
 BAIRROS = {"AFOGADOS": "5", "VARZEA": "4", "COHAB": "6"}
@@ -52,6 +54,7 @@ def criar_normalizador(
     layout: CodigoDoLayout = CodigoDoLayout.PORTAL_156,
     vocabularios: dict[tuple[str, str], frozenset[str]] | None = None,
     sal: str | None = None,
+    ordem: OrdemPorConteudo | None = None,
 ) -> NormalizadorDeLinhas:
     plano = PlanoDeNormalizacao(
         colunas=COLUNAS_156,
@@ -62,7 +65,21 @@ def criar_normalizador(
         importacao_id=7,
         sal=sal,
     )
-    return NormalizadorDeLinhas(plano, Referencias(BAIRROS, vocabularios or {}))
+    return NormalizadorDeLinhas(
+        plano, Referencias(BAIRROS, vocabularios or {}), ordem or OrdemPorConteudo()
+    )
+
+
+def normalizar_arquivo(
+    linhas: list[list[str]], decisoes: Decisoes | None = None
+) -> tuple[list[RegistroDeDemanda | None], NormalizadorDeLinhas]:
+    ordem = OrdemPorConteudo()
+    primeira_passada = criar_normalizador(decisoes, ordem=ordem)
+    for linha in linhas:
+        primeira_passada.anotar(linha)
+    ordem.fechar()
+    normalizador = criar_normalizador(decisoes, ordem=ordem)
+    return [normalizador.normalizar(linha) for linha in linhas], normalizador
 
 
 def decisoes_156(**extras: object) -> Decisoes:
@@ -300,10 +317,7 @@ def test_mudanca_de_situacao_mantem_a_chave_e_muda_a_assinatura() -> None:
 
 
 def test_linhas_iguais_no_arquivo_ganham_chaves_diferentes() -> None:
-    normalizador = criar_normalizador()
-
-    primeira = normalizador.normalizar(LINHA_156)
-    segunda = normalizador.normalizar(LINHA_156)
+    (primeira, segunda), normalizador = normalizar_arquivo([LINHA_156, LINHA_156])
 
     assert primeira is not None
     assert segunda is not None
@@ -313,12 +327,37 @@ def test_linhas_iguais_no_arquivo_ganham_chaves_diferentes() -> None:
 
 def test_manter_um_descarta_a_linha_repetida_no_arquivo() -> None:
     decisoes = decisoes_156(repetidos_no_arquivo=PoliticaDeDuplicados.MANTER_UM)
-    normalizador = criar_normalizador(decisoes)
 
-    normalizador.normalizar(LINHA_156)
+    (primeira, segunda), normalizador = normalizar_arquivo([LINHA_156, LINHA_156], decisoes)
 
-    assert normalizador.normalizar(LINHA_156) is None
+    assert primeira is not None
+    assert segunda is None
     assert normalizador.relatorio.descartes[MotivoDeDescarte.REPETIDA_NO_ARQUIVO] == 1
+
+
+def test_mesma_chave_com_conteudo_diferente_nao_e_repetida() -> None:
+    decisoes = decisoes_156(repetidos_no_arquivo=PoliticaDeDuplicados.MANTER_UM)
+    em_execucao = [*LINHA_156]
+    em_execucao[5] = "EXECUCAO"
+
+    (primeira, segunda), normalizador = normalizar_arquivo([LINHA_156, em_execucao], decisoes)
+
+    assert primeira is not None
+    assert segunda is not None
+    assert primeira.chave_registro != segunda.chave_registro
+    assert normalizador.relatorio.repetidas_no_arquivo == 0
+
+
+def test_a_ordem_das_linhas_no_arquivo_nao_muda_quem_e_quem() -> None:
+    em_execucao = [*LINHA_156]
+    em_execucao[5] = "EXECUCAO"
+
+    registros, _ = normalizar_arquivo([LINHA_156, em_execucao])
+    invertidos, _ = normalizar_arquivo([em_execucao, LINHA_156])
+
+    pares = {(r.chave_registro, r.assinatura) for r in registros if r}
+    pares_invertidos = {(r.chave_registro, r.assinatura) for r in invertidos if r}
+    assert pares == pares_invertidos
 
 
 def test_inserir_como_novos_muda_a_chave_de_quem_ja_existe() -> None:
@@ -345,7 +384,9 @@ def test_ano_do_arquivo_vem_do_nome_ou_do_retrato(nome_do_arquivo: str, ano: int
         importacao_id=1,
     )
 
-    registro = NormalizadorDeLinhas(plano, Referencias(BAIRROS, {})).normalizar(LINHA_156)
+    registro = NormalizadorDeLinhas(plano, Referencias(BAIRROS, {}), OrdemPorConteudo()).normalizar(
+        LINHA_156
+    )
 
     assert registro is not None
     assert registro.ano_do_arquivo == ano

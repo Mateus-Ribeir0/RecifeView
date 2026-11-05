@@ -10,7 +10,7 @@ from app.domain.importacao.campos import (
     CAMPOS_VERIFICADOS_NO_VOCABULARIO,
     TipoDeCampo,
 )
-from app.domain.importacao.chaves import GeradorDeChaves
+from app.domain.importacao.chaves import GeradorDeChaves, OrdemPorConteudo
 from app.domain.importacao.conversao import (
     ano_do_nome_do_arquivo,
     calcular_hash,
@@ -95,7 +95,12 @@ class PrazoResolvido:
 class NormalizadorDeLinhas:
     """Transforma cada linha do arquivo num registro da base, seguindo as decisões da importação."""
 
-    def __init__(self, plano: PlanoDeNormalizacao, referencias: Referencias) -> None:
+    def __init__(
+        self,
+        plano: PlanoDeNormalizacao,
+        referencias: Referencias,
+        ordem: OrdemPorConteudo,
+    ) -> None:
         self.relatorio = RelatorioDeLinhas()
         self._plano = plano
         self._decisoes = plano.decisoes
@@ -112,15 +117,23 @@ class NormalizadorDeLinhas:
         self._territorio = ResolvedorDeTerritorio(
             referencias.bairros, plano.decisoes, self._campos_mapeados, self.relatorio
         )
+        self._anotando = False
         self._chaves = GeradorDeChaves(
+            ordem,
             str(plano.importacao_id)
             if plano.decisoes.repetidos_na_base is PoliticaDeRepetidos.INSERIR_COMO_NOVOS
-            else ""
+            else "",
         )
         self._ano_do_arquivo = (
             ano_do_nome_do_arquivo(plano.arquivo_origem) or plano.data_do_retrato.year
         )
         self._adaptar = self._escolher_adaptador()
+
+    def anotar(self, celulas: Sequence[str]) -> None:
+        """Primeira passada pelo arquivo: registra o conteúdo para a ordem dos repetidos."""
+        self._anotando = True
+        self.normalizar(celulas)
+        self._anotando = False
 
     def normalizar(self, celulas: Sequence[str]) -> RegistroDeDemanda | None:
         self.relatorio.lidas += 1
@@ -281,8 +294,11 @@ class NormalizadorDeLinhas:
         abertura, fim = datas
         return (fim - abertura).days if fim is not None else None
 
-    def _gerar_chave(self, fonte: str, partes: dict[str, object]) -> int:
-        chave = self._chaves.gerar(fonte, partes)
+    def _gerar_chave(self, fonte: str, partes: dict[str, object], assinatura: int) -> int:
+        if self._anotando:
+            self._chaves.anotar(fonte, partes, assinatura)
+            return 0
+        chave = self._chaves.gerar(fonte, partes, assinatura)
         if not chave.repetida_no_arquivo:
             return chave.valor
         self.relatorio.repetidas_no_arquivo += 1
@@ -369,10 +385,11 @@ class NormalizadorDeLinhas:
             "data_ult_movimento": principal[INDICE_DO_MOVIMENTO],
             "bairro_oficial": principal[INDICE_DO_BAIRRO],
         }
+        assinatura = calcular_hash("|".join(map(str, (*principal, *complemento))))
         return RegistroDeDemanda._make(
             (
-                self._gerar_chave(fonte, partes),
-                calcular_hash("|".join(map(str, (*principal, *complemento)))),
+                self._gerar_chave(fonte, partes, assinatura),
+                assinatura,
                 *principal,
                 self._resolver_id_local(valores, fonte),
                 self._resolver_numero_informado(valores),
