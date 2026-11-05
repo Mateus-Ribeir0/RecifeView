@@ -1,0 +1,35 @@
+.corpo {
+  margin-top: var(--espaco-5);
+}
+
+.leitura {
+  margin-top: var(--espaco-3);
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.link {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.detalhes {
+  margin-top: var(--espaco-5);
+}
+
+.detalhes summary {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tabela {
+  display: grid;
+  justify-items: start;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-3);
+}
+
+.tabela > :last-child {
+  width: 100%;
+}
