@@ -7,16 +7,26 @@ from fastapi.responses import JSONResponse
 
 from app.api.schemas.erros import DetalheDoErro, ErroResposta
 from app.domain.erros import (
+    ArquivoGrandeDemais,
+    ArquivoIlegivel,
+    ArquivoVazio,
     ContaBloqueada,
     ContaInativa,
     CredenciaisInvalidas,
+    DecisaoInvalida,
+    DiaForaDaJanela,
     EmailInvalido,
     EmailJaCadastrado,
     ErroDeDominio,
+    ImportacaoEmEstadoInvalido,
+    ImportacaoNaoEncontrada,
+    ImportacaoNaoPodeSerDesfeita,
+    PeriodoInvalido,
     SenhaAtualIncorreta,
     SenhaFraca,
     SessaoInvalida,
     UsuarioNaoEncontrado,
+    ValorDeFiltroInvalido,
 )
 
 
@@ -65,6 +75,48 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
     UsuarioNaoEncontrado: RespostaDeErro(
         status.HTTP_404_NOT_FOUND, "usuario_nao_encontrado", "Conta não encontrada."
     ),
+    ImportacaoNaoEncontrada: RespostaDeErro(
+        status.HTTP_404_NOT_FOUND, "importacao_nao_encontrada", "Importação não encontrada."
+    ),
+    ImportacaoEmEstadoInvalido: RespostaDeErro(
+        status.HTTP_409_CONFLICT,
+        "importacao_em_outra_etapa",
+        "A importação não está mais nesta etapa. Atualize a página.",
+    ),
+    ImportacaoNaoPodeSerDesfeita: RespostaDeErro(
+        status.HTTP_409_CONFLICT,
+        "importacao_nao_pode_ser_desfeita",
+        "Só a importação mais recente pode ser desfeita.",
+    ),
+    ArquivoVazio: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, "arquivo_vazio", "O arquivo está vazio."
+    ),
+    ArquivoIlegivel: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "arquivo_ilegivel",
+        "Não foi possível ler o arquivo. Confira o formato.",
+    ),
+    ArquivoGrandeDemais: RespostaDeErro(
+        status.HTTP_413_CONTENT_TOO_LARGE,
+        "arquivo_grande_demais",
+        "O arquivo passa do tamanho máximo aceito.",
+    ),
+    DecisaoInvalida: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, "decisao_invalida", "Confira as escolhas feitas."
+    ),
+    PeriodoInvalido: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "periodo_invalido",
+        "O início do período precisa vir antes do fim.",
+    ),
+    ValorDeFiltroInvalido: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, "filtro_invalido", "Confira os filtros aplicados."
+    ),
+    DiaForaDaJanela: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "dia_fora_da_janela",
+        "Não há dados para o dia escolhido.",
+    ),
 }
 
 
@@ -75,7 +127,7 @@ def registrar_tratadores_de_erro(app: FastAPI) -> None:
 
 def _tratar_erro_de_dominio(_: Request, erro: ErroDeDominio) -> JSONResponse:
     resposta = RESPOSTAS_POR_ERRO.get(type(erro), ERRO_GENERICO)
-    mensagem = erro.motivo if isinstance(erro, SenhaFraca) else resposta.mensagem
+    mensagem = erro.motivo if isinstance(erro, (SenhaFraca, DecisaoInvalida)) else resposta.mensagem
     detalhes = _detalhes_do_erro(erro)
     return _responder(
         resposta.status, DetalheDoErro(codigo=resposta.codigo, mensagem=mensagem, detalhes=detalhes)
