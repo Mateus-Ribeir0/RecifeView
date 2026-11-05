@@ -23,8 +23,8 @@ O projeto responde ao desafio [Fragmentação do Tratamento de Denúncias Recebi
 |---|---|
 | Pesquisa, dados, EDA (N1 a N3) | Concluída. Os entregáveis estão no Drive do grupo. |
 | Página inicial e acesso | Prontos: página pública, entrada, troca de senha, sessão e saída |
-| Telas de dados do painel | Prontas na branch `feat/painel-e-importacoes`: Início, War Room, Retorno, Reincidência, Prazos, Território, Prioridade e Sobre os dados |
-| Importação de arquivos | Pronta na mesma branch: envio, normalização, decisões, histórico e desfazer |
+| Telas de dados do painel | Prontas: Início, War Room, Retorno, Reincidência, Prazos, Território, Prioridade e Sobre os dados |
+| Importação de arquivos | Pronta: envio, normalização, decisões, histórico e desfazer |
 | Processor | Ainda não começou |
 
 ## Arquitetura
