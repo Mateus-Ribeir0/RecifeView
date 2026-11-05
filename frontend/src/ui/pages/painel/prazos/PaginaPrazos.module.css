@@ -1,0 +1,14 @@
+.pilha {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.leitura {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.vazio {
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}
