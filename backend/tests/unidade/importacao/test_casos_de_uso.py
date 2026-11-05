@@ -171,6 +171,19 @@ def test_coluna_bloqueada_nao_aceita_outro_destino() -> None:
     assert servicos.obter(importacao.id).decisoes.mapeamento["LOGRADOURO"] == "logradouro"
 
 
+def test_dataset_passa_com_o_texto_em_uso_interno() -> None:
+    colunas = ["fonte", "data_abertura", "categoria", "bairro_oficial", "texto"]
+    linha = ["156_EMLURB", "2026-02-10", "DRENAGEM", "AFOGADOS", "sem uso aqui"]
+    servicos = criar_servicos(TabelaFalsa(colunas, [linha]))
+    importacao = receber(servicos)
+    assert importacao.decisoes.mapeamento["texto"] == "texto"
+    escolha = EscolhaDeColunas(None, RETRATO, dict(importacao.decisoes.mapeamento), {})
+
+    DefinirColunas(servicos).executar(importacao.id, escolha)
+
+    assert servicos.obter(importacao.id).status is not StatusDaImportacao.AGUARDANDO_COLUNAS
+
+
 def test_data_do_retrato_nao_pode_estar_no_futuro() -> None:
     servicos = servicos_com()
     importacao = receber(servicos)

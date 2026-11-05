@@ -29,6 +29,11 @@ def _exigir_campos_conhecidos(importacao: Importacao, campos: list[str]) -> None
         raise DecisaoInvalida("Há coluna associada a um campo que não existe.")
 
 
+def _campos_escolhidos(importacao: Importacao, mapeamento: dict[str, str]) -> list[str]:
+    fixas = colunas_com_uso_fixo(importacao)
+    return [campo for coluna, campo in mapeamento.items() if coluna not in fixas]
+
+
 def _exigir_campos_sem_repeticao(campos: list[str]) -> None:
     repetidos = {campo for campo in campos if campos.count(campo) > 1}
     if repetidos:
@@ -60,7 +65,7 @@ class DefinirColunas:
         importacao.exigir_edicao_aberta()
         mapeamento = self._mapeamento_final(importacao, escolha)
         campos = list(mapeamento.values())
-        _exigir_campos_conhecidos(importacao, campos)
+        _exigir_campos_conhecidos(importacao, _campos_escolhidos(importacao, mapeamento))
         _exigir_campos_sem_repeticao(campos)
         _exigir_campos_obrigatorios(campos, escolha.valores_fixos)
         _exigir_fonte(importacao, escolha, campos)
