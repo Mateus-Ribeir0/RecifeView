@@ -2,12 +2,12 @@
 
 SPA do RecifeView: a página inicial pública e o painel usado por gestores públicos para ver, por bairro, serviço e período, onde as demandas se repetem, demoram ou ficam sem resposta.
 
-**Stack:** React 19, React Router, TypeScript e Vite, com Recharts e Leaflet previstos para as telas de dados. As versões ficam no `package-lock.json`; o porquê de cada ferramenta está em [docs/stack.md](../docs/stack.md#frontend) e na [ADR 0004](../docs/adr/0004-ferramentas-complementares.md).
+**Stack:** React 19, React Router, TypeScript e Vite, com Recharts nos gráficos e Leaflet no mapa. As versões ficam no `package-lock.json`; o porquê de cada ferramenta está em [docs/stack.md](../docs/stack.md#frontend) e na [ADR 0004](../docs/adr/0004-ferramentas-complementares.md).
 
 ## Pré-requisitos
 
 - Node.js 22 LTS (a versão está no `.nvmrc`).
-- A API rodando em http://localhost:8000 (ver [backend/README.md](../backend/README.md)). Sem ela, a página inicial abre, mas o login não funciona.
+- A API rodando em http://localhost:8000, com a base carregada (ver [backend/README.md](../backend/README.md#carregar-os-dados)). Sem a API, a página inicial abre, mas o login não funciona. Sem a base, as telas do painel abrem vazias.
 
 ## Como rodar
 
@@ -22,15 +22,23 @@ O painel fica em http://localhost:5173. Em desenvolvimento, o Vite repassa tudo 
 
 ## Telas
 
-| Caminho          | Tela                                                                              | Acesso             |
-| ---------------- | --------------------------------------------------------------------------------- | ------------------ |
-| `/`              | Página inicial: o problema, os primeiros achados, o painel, as fontes e o projeto | Público            |
-| `/entrar`        | Entrada com e-mail e senha                                                        | Só quem não entrou |
-| `/entrar/ajuda`  | Senha esquecida, conta bloqueada, pedido de acesso                                | Público            |
-| `/definir-senha` | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária    | Gestor             |
-| `/painel`        | Visão geral, por enquanto com o andamento das telas de dados                      | Gestor             |
+| Caminho                  | Tela                                                                              | Acesso             |
+| ------------------------ | --------------------------------------------------------------------------------- | ------------------ |
+| `/`                      | Página inicial: o problema, os primeiros achados, o painel, as fontes e o projeto | Público            |
+| `/entrar`                | Entrada com e-mail e senha                                                        | Só quem não entrou |
+| `/entrar/ajuda`          | Senha esquecida, conta bloqueada, pedido de acesso                                | Público            |
+| `/definir-senha`         | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária    | Gestor             |
+| `/painel`                | Início: principais indicadores e volume por fonte                                 | Gestor             |
+| `/painel/war-room`       | Estado de um dia: o que está parado e por onde começar                            | Gestor             |
+| `/painel/retorno`        | Para onde vai cada tipo de pedido e quanto volta                                  | Gestor             |
+| `/painel/reincidencia`   | Local repetido, intervalos e pontos crônicos                                      | Gestor             |
+| `/painel/prazos`         | Percentis, faixas, categorias e estoque aberto                                    | Gestor             |
+| `/painel/territorio`     | Mapa, tabela e tendência por bairro                                               | Gestor             |
+| `/painel/prioridade`     | Índice AHP, mapa, ranking, sensibilidade e fila                                   | Gestor             |
+| `/painel/sobre-os-dados` | Cobertura, glossário e correções aplicadas                                        | Gestor             |
+| `/painel/importacoes`    | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório       | Gestor             |
 
-As próximas telas (Mapa por bairro e RPA, Prazos, Recorrências, Fluxo Câmara → Prefeitura) estão em [docs/arquitetura.md](../docs/arquitetura.md#telas-e-rotas-da-api).
+A correspondência entre telas e rotas da API está em [docs/arquitetura.md](../docs/arquitetura.md#telas-e-rotas-da-api).
 
 ## Variáveis de ambiente
 
@@ -63,14 +71,15 @@ Camadas `domain`, `application`, `infrastructure` e `ui`, conforme [docs/clean-a
 
 ```
 src/
-  domain/           usuario, senha, erros, acesso, territorio, formatacao
-  application/      autenticacao/ (porta do serviço, provedor e hook da sessão)
-  infrastructure/   api/ (cliente HTTP e serviço de autenticação)
+  domain/           usuario, senha, erros, acesso, territorio, formatacao, painel, filtros, importacoes
+  application/      autenticacao/, filtros/, consultas/ (cache e hooks do painel), importacoes/
+  infrastructure/   api/ (cliente HTTP, conversão e serviços que implementam as portas)
   ui/
     app/            rotas, guardas de rota e montagem (único lugar que conhece a infraestrutura)
-    pages/          inicio/, entrar/, ajuda-de-acesso/, definir-senha/, painel/, nao-encontrada/
-    components/     logo, botões, campos, avisos, layout das telas de acesso
-    map/            mapa SVG dos bairros e a malha
+    pages/          inicio/, entrar/, ajuda-de-acesso/, definir-senha/, painel/, importacoes/, nao-encontrada/
+    components/     logo, botões, campos, avisos, KPIs, cartões, tabela, estados da consulta
+    charts/         gráficos (únicos arquivos que importam o Recharts)
+    map/            mapa SVG dos bairros, mapa coroplético (Leaflet) e a malha
     conteudo/       textos compartilhados entre páginas
     theme/          tokens do design system e estilos base
   main.tsx          ponto de entrada

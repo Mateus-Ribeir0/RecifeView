@@ -1,0 +1,102 @@
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+  min-height: 64px;
+  padding-inline: var(--margem-lateral);
+  background: var(--cor-azul-marinho);
+  color: var(--cor-branco);
+}
+
+.marca {
+  display: inline-flex;
+  margin-right: auto;
+}
+
+.abrirLateral,
+.recolher {
+  min-height: 36px;
+  padding: 0 var(--espaco-3);
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: var(--raio-de-campo);
+  background: none;
+  color: var(--cor-branco);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.abrirLateral:focus-visible,
+.recolher:focus-visible {
+  outline-color: var(--cor-branco);
+}
+
+.abrirLateral {
+  display: none;
+}
+
+.corpo {
+  display: flex;
+  align-items: flex-start;
+}
+
+.lateral {
+  position: sticky;
+  top: 64px;
+  flex: 0 0 var(--largura-da-lateral);
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  background: var(--cor-azul-claro);
+}
+
+.lateralFechada {
+  display: none;
+}
+
+.principal {
+  flex: 1;
+  min-width: 0;
+  padding: var(--espaco-5) var(--margem-lateral) var(--espaco-7);
+}
+
+.principal:focus {
+  outline: none;
+}
+
+.conteudo {
+  max-width: var(--largura-do-painel);
+  margin-inline: auto;
+}
+
+@media (max-width: 1039px) {
+  .abrirLateral {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .recolher {
+    display: none;
+  }
+
+  .lateral {
+    position: fixed;
+    z-index: 35;
+    left: 0;
+    bottom: 0;
+    width: var(--largura-da-lateral);
+    transform: translateX(-100%);
+    transition: transform 160ms ease;
+    box-shadow: var(--sombra-flutuante);
+  }
+
+  .lateralFechada {
+    display: block;
+  }
+
+  .gavetaAberta {
+    transform: none;
+  }
+}

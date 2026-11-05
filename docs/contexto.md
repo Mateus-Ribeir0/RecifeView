@@ -106,9 +106,9 @@ Para o dashboard, a N3 recomenda: o fluxo das categorias que mudam de mão, os p
 |---|---|---|
 | Pedido LAI ao SGDE (protocolado em 08/10; número no Drive) | Prazo 28/10, prorrogável até 07/11 | Se chegar, vira um novo adaptador no Processor e permite medir a fragmentação pedido a pedido |
 | Entrevista e amostra de dados da Emprel | Não aconteceu | Nenhum, por enquanto |
-| Levar as correções da N3 para o pipeline (órgãos da Ouvidoria, grafias do 156, bairro da Câmara pela ementa, anulações) | Feito só no notebook | Precisa entrar no Processor |
+| Levar as correções da N3 para o pipeline (órgãos da Ouvidoria, grafias do 156, bairro da Câmara pela ementa, anulações) | Em 05/11, feito na importação do backend. Falta harmonizar a situação entre as fontes | O Processor reaproveita as regras do domínio. Ver [dados.md](dados.md#correções-da-n3-no-pipeline) |
 | Padronizar a definição de reincidência | Em aberto | Ver [dados.md](dados.md#definições-de-métricas) |
-| Priorização com AHP e mapa de prioridade (sugestão da Profª Maíra, 19/10) | Perguntar à Maíra e ao Marcelo o formato esperado | Índice calculado no backend ou no Processor; mapa no frontend |
+| Priorização com AHP e mapa de prioridade (sugestão da Profª Maíra, 19/10) | Em 05/11, tela pronta, com os julgamentos do protótipo em Streamlit. Falta perguntar à Maíra e ao Marcelo se o formato atende | Índice calculado no backend; mapa no frontend |
 | Decisões de arquitetura em aberto | Ver [adr/README.md](adr/README.md) | Bloqueiam partes da infraestrutura |
 
 ## Identidade
