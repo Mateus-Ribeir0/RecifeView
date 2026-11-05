@@ -56,6 +56,7 @@ export function PassoColunas({ importacao, aoConcluir, aoCancelar }: Propriedade
     (campo) => !camposUsados.has(campo.nome) && !valoresFixos[campo.nome],
   )
   const conhecidos = new Set(campos.map((campo) => campo.nome))
+  const faltaFonte = !eDataset && !fonte && !camposUsados.has('fonte')
 
   async function continuar() {
     definirEnviando(true)
@@ -177,6 +178,11 @@ export function PassoColunas({ importacao, aoConcluir, aoCancelar }: Propriedade
           </tbody>
         </table>
       </div>
+      {faltaFonte && (
+        <Aviso tipo="alerta" titulo="Falta escolher a fonte">
+          Escolha acima, em "De qual fonte é este arquivo?", de onde vieram estes dados.
+        </Aviso>
+      )}
       {faltando.length > 0 && (
         <Aviso tipo="alerta" titulo="Faltam campos obrigatórios">
           <p>
@@ -210,7 +216,11 @@ export function PassoColunas({ importacao, aoConcluir, aoCancelar }: Propriedade
         </Aviso>
       ) : null}
       <div className={estilos.acoes}>
-        <Botao compacto disabled={enviando || faltando.length > 0} onClick={() => void continuar()}>
+        <Botao
+          compacto
+          disabled={enviando || faltaFonte || faltando.length > 0}
+          onClick={() => void continuar()}
+        >
           {enviando ? 'Conferindo...' : 'Conferir os dados'}
         </Botao>
         <Botao variante="secundario" compacto onClick={aoCancelar}>
