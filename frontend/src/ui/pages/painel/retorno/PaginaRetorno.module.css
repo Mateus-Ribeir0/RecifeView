@@ -1,9 +1,8 @@
 .pilha {
   display: grid;
-  gap: var(--espaco-3);
+  align-content: start;
 }
 
-.leitura {
-  font-size: 13px;
-  color: var(--cor-texto-secundario);
+.pilha > * {
+  margin-bottom: var(--espaco-3);
 }

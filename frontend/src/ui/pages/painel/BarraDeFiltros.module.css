@@ -1,0 +1,31 @@
+.barra {
+  position: sticky;
+  z-index: 20;
+  top: var(--altura-do-topo-do-painel);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 52px;
+  padding: var(--espaco-2) var(--margem-lateral);
+  border-bottom: 1px solid var(--cor-borda);
+  background: var(--cor-branco);
+}
+
+.icone {
+  display: inline-flex;
+  margin-right: var(--espaco-1);
+  color: var(--cor-texto-terciario);
+}
+
+.limpar {
+  height: 36px;
+  padding: 0 var(--espaco-2);
+  border: 0;
+  background: none;
+  color: var(--cor-azul-escuro);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}

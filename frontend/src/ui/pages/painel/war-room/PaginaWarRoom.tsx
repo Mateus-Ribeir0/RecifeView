@@ -5,14 +5,28 @@ import type { CalendarioDaWarRoom, ModoDaWarRoom } from '../../../../domain/warR
 import { Botao } from '../../../components/Botao'
 import { CabecalhoDaTela } from '../../../components/CabecalhoDaTela'
 import { EstadoDaConsulta } from '../../../components/EstadoDaConsulta'
+import { Icone } from '../../../components/Icone'
 import estilos from './PaginaWarRoom.module.css'
 import { QuadroDoDia } from './QuadroDoDia'
 
 function seloDoModo(modo: ModoDaWarRoom, passo: number, calendario: CalendarioDaWarRoom): string {
   if (modo === 'simulacao') return `Simulação, dia ${passo} de ${calendario.diasSimulados}`
   if (modo === 'fim') return `Simulação encerrada, dia ${passo} de ${calendario.diasSimulados}`
-  if (modo === 'hoje') return `Hoje: bases baixadas em ${formatarData(calendario.hoje)}`
+  if (modo === 'hoje') return 'Hoje'
   return 'Dia sorteado'
+}
+
+function notasDaTela(calendario: CalendarioDaWarRoom | undefined): string[] {
+  const notas = [
+    'Mostra a cidade inteira, com os pesos padrão do AHP. Os filtros não se aplicam aqui.',
+    'Um pedido conta como aberto da entrada até o atendimento, ou até hoje, se continua aberto nos arquivos mais recentes. Em datas antigas o estoque é um piso, porque os abertos de arquivos antigos têm destino desconhecido.',
+  ]
+  if (!calendario) return notas
+  return [
+    ...notas,
+    `Hoje é ${formatarData(calendario.hoje)}, o dia do retrato mais recente das bases. Registro mais recente: 156 em ${formatarData(calendario.ultimoRegistro156)}; Ouvidoria em ${formatarData(calendario.ultimoRegistroOuvidoria)}.`,
+    `A simulação sorteia um dia real entre ${formatarData(calendario.primeiroDia)} e ${formatarData(calendario.ultimoDia)} e avança um dia a cada ${formatarNumero(calendario.segundosPorDia, 1)} s, por ${calendario.diasSimulados} dias. As bases só têm a data, sem horário.`,
+  ]
 }
 
 export function PaginaWarRoom() {
@@ -27,41 +41,35 @@ export function PaginaWarRoom() {
     <>
       <CabecalhoDaTela
         titulo="War Room"
-        semRecorte
         fontes={['156_EMLURB', 'DEFESA_CIVIL', 'CAMARA_REQUERIMENTOS', 'OUVIDORIA']}
-        ignorados={[
-          'Cidade inteira, com os pesos padrão do AHP: os filtros da barra lateral não se aplicam aqui.',
-        ]}
+        notas={notasDaTela(calendario)}
+        acoes={
+          <>
+            <Botao compacto onClick={simulacao.simularMes}>
+              <Icone nome="reproduzir" tamanho={16} />
+              Simular um mês
+            </Botao>
+            <Botao variante="secundario" compacto onClick={simulacao.diaAleatorio}>
+              <Icone nome="sortear" tamanho={16} />
+              Dia aleatório
+            </Botao>
+            <Botao
+              variante="secundario"
+              compacto
+              disabled={modo === 'hoje'}
+              onClick={simulacao.voltarParaHoje}
+            >
+              <Icone nome="voltar" tamanho={16} />
+              {modo === 'simulacao' ? 'Parar' : 'Hoje'}
+            </Botao>
+          </>
+        }
       >
-        Protótipo de tela de operações: o que está parado, o que não voltou e onde agir primeiro,
-        num só quadro. A tela inteira mostra o estado de um dia.
+        O que está parado, o que não voltou e onde agir primeiro, num só quadro.
       </CabecalhoDaTela>
       <EstadoDaConsulta consulta={consultaDoCalendario}>
         {(dados) => (
           <>
-            <div className={estilos.controles}>
-              <Botao compacto onClick={simulacao.simularMes}>
-                Simular um mês
-              </Botao>
-              <Botao variante="secundario" compacto onClick={simulacao.diaAleatorio}>
-                Dia aleatório
-              </Botao>
-              <Botao
-                variante="secundario"
-                compacto
-                disabled={modo === 'hoje'}
-                onClick={simulacao.voltarParaHoje}
-              >
-                {modo === 'simulacao' ? 'Parar e voltar para hoje' : 'Voltar para hoje'}
-              </Botao>
-              <p className={estilos.legendaDosControles}>
-                A simulação sorteia um dia real entre {formatarData(dados.primeiroDia)} e{' '}
-                {formatarData(dados.ultimoDia)} e avança um dia a cada{' '}
-                {formatarNumero(dados.segundosPorDia, 1)} s, por {dados.diasSimulados} dias. As
-                bases só têm a data, sem horário. Para a sala, recolha a barra lateral e use tela
-                cheia.
-              </p>
-            </div>
             {dia && (
               <div className={estilos.data}>
                 <h2>{formatarDataLonga(dia)}</h2>
@@ -75,14 +83,6 @@ export function PaginaWarRoom() {
                 max={dados.diasSimulados}
                 aria-label="Andamento da simulação"
               />
-            )}
-            {modo === 'hoje' && (
-              <p className={estilos.legendaDosControles}>
-                {formatarData(dados.hoje)} é o dia do retrato mais recente das bases, não o do
-                registro mais recente. Registro mais recente de cada fonte: 156 em{' '}
-                {formatarData(dados.ultimoRegistro156)}; Ouvidoria em{' '}
-                {formatarData(dados.ultimoRegistroOuvidoria)}.
-              </p>
             )}
           </>
         )}

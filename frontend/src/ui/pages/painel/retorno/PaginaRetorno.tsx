@@ -10,15 +10,16 @@ import {
 } from '../../../../domain/formatacao'
 import { nomeDaCategoria, nomeDoOrgao } from '../../../../domain/nomes'
 import type { Retorno } from '../../../../domain/painel'
-import { BarrasHorizontais } from '../../../charts/BarrasHorizontais'
 import { BarrasVerticais } from '../../../charts/BarrasVerticais'
-import { COR } from '../../../charts/estilo'
+import { Funil } from '../../../charts/Funil'
 import { MapaDeCalor } from '../../../charts/MapaDeCalor'
+import { Abas } from '../../../components/Abas'
 import { CabecalhoDaTela } from '../../../components/CabecalhoDaTela'
 import { Cartao } from '../../../components/Cartao'
 import { EstadoDaConsulta } from '../../../components/EstadoDaConsulta'
 import { GradeDeKpis } from '../../../components/GradeDeKpis'
 import { KpiCard } from '../../../components/KpiCard'
+import { Medidor } from '../../../components/Medidor'
 import { Colunas, Secao } from '../../../components/Secao'
 import { CaminhoDaCategoria } from './CaminhoDaCategoria'
 import { CanaisDaOuvidoria } from './CanaisDaOuvidoria'
@@ -33,30 +34,10 @@ const CANAIS_CURTOS: Readonly<Record<string, string>> = {
 }
 
 function etapasDoFunil({ resumo }: Retorno) {
-  const texto = (n: number) =>
-    `${formatarNumero(n)} (${formatarPorcentagem((n / Math.max(resumo.total, 1)) * 100)})`
   return [
-    {
-      chave: 'apresentadas',
-      rotulo: 'Apresentadas na Câmara',
-      valor: resumo.total,
-      texto: texto(resumo.total),
-      cor: COR.claro,
-    },
-    {
-      chave: 'enviadas',
-      rotulo: 'Enviadas à Prefeitura',
-      valor: resumo.enviadas,
-      texto: texto(resumo.enviadas),
-      cor: COR.principal,
-    },
-    {
-      chave: 'respondidas',
-      rotulo: 'Com resposta registrada',
-      valor: resumo.respondidas,
-      texto: texto(resumo.respondidas),
-      cor: COR.marinho,
-    },
+    { chave: 'apresentadas', rotulo: 'Apresentadas na Câmara', valor: resumo.total },
+    { chave: 'enviadas', rotulo: 'Enviadas à Prefeitura', valor: resumo.enviadas },
+    { chave: 'respondidas', rotulo: 'Com resposta registrada', valor: resumo.respondidas },
   ]
 }
 
@@ -108,12 +89,24 @@ function ConteudoDoRetorno({ dados, n, periodo }: ConteudoProps) {
           valor={formatarPorcentagem(dados.resumo.pctEnviadas)}
           contexto={`envio em ${formatarDias(dados.resumo.medianaDiasAteEnvio)}`}
           ajuda="Indicações com envio à Prefeitura registrado na tramitação, e a mediana de dias até o envio."
+          visual={
+            <Medidor
+              porcentagem={dados.resumo.pctEnviadas ?? 0}
+              rotulo="Parte das indicações enviadas à Prefeitura"
+            />
+          }
         />
         <KpiCard
           rotulo="Voltam com resposta"
           valor={formatarPorcentagem(dados.resumo.pctRespondidas)}
           contexto={`${formatarNumero(dados.resumo.respondidas)} indicações`}
           ajuda="Sem resposta registrada não quer dizer que o serviço não foi feito: quer dizer que a informação não voltou."
+          visual={
+            <Medidor
+              porcentagem={dados.resumo.pctRespondidas ?? 0}
+              rotulo="Parte das indicações com resposta registrada"
+            />
+          }
         />
         <KpiCard
           rotulo="Tempo até a resposta"
@@ -122,39 +115,29 @@ function ConteudoDoRetorno({ dados, n, periodo }: ConteudoProps) {
           ajuda="Mediana dos dias entre a apresentação e a resposta registrada, só para as que têm resposta."
         />
       </GradeDeKpis>
-      <Secao
-        titulo="A perda está toda depois da entrada"
-        ajuda="Onde o pedido do vereador se perde: entra, vai para a Prefeitura e raramente volta com resposta."
-      >
-        <Colunas>
-          <Cartao
-            titulo="Funil das indicações"
-            leitura="Quase tudo sai da Câmara em poucos dias. A queda acontece dentro da Prefeitura, no caminho de volta."
-            nota={nota}
-          >
-            <BarrasHorizontais
-              dados={etapasDoFunil(dados)}
-              maximo={dados.resumo.total * 1.3}
-              larguraDoRotulo={170}
-              rotuloDoValor="indicações"
-              alturaDaLinha={48}
-            />
-          </Cartao>
-          <Cartao
-            titulo="Quando o envio vira sistema, a resposta aparece"
-            ajuda="% das indicações com resposta registrada por ano, com o canal de envio mais usado em cada ano."
-            leitura="De ofício e protocolo em papel para lote e sistema da SEGOV, a parte com resposta registrada sobe de menos de 1% para cerca de 45%. Anos recentes ainda podem receber resposta."
-            nota={nota}
-          >
-            <BarrasVerticais
-              dados={colunasDoCanal(dados)}
-              rotuloDoEixo="% com resposta registrada"
-              maximo={60}
-              altura={260}
-            />
-          </Cartao>
-        </Colunas>
-      </Secao>
+      <Colunas>
+        <Cartao
+          titulo="A perda está toda depois da entrada"
+          ajuda="Onde o pedido do vereador se perde: entra, vai para a Prefeitura e raramente volta com resposta."
+          leitura="Quase tudo sai da Câmara em poucos dias. A queda acontece dentro da Prefeitura, no caminho de volta."
+          nota={nota}
+        >
+          <Funil etapas={etapasDoFunil(dados)} />
+        </Cartao>
+        <Cartao
+          titulo="Quando o envio vira sistema, a resposta aparece"
+          ajuda="% das indicações com resposta registrada por ano, com o canal de envio mais usado em cada ano."
+          leitura="De ofício e protocolo em papel para lote e sistema da SEGOV, a parte com resposta registrada sobe de menos de 1% para cerca de 45%. Anos recentes ainda podem receber resposta."
+          nota={nota}
+        >
+          <BarrasVerticais
+            dados={colunasDoCanal(dados)}
+            rotuloDoEixo="% com resposta registrada"
+            maximo={60}
+            altura={240}
+          />
+        </Cartao>
+      </Colunas>
       <Secao
         titulo="O mesmo tipo de pedido vai para órgãos diferentes"
         ajuda="Para onde vão as indicações de cada categoria. Clique numa linha para ver o caminho dela."
@@ -162,7 +145,8 @@ function ConteudoDoRetorno({ dados, n, periodo }: ConteudoProps) {
         <Colunas proporcao="larga">
           <Cartao
             titulo="Destino por categoria (% de cada linha)"
-            leitura="Cada linha soma 100%. Clique numa linha para ver o caminho dela até o desfecho. Categoria e órgão vêm da ementa (rótulo fraco)."
+            ajuda="Cada linha soma 100%. Clique numa linha para ver o caminho dela até o desfecho."
+            leitura="Categoria e órgão vêm da ementa (rótulo fraco)."
             nota={nota}
           >
             <MapaDeCalor
@@ -205,29 +189,43 @@ export function PaginaRetorno() {
       <CabecalhoDaTela
         titulo="Retorno e fragmentação"
         fontes={['CAMARA_REQUERIMENTOS', 'OUVIDORIA']}
-        ignorados={[
-          'Ouvidoria: não tem bairro nem a mesma classificação de serviço; o último bloco segue só o período.',
+        notas={[
+          'A Câmara é a única fonte pública que mostra o caminho inteiro, do pedido do vereador até a resposta da Prefeitura.',
+          'A Ouvidoria não tem bairro nem a mesma classificação de serviço: a aba dela segue só o período.',
         ]}
         atualizando={consulta.atualizando}
       >
-        Depois que a demanda entra, ela muda de mão entre órgãos e raramente volta com resposta
-        registrada. A Câmara é a única fonte pública que mostra o caminho inteiro, do pedido do
-        vereador até a resposta da Prefeitura.
+        Depois que a demanda entra, ela muda de mão entre órgãos e raramente volta com resposta.
       </CabecalhoDaTela>
-      <EstadoDaConsulta
-        consulta={consulta}
-        estaVazia={({ dados }) => dados.resumo.total === 0}
-        mensagemDeVazio="Nenhuma indicação da Câmara para estes filtros. A Câmara cobre 2021 a 2025 e só as categorias de serviço urbano citadas nas ementas."
-      >
-        {({ dados, meta }) => (
-          <ConteudoDoRetorno
-            dados={dados}
-            n={meta.n}
-            periodo={formatarPeriodo(filtros.anoInicio, filtros.anoFim)}
-          />
-        )}
-      </EstadoDaConsulta>
-      <CanaisDaOuvidoria />
+      <Abas
+        legenda="Fontes do retorno"
+        abas={[
+          {
+            chave: 'camara',
+            rotulo: 'Câmara: do pedido à resposta',
+            conteudo: (
+              <EstadoDaConsulta
+                consulta={consulta}
+                estaVazia={({ dados }) => dados.resumo.total === 0}
+                mensagemDeVazio="Nenhuma indicação da Câmara para estes filtros. A Câmara cobre 2021 a 2025 e só as categorias de serviço urbano citadas nas ementas."
+              >
+                {({ dados, meta }) => (
+                  <ConteudoDoRetorno
+                    dados={dados}
+                    n={meta.n}
+                    periodo={formatarPeriodo(filtros.anoInicio, filtros.anoFim)}
+                  />
+                )}
+              </EstadoDaConsulta>
+            ),
+          },
+          {
+            chave: 'ouvidoria',
+            rotulo: 'Ouvidoria: canais e prazo',
+            conteudo: <CanaisDaOuvidoria />,
+          },
+        ]}
+      />
     </>
   )
 }

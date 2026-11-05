@@ -21,7 +21,17 @@ export function Secao({ titulo, ajuda, children }: Propriedades) {
   )
 }
 
-export function Colunas({ children, proporcao }: { children: ReactNode; proporcao?: 'larga' }) {
-  const classe = proporcao === 'larga' ? estilos.colunasLarga : estilos.colunas
-  return <div className={classe}>{children}</div>
+const CLASSE_DA_PROPORCAO = {
+  igual: estilos.colunas,
+  larga: estilos.colunasLarga,
+  tres: estilos.colunasTres,
+}
+
+interface PropriedadesDasColunas {
+  children: ReactNode
+  proporcao?: keyof typeof CLASSE_DA_PROPORCAO
+}
+
+export function Colunas({ children, proporcao = 'igual' }: PropriedadesDasColunas) {
+  return <div className={CLASSE_DA_PROPORCAO[proporcao]}>{children}</div>
 }

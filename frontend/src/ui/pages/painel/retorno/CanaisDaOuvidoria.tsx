@@ -7,6 +7,7 @@ import { COR } from '../../../charts/estilo'
 import { Cartao } from '../../../components/Cartao'
 import { EstadoDaConsulta } from '../../../components/EstadoDaConsulta'
 import { KpiCard } from '../../../components/KpiCard'
+import { Medidor } from '../../../components/Medidor'
 import { Colunas, Secao } from '../../../components/Secao'
 import estilos from './PaginaRetorno.module.css'
 
@@ -50,7 +51,8 @@ export function CanaisDaOuvidoria() {
         {({ dados, meta }) => (
           <Colunas proporcao="larga">
             <Cartao
-              titulo="Canais de entrada por ano"
+              titulo="O telefone domina, e o app mal aparece"
+              leitura="O telefone virou o canal dominante, e o app só aparece em 2023, com cerca de 3%. O problema não é falta de canal digital para o cidadão: é o que acontece depois que o pedido entra."
               nota={`Fonte: Ouvidoria. Período: ${periodo}. n = ${formatarNumero(meta.n)}. Filtros de território e categoria não se aplicam.`}
             >
               <BarrasEmpilhadas
@@ -67,17 +69,24 @@ export function CanaisDaOuvidoria() {
                 rotulo="App Conecta Recife na Ouvidoria"
                 valor={formatarPorcentagem(dados.pctDoApp, 1)}
                 contexto={dados.anoDoApp ? `em ${dados.anoDoApp}` : undefined}
+                visual={
+                  <Medidor
+                    porcentagem={dados.pctDoApp ?? 0}
+                    rotulo="Parte das manifestações que entram pelo app"
+                  />
+                }
               />
               <KpiCard
                 rotulo="Respondidas no prazo"
                 valor={formatarPorcentagem(dados.pctNoPrazo)}
                 contexto="Ouvidoria, no período"
+                visual={
+                  <Medidor
+                    porcentagem={dados.pctNoPrazo ?? 0}
+                    rotulo="Parte das manifestações respondidas no prazo"
+                  />
+                }
               />
-              <p className={estilos.leitura}>
-                O telefone virou o canal dominante, e o app só aparece em 2023, com cerca de 3%. O
-                problema não é falta de canal digital para o cidadão: é o que acontece depois que o
-                pedido entra.
-              </p>
             </div>
           </Colunas>
         )}

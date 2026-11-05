@@ -88,6 +88,12 @@ Escala sequencial de 5 classes, do claro ao escuro, toda dentro da família de a
 - Se precisar de 7 classes, intercale `#78A9FF` (entre 2 e 3) e `#0043CE` (entre 4 e 5).
 - Escala divergente (acima ou abaixo do esperado, por exemplo um resíduo): azul de um lado, `#8A3800` do outro, branco no centro. Combine com o grupo antes de usar.
 
+### Seleção (derivada)
+
+| Token | Hex | Uso |
+|---|---|---|
+| `selecao` | `#FF832B` | Só o elemento que a pessoa clicou (bairro no mapa, ponto da dispersão). Contrasta com a escala azul, e por isso não serve para mais nada |
+
 ### Contraste: cuidados que já foram medidos
 
 - `azul-principal` sobre `branco`: 5,0:1. Pode ser usado em texto de qualquer tamanho.
@@ -140,31 +146,35 @@ O mockup 04 da pasta `MockupsDashboard` serve de referência de estrutura. Os n�
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ logo                                               usuário   │  cabeçalho
-├───────────────┬──────────────────────────────────────────────┤
-│ Painel        │ Título da tela                               │
-│ Importações   │ A pergunta que a tela responde, em uma linha │
-│               │ Resumo do recorte: RPA 3 · 2021 a 2025       │
-│ Telas por     │                                              │
-│ grupo         │ [KPI] [KPI] [KPI] [KPI]         no máximo 4  │
-│               │                                              │
-│ Período       │ ┌───────────────────┐ ┌────────────────────┐ │
-│ RPA           │ │ gráfico principal │ │ gráfico de apoio   │ │
-│ Bairro        │ └───────────────────┘ └────────────────────┘ │
-│ Categoria     │ Fonte: ... · Período: ... · n = ...          │
-│ Limpar        │                                              │
-└───────────────┴──────────────────────────────────────────────┘
+│ menu · logo                                        usuário   │  cabeçalho
+├──────┬───────────────────────────────────────────────────────┤
+│ ícone│ Período · RPA · Bairro · Categoria · Limpar           │  filtros (fixos)
+│ ícone├───────────────────────────────────────────────────────┤
+│ ícone│ Título da tela                          ações da tela │
+│ ─────│ Uma frase com a pergunta da tela                      │
+│ ícone│ Selos das fontes · Sobre esta tela                    │
+│ ícone│                                                       │
+│ ─────│ [KPI] [KPI] [KPI] [KPI]                  no máximo 4  │
+│ ícone│                                                       │
+│ ícone│ ┌───────────────────────┐ ┌─────────────────────────┐ │
+│      │ │ gráfico principal     │ │ gráfico de apoio        │ │
+│      │ │ Como ler · Fonte · n  │ │ Como ler · Fonte · n    │ │
+│      │ └───────────────────────┘ └─────────────────────────┘ │
+└──────┴───────────────────────────────────────────────────────┘
 ```
 
-- A barra lateral (fundo `azul-claro`, largura no token `--largura-da-lateral`) tem uma chave de duas partes no topo: Painel e Importações. Na parte do Painel ficam as telas por grupo e os filtros globais; a decisão está na [ADR 0008](adr/0008-navegacao-lateral-com-filtros.md) (proposta).
-- A lateral recolhe, para a War Room ocupar a tela, e vira gaveta em telas menores.
-- Os filtros valem para todas as telas e persistem na navegação. O cabeçalho da tela mostra um resumo legível ("RPA 3 · 2021 a 2025"), e a lateral tem um jeito de limpar. Quando uma tela não consegue aplicar um filtro, ela diz qual e por quê.
-- A War Room é a única exceção ao limite de 4 KPIs: ela mantém as 9 placas, porque o quadro inteiro é a leitura do dia.
+- A barra lateral (fundo `azul-claro`) tem ícone e rótulo. O botão de menu do cabeçalho alterna entre aberta (`--largura-da-lateral`) e recolhida só com ícones (`--largura-da-lateral-recolhida`), e a escolha fica salva. Abaixo de 1040px, ela vira gaveta, com o fundo escurecido e um X para fechar. A decisão está na [ADR 0008](adr/0008-navegacao-lateral-com-filtros.md) (proposta).
+- A linha de filtros fica fixa acima do conteúdo e mostra só os filtros que a tela aplica. Filtro em uso fica em `azul-claro`, com o valor escrito, e aparece "Limpar". Telas sem filtros não têm a linha.
+- Texto corrido não fica na tela: o cabeçalho tem uma frase, o detalhe vai em "Sobre esta tela" e a explicação de cada gráfico vai em "Como ler", que abre sob demanda. A nota de fonte, período e n continua sempre visível.
+- Telas com assuntos diferentes se dividem em abas, em vez de crescer para baixo.
+- A War Room tem cinco KPIs, um a mais que o limite, porque o quadro inteiro é a leitura do dia.
 - O público é um gestor no computador. Desenhe primeiro para 1280px ou mais e garanta leitura em tablet. No celular, basta que os KPIs e as tabelas sejam legíveis.
 
 ## Componentes
 
-- **Cartão de KPI:** rótulo, valor, contexto (período e comparação) e fonte em uma linha. Sem ícone decorativo.
+- **Cartão de KPI:** rótulo, valor, contexto e, quando houver, um visual (`Medidor` para proporção, `Sparkline` para tendência). Rótulo, valor, contexto e visual se alinham entre os cartões da mesma linha. Sem ícone decorativo.
+- **Cartões lado a lado:** têm sempre a mesma altura, com o rodapé (Como ler e nota) preso embaixo.
+- **Ícone:** só em `ui/components/Icone.tsx`, em traço de 1,75px. Serve para reconhecer um destino da navegação ou uma ação, nunca para enfeitar título.
 - **Botão primário:** fundo `azul-principal` e texto `branco`. Só um botão primário por área.
 - **Botão secundário:** borda `azul-principal`, texto `azul-principal` e fundo `branco`.
 - **Tabela:** cabeçalho em 12px/600, números alinhados à direita, linhas de 40px, zebra opcional com `cinza-fundo`.
@@ -205,8 +215,8 @@ Não use: pizza com mais de 3 fatias, rosca, gráfico 3D, gauge, eixo duplo e gr
 - Mapear taxa, não contagem: pedidos por mil habitantes, filtrando bairros com menos de 1.000 moradores (ver [dados.md](dados.md#cuidados-antes-de-usar)).
 - 5 classes por quantis, com os limites escritos na legenda ("12 a 30 por mil hab.").
 - Mapa de fundo claro e discreto (estilo Positron), ou nenhum. Mantenha a atribuição (OpenStreetMap e o provedor do mapa base).
-- Contorno dos bairros em `branco` com 1px; bairro em foco com contorno `preto` de 2px.
-- Hover mostra o nome do bairro, o valor e a RPA. O clique abre o detalhe do bairro ao lado do mapa, sem mudar o filtro global.
+- Contorno dos bairros em `branco` com 1px. O contorno de foco do navegador é desligado nos polígonos, porque ele desenha um retângulo em volta do bairro.
+- Hover reforça o contorno e mostra o nome do bairro, o valor e a RPA. O clique seleciona: o bairro fica em `cor-selecao`, com contorno `preto` e o nome fixo, e os demais ficam atenuados. Clicar de novo tira a seleção. O detalhe abre junto do mapa, sem mudar o filtro global, e o mesmo bairro aparece em `cor-selecao` nos outros gráficos da tela.
 - Ao lado do mapa vai sempre uma tabela ordenada com os mesmos valores. Ela é a alternativa acessível e o jeito mais rápido de ler os extremos.
 - Os dois mapas de prioridade (serviço urbano e emergência) ficam lado a lado, com a mesma escala de cores e legendas independentes.
 
@@ -243,7 +253,7 @@ A interface e os documentos não podem ter cara de template genérico nem de tex
 - Emoji em interface, documentação ou commit.
 - Travessão e meia-risca, em qualquer texto.
 - Gradientes (sobretudo roxo e azul), glassmorphism, neon, fundo escuro "tech" e brilhos.
-- Ícone decorativo em todo título ou cartão. Ícone só quando ajuda a reconhecer uma ação (filtro, download, fechar).
+- Ícone decorativo em todo título ou cartão. Ícone só quando ajuda a reconhecer uma ação ou um destino da navegação (filtro, download, fechar, itens do menu).
 - Frases de efeito e enchimento: "Insights poderosos", "Transformando dados em decisões", "Bem-vindo(a)!", "Explore o poder de...".
 - Cantos muito arredondados, sombras grandes e cartões flutuando.
 - Ilustração genérica de pessoas, cidade ou robôs. A identidade já tem logo e skyline próprios.

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useFiltrosGlobais } from '../../../../application/filtros/contexto'
 import { classeDoValor, faixasIguais } from '../../../../domain/classes'
@@ -40,6 +40,8 @@ interface Propriedades {
 
 export function IndiceDosBairros({ prioridade, criterios }: Propriedades) {
   const { filtros } = useFiltrosGlobais()
+  const [escolhido, definirEscolhido] = useState<string | null>(null)
+  const bairroEscolhido = prioridade.bairros.find((bairro) => bairro.nome === escolhido)
   const emDestaque = (bairro: BairroPriorizado) =>
     (filtros.rpas.length === 0 || filtros.rpas.includes(bairro.rpa)) &&
     (filtros.bairros.length === 0 || filtros.bairros.includes(bairro.bairroOficial))
@@ -64,19 +66,25 @@ export function IndiceDosBairros({ prioridade, criterios }: Propriedades) {
     <Colunas>
       <Cartao
         titulo="Índice de prioridade por bairro"
-        leitura="Quanto mais escuro, maior a prioridade. Hachurado: bairros com menos de 1.000 moradores, fora do índice."
+        ajuda="Quanto mais escuro, maior a prioridade. Hachurado: bairros com menos de 1.000 moradores, fora do índice. Clique num bairro."
+        nota={
+          bairroEscolhido
+            ? `${bairroEscolhido.nome}: ${bairroEscolhido.posicao}º da cidade, índice ${formatarNumero(bairroEscolhido.indice, 1)}.`
+            : 'Clique num bairro para ver a posição dele.'
+        }
       >
         <MapaCoropletico
           rotulo="Índice de prioridade por bairro do Recife. Os 15 maiores estão na lista ao lado."
           valores={valores}
           altura={500}
+          selecionado={escolhido}
+          aoClicar={(nome) => definirEscolhido((atual) => (atual === nome ? null : nome))}
         />
         <LegendaDoMapa titulo="índice de prioridade (0 a 10)" faixas={FAIXAS} casas={0} />
       </Cartao>
       <Cartao
         titulo={titulo}
         ajuda="Cada barra é a nota do bairro; as cores mostram quantos pontos vieram de cada critério."
-        leitura="Barras mais longas, prioridade maior. A cor mostra o porquê: um bairro pode subir por risco, por vulnerabilidade, por pedidos que passaram do prazo ou por problemas que voltam."
       >
         <BarrasEmpilhadas
           dados={lista.map((bairro) => ({

@@ -51,7 +51,7 @@ flowchart TB
 | Componente | Papel |
 |---|---|
 | Shell da aplicação | React Router, layout e proteção de rotas (exige sessão válida) |
-| Filtros globais | Período, RPA, bairro e categoria, na barra lateral ([ADR 0008](adr/0008-navegacao-lateral-com-filtros.md)). Estado compartilhado; cada tela diz quais não consegue aplicar e por quê |
+| Filtros globais | Período, RPA, bairro e categoria, numa linha acima do conteúdo ([ADR 0008](adr/0008-navegacao-lateral-com-filtros.md)). Estado compartilhado; cada tela mostra só os que aplica |
 | Biblioteca de gráficos | Recharts: linhas, barras, dispersão, histograma. O fluxo (Sankey) e o mapa de calor são feitos sob medida em `ui/charts` |
 | Mapa coroplético | Leaflet com o GeoJSON dos 94 bairros oficiais ([ADR 0002](adr/0002-leaflet-para-mapa-coropletico.md)) |
 | Sessão e cliente da API | Login, token e renovação, chamadas à API e cache de consultas (hook próprio `useConsulta`, porque o TanStack Query segue como proposta) |
@@ -67,12 +67,12 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 | Entrar, ajuda e definir senha | Autenticação do gestor, orientação de acesso, troca da senha temporária | Autenticação |
 | Início (`/painel`) | KPIs-síntese e volume por fonte | Indicadores |
 | War Room (`/painel/war-room`) | Estado de um dia simulado: entradas, estoque, fila e alertas | War Room |
-| Retorno e fragmentação (`/painel/retorno`) | Funil, canais, destinos e caminhos das indicações; canais e prazo da Ouvidoria | Retorno |
+| Retorno (`/painel/retorno`) | Abas: funil, canais, destinos e caminhos das indicações; canais e prazo da Ouvidoria | Retorno |
 | Reincidência (`/painel/reincidencia`) | Local repetido, intervalos e pontos crônicos | Recorrências |
 | Prazos (`/painel/prazos`) | Percentis, faixas, categorias e estoque aberto | Prazos |
 | Território (`/painel/territorio`) | Taxas por bairro, faixas e tendência, com mapa e tabela | Território |
-| Prioridade (`/painel/prioridade`) | Índice AHP com seis comparações, mapa, ranking, sensibilidade e fila de ocorrências | Prioridade |
-| Sobre os dados (`/painel/sobre-os-dados`) | Cobertura por fonte e ano, glossário e correções aplicadas | Sobre |
+| Prioridade (`/painel/prioridade`) | Abas: índice AHP com seis comparações, mapa e ranking; fila de ocorrências; método e sensibilidade | Prioridade |
+| Sobre os dados (`/painel/sobre-os-dados`) | Abas: fontes e cobertura, correções, cuidados e privacidade, glossário | Sobre |
 | Importações (`/painel/importacoes`, `/nova` e `/:id`) | Histórico, envio de arquivo, decisões, relatório e desfazer | Importações |
 | (apoio a todas) | Anos, RPAs, bairros, categorias e fontes para os filtros | Catálogos |
 | (bônus) | Demanda esperada e classificador | Modelos |

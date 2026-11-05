@@ -4,9 +4,9 @@
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: var(--espaco-4);
-  min-height: 64px;
-  padding-inline: var(--margem-lateral);
+  gap: var(--espaco-3);
+  height: var(--altura-do-topo-do-painel);
+  padding-inline: var(--espaco-3) var(--margem-lateral);
   background: var(--cor-azul-marinho);
   color: var(--cor-branco);
 }
@@ -16,26 +16,26 @@
   margin-right: auto;
 }
 
-.abrirLateral,
-.recolher {
-  min-height: 36px;
-  padding: 0 var(--espaco-3);
-  border: 1px solid rgb(255 255 255 / 0.5);
+.menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
   border-radius: var(--raio-de-campo);
   background: none;
   color: var(--cor-branco);
-  font-size: var(--texto-legenda);
-  font-weight: 600;
   cursor: pointer;
 }
 
-.abrirLateral:focus-visible,
-.recolher:focus-visible {
-  outline-color: var(--cor-branco);
+.menu:hover {
+  background: rgb(255 255 255 / 0.14);
 }
 
-.abrirLateral {
-  display: none;
+.menu:focus-visible {
+  outline-color: var(--cor-branco);
 }
 
 .corpo {
@@ -45,21 +45,26 @@
 
 .lateral {
   position: sticky;
-  top: 64px;
+  top: var(--altura-do-topo-do-painel);
+  z-index: 25;
   flex: 0 0 var(--largura-da-lateral);
-  height: calc(100vh - 64px);
-  overflow-y: auto;
+  width: var(--largura-da-lateral);
+  height: calc(100vh - var(--altura-do-topo-do-painel));
+  border-right: 1px solid var(--cor-borda);
   background: var(--cor-azul-claro);
+  transition:
+    flex-basis 160ms ease,
+    width 160ms ease;
 }
 
-.lateralFechada {
-  display: none;
+.lateralRecolhida {
+  flex-basis: var(--largura-da-lateral-recolhida);
+  width: var(--largura-da-lateral-recolhida);
 }
 
 .principal {
   flex: 1;
   min-width: 0;
-  padding: var(--espaco-5) var(--margem-lateral) var(--espaco-7);
 }
 
 .principal:focus {
@@ -69,19 +74,22 @@
 .conteudo {
   max-width: var(--largura-do-painel);
   margin-inline: auto;
+  padding: var(--espaco-5) var(--margem-lateral) var(--espaco-6);
+}
+
+.fundoDaGaveta {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lateral {
+    transition: none;
+  }
 }
 
 @media (max-width: 1039px) {
-  .abrirLateral {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .recolher {
-    display: none;
-  }
-
-  .lateral {
+  .lateral,
+  .lateralRecolhida {
     position: fixed;
     z-index: 35;
     left: 0;
@@ -92,11 +100,16 @@
     box-shadow: var(--sombra-flutuante);
   }
 
-  .lateralFechada {
-    display: block;
-  }
-
   .gavetaAberta {
     transform: none;
+  }
+
+  .fundoDaGaveta {
+    position: fixed;
+    z-index: 30;
+    inset: var(--altura-do-topo-do-painel) 0 0;
+    display: block;
+    border: 0;
+    background: rgb(0 0 0 / 0.4);
   }
 }
