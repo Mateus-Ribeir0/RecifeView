@@ -13,7 +13,7 @@ SELECT
 FROM ouro.mv_indicadores_bairro
 ORDER BY bairro_oficial
 """
-TOTAL_DE_REGISTROS = "SELECT coalesce(sum(n), 0)::int FROM ouro.mv_demanda WHERE fonte = :fonte"
+TOTAL_DE_REGISTROS = "SELECT registros FROM ouro.mv_referencia_por_fonte WHERE fonte = :fonte"
 TOTAL_DE_INDICACOES = "SELECT count(*) FROM ouro.mv_camara_indicacoes"
 FONTES_DO_REGISTRO = {
     FonteDaFila.CENTRAL_156: Fonte.CENTRAL_156.value,

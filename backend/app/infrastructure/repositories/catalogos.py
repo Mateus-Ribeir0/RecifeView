@@ -18,7 +18,7 @@ WHERE fonte = :fonte AND categoria IS NOT NULL
 GROUP BY categoria
 ORDER BY sum(n) DESC
 """
-REGISTROS_POR_FONTE = "SELECT fonte, sum(n)::int FROM ouro.mv_demanda GROUP BY fonte"
+REGISTROS_POR_FONTE = "SELECT fonte, registros FROM ouro.mv_referencia_por_fonte"
 ANOS = "SELECT coalesce(min(ano), 2012), coalesce(max(ano), 2026) FROM ouro.mv_demanda"
 REFERENCIA = """
 SELECT r.data_referencia, (
