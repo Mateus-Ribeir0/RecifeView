@@ -1,0 +1,33 @@
+.lista {
+  display: flex;
+  gap: var(--espaco-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.aba {
+  flex: none;
+  height: 40px;
+  padding-inline: var(--espaco-3);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--cor-texto-secundario);
+  font-size: var(--texto-apoio);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.aba:hover {
+  color: var(--cor-preto);
+}
+
+.aba[aria-selected='true'] {
+  border-bottom-color: var(--cor-azul-principal);
+  color: var(--cor-preto);
+  font-weight: 600;
+}
+
+.painel {
+  margin-top: var(--espaco-4);
+}

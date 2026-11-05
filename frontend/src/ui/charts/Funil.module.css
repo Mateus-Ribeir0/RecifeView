@@ -1,0 +1,60 @@
+.funil {
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+.etapa {
+  display: grid;
+  gap: var(--espaco-1);
+}
+
+.perda {
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+  color: var(--cor-texto-terciario);
+}
+
+.linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}
+
+.rotulo {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.numero {
+  font-size: var(--texto-corpo);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.parte {
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+}
+
+.trilho {
+  height: 20px;
+  overflow: hidden;
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-fundo-alternativo);
+}
+
+.barra {
+  display: block;
+  height: 100%;
+  background: var(--cor-mapa-2);
+}
+
+.barra[data-etapa='1'] {
+  background: var(--cor-azul-principal);
+}
+
+.barra[data-etapa='2'] {
+  background: var(--cor-azul-marinho);
+}

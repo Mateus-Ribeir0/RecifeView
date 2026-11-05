@@ -1,0 +1,49 @@
+.barra {
+  display: flex;
+  gap: 2px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--raio-de-campo);
+}
+
+.parte {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 2px;
+  color: var(--cor-branco);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.legenda {
+  display: grid;
+  gap: var(--espaco-1);
+  margin-top: var(--espaco-3);
+  font-size: 13px;
+}
+
+.legenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.marca {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.nome {
+  flex: 1;
+  min-width: 0;
+}
+
+.detalhe {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
