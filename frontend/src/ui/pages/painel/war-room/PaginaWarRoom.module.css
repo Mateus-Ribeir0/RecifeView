@@ -1,0 +1,129 @@
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-4);
+}
+
+.legendaDosControles {
+  flex: 1 1 320px;
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+.data {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-4);
+}
+
+.data h2 {
+  font-size: var(--texto-pagina);
+  font-weight: 700;
+}
+
+.selo {
+  padding: 2px var(--espaco-2);
+  border: 1px solid var(--cor-azul-principal);
+  border-radius: var(--raio-de-campo);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  color: var(--cor-azul-escuro);
+}
+
+.progresso {
+  width: 100%;
+  height: 8px;
+  margin-top: var(--espaco-2);
+  accent-color: var(--cor-azul-principal);
+}
+
+.placas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-4);
+}
+
+.placa {
+  min-height: 118px;
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-left: 6px solid var(--cor-azul-principal);
+  border-radius: var(--raio-de-cartao);
+  cursor: help;
+}
+
+.placaEmAlerta {
+  border-left-color: var(--cor-alerta-texto);
+  background: var(--cor-alerta-fundo);
+}
+
+.rotuloDaPlaca,
+.detalheDaPlaca {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.placaEmAlerta .rotuloDaPlaca,
+.placaEmAlerta .detalheDaPlaca {
+  color: var(--cor-preto);
+}
+
+.valorDaPlaca {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.duasColunas,
+.tresColunas {
+  display: grid;
+  gap: var(--espaco-4);
+  align-items: start;
+  margin-top: var(--espaco-4);
+}
+
+@media (min-width: 1100px) {
+  .duasColunas {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  }
+
+  .tresColunas {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.maisEntradas {
+  display: grid;
+  gap: var(--espaco-1);
+  font-size: 13px;
+}
+
+.alertas {
+  margin-top: var(--espaco-5);
+}
+
+.alertas h2 {
+  font-size: var(--texto-corpo);
+  font-weight: 600;
+}
+
+.alertas ul {
+  display: grid;
+  gap: var(--espaco-1);
+  margin-top: var(--espaco-2);
+  padding-left: var(--espaco-5);
+  font-size: var(--texto-apoio);
+  list-style: disc;
+}
+
+.aviso,
+.leitura {
+  margin-top: var(--espaco-3);
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
