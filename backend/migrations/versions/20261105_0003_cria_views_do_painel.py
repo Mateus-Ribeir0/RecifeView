@@ -71,7 +71,10 @@ VIEWS = (
     View(
         "mv_referencia_por_fonte",
         """
-        SELECT fonte, max(ano_do_arquivo) - 1 AS primeiro_ano_recente
+        SELECT
+            fonte,
+            max(ano_do_arquivo) - 1 AS primeiro_ano_recente,
+            count(*)::int AS registros
         FROM ouro.fato_demanda
         GROUP BY fonte
         """,

@@ -15,7 +15,7 @@ CROSS JOIN LATERAL jsonb_each_text(i.resultado -> 'correcoes') AS correcao
 WHERE i.status = 'CONCLUIDA'
 GROUP BY correcao.key ORDER BY 2 DESC
 """
-REGISTROS = "SELECT coalesce(sum(n), 0)::int FROM ouro.mv_demanda"
+REGISTROS = "SELECT coalesce(sum(registros), 0)::int FROM ouro.mv_referencia_por_fonte"
 
 
 class SobreRepositorySql:
