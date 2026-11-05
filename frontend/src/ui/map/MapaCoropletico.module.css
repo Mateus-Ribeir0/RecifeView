@@ -5,6 +5,26 @@
   isolation: isolate;
 }
 
+.mapa :global(.leaflet-interactive) {
+  outline: none;
+}
+
+.semClique :global(.leaflet-interactive) {
+  cursor: default;
+}
+
+.mapa :global(.leaflet-bar) {
+  border: 1px solid var(--cor-borda);
+  box-shadow: none;
+}
+
+.mapa :global(.leaflet-bar a) {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  color: var(--cor-preto);
+}
+
 .atribuicao {
   margin-top: var(--espaco-1);
   font-size: 11px;
@@ -16,6 +36,24 @@
   border-radius: var(--raio-de-campo);
   box-shadow: var(--sombra-flutuante);
   font-family: var(--fonte-base);
+  width: max-content;
+  max-width: 260px;
   font-size: var(--texto-legenda);
   white-space: pre-line;
+}
+
+.rotuloFixo {
+  padding: 2px var(--espaco-2);
+  border: 0;
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-preto);
+  box-shadow: none;
+  color: var(--cor-branco);
+  font-family: var(--fonte-base);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+}
+
+.rotuloFixo::before {
+  display: none;
 }

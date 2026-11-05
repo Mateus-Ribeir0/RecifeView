@@ -10,22 +10,34 @@
 
 .itens {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--espaco-1) var(--espaco-3);
-  font-size: var(--texto-legenda);
-  font-weight: 500;
+  gap: 2px;
 }
 
 .itens li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espaco-1);
+  display: grid;
+  flex: 1 1 0;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itens .semDadoItem {
+  flex: none;
+  margin-left: var(--espaco-3);
+  white-space: nowrap;
 }
 
 .marca {
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--cor-borda);
+  height: 10px;
+}
+
+.limites {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-1);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+  font-variant-numeric: tabular-nums;
 }
 
 .semDado {

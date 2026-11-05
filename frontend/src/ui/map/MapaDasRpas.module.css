@@ -1,0 +1,24 @@
+.mapa {
+  display: block;
+  width: 132px;
+  height: auto;
+}
+
+.bairro {
+  fill: var(--cor-mapa-2);
+  stroke: var(--cor-branco);
+  stroke-width: 0.6;
+  cursor: pointer;
+}
+
+.mapa[data-com-escolha] .bairro {
+  fill: var(--cor-borda);
+}
+
+.mapa .bairro:hover {
+  fill: var(--cor-mapa-3);
+}
+
+.mapa .bairro[data-ativa] {
+  fill: var(--cor-azul-principal);
+}

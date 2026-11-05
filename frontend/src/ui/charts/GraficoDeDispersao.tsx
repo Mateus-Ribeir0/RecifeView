@@ -24,6 +24,7 @@ interface Propriedades {
   rotuloX: string
   rotuloY: string
   escalaLog?: boolean
+  destacado?: string | null
 }
 
 interface DicaDeDispersao {
@@ -32,6 +33,8 @@ interface DicaDeDispersao {
 }
 
 const MARCAS_DA_ESCALA_LOG = [0, 1, 3, 10, 30, 100]
+const RAIO_DO_PONTO = 5
+const RAIO_EM_DESTAQUE = 8
 
 function emEscalaLog(valor: number): number {
   return Math.log10(1 + Math.max(valor, 0))
@@ -47,10 +50,16 @@ export function GraficoDeDispersao({
   rotuloX,
   rotuloY,
   escalaLog,
+  destacado,
 }: Propriedades) {
   const transformar = escalaLog ? emEscalaLog : (valor: number) => valor
   const dados = pontos.map((ponto) => ({ ...ponto, yGrafico: transformar(ponto.y) }))
   const linha = tendencia.map((ponto) => ({ x: ponto.x, yGrafico: transformar(ponto.y) }))
+
+  function corDoPonto(ponto: PontoDeBairro | undefined): string {
+    if (ponto?.nome === destacado) return 'var(--cor-selecao)'
+    return ponto?.emDestaque ? COR.principal : COR.claro
+  }
 
   function desenharDica({ active, payload }: DicaDeDispersao) {
     const ponto = payload?.[0]?.payload
@@ -107,9 +116,9 @@ export function GraficoDeDispersao({
             <circle
               cx={propriedades.cx}
               cy={propriedades.cy}
-              r={5}
-              fill={propriedades.payload?.emDestaque ? COR.principal : COR.claro}
-              stroke={COR.fundo}
+              r={propriedades.payload?.nome === destacado ? RAIO_EM_DESTAQUE : RAIO_DO_PONTO}
+              fill={corDoPonto(propriedades.payload)}
+              stroke={propriedades.payload?.nome === destacado ? COR.texto : COR.fundo}
               strokeWidth={1}
             />
           )}

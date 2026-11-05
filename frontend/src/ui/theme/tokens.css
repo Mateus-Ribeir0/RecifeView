@@ -33,7 +33,11 @@
   --cor-fonte-defesa-civil: #9f1853;
   --cor-fonte-sedec: #8a3800;
 
-  --largura-da-lateral: 288px;
+  --cor-selecao: #ff832b;
+
+  --altura-do-topo-do-painel: 56px;
+  --largura-da-lateral: 248px;
+  --largura-da-lateral-recolhida: 68px;
   --largura-do-painel: 1440px;
 
   --fonte-base: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
