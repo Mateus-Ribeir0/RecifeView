@@ -27,6 +27,15 @@
   --cor-mapa-4: #0f62fe;
   --cor-mapa-5: #062a5f;
 
+  --cor-fonte-156: #0f62fe;
+  --cor-fonte-ouvidoria: #005d5d;
+  --cor-fonte-camara: #b28600;
+  --cor-fonte-defesa-civil: #9f1853;
+  --cor-fonte-sedec: #8a3800;
+
+  --largura-da-lateral: 288px;
+  --largura-do-painel: 1440px;
+
   --fonte-base: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --texto-destaque: 52px;

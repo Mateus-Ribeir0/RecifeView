@@ -1,0 +1,27 @@
+.esqueleto {
+  height: 320px;
+  margin-top: var(--espaco-5);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-fundo-alternativo);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .esqueleto {
+    animation: pulsar 1.2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes pulsar {
+  to {
+    opacity: 0.5;
+  }
+}
+
+.vazio {
+  margin-top: var(--espaco-5);
+  padding: var(--espaco-5);
+  border: 1px dashed var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-cartao);
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}

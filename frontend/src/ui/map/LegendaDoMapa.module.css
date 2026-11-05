@@ -1,0 +1,39 @@
+.legenda {
+  margin-top: var(--espaco-2);
+}
+
+.titulo {
+  margin-bottom: var(--espaco-1);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+}
+
+.itens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1) var(--espaco-3);
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+}
+
+.itens li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+}
+
+.marca {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--cor-borda);
+}
+
+.semDado {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--cor-contexto),
+    var(--cor-contexto) 2px,
+    var(--cor-branco) 2px,
+    var(--cor-branco) 4px
+  );
+}

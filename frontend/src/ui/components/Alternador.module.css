@@ -1,0 +1,52 @@
+.linha {
+  display: flex;
+  align-items: center;
+  margin-top: var(--espaco-4);
+}
+
+.alternador {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: var(--texto-apoio);
+  cursor: pointer;
+}
+
+.alternador input {
+  position: absolute;
+  opacity: 0;
+}
+
+.trilho {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--cor-borda-de-campo);
+  transition: background-color 120ms ease;
+}
+
+.trilho::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cor-branco);
+  transition: transform 120ms ease;
+}
+
+.alternador input:checked + .trilho {
+  background: var(--cor-azul-principal);
+}
+
+.alternador input:checked + .trilho::after {
+  transform: translateX(16px);
+}
+
+.alternador input:focus-visible + .trilho {
+  outline: 2px solid var(--cor-azul-escuro);
+  outline-offset: 2px;
+}

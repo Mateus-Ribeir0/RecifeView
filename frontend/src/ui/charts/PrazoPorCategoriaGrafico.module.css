@@ -1,0 +1,105 @@
+.lista {
+  display: grid;
+  gap: 2px;
+}
+
+.linha,
+.eixo {
+  display: grid;
+  grid-template-columns: minmax(120px, 220px) 1fr;
+  gap: var(--espaco-3);
+  align-items: center;
+}
+
+.linha {
+  min-height: 28px;
+}
+
+.linha:hover {
+  background: var(--cor-azul-claro);
+}
+
+.nome {
+  font-size: var(--texto-legenda);
+  text-align: right;
+}
+
+.trilho {
+  position: relative;
+  height: 28px;
+  margin-right: var(--espaco-4);
+}
+
+.grade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--cor-borda);
+}
+
+.faixa {
+  position: absolute;
+  top: 12px;
+  height: 4px;
+  background: var(--cor-mapa-2);
+}
+
+.mediana,
+.p90 {
+  position: absolute;
+  top: 8px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border: 2px solid var(--cor-branco);
+  border-radius: 50%;
+}
+
+.mediana {
+  background: var(--cor-mapa-3);
+}
+
+.p90 {
+  background: var(--cor-azul-marinho);
+}
+
+.marcas {
+  position: relative;
+  height: 20px;
+  margin-right: var(--espaco-4);
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+  color: var(--cor-texto-terciario);
+}
+
+.marcas span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.legenda {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+  color: var(--cor-texto-terciario);
+}
+
+.chaveMediana,
+.chaveP90 {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.chaveMediana {
+  background: var(--cor-mapa-3);
+}
+
+.chaveP90 {
+  margin-left: var(--espaco-3);
+  background: var(--cor-azul-marinho);
+}

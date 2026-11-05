@@ -1,0 +1,21 @@
+.mapa {
+  width: 100%;
+  background: var(--cor-branco);
+  font-family: var(--fonte-base);
+  isolation: isolate;
+}
+
+.atribuicao {
+  margin-top: var(--espaco-1);
+  font-size: 11px;
+  color: var(--cor-texto-terciario);
+}
+
+.dica {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-campo);
+  box-shadow: var(--sombra-flutuante);
+  font-family: var(--fonte-base);
+  font-size: var(--texto-legenda);
+  white-space: pre-line;
+}

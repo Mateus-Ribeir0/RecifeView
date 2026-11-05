@@ -22,3 +22,19 @@ export function carregarBairros(): Promise<readonly Bairro[]> {
   )
   return carregamento
 }
+
+export interface FeicaoDeBairro {
+  type: 'Feature'
+  properties: { codigo: number; nome: string; rpa: number }
+  geometry: { type: string; coordinates: unknown }
+}
+
+export interface MalhaDosBairros {
+  type: 'FeatureCollection'
+  features: FeicaoDeBairro[]
+}
+
+export async function carregarMalha(): Promise<MalhaDosBairros> {
+  const modulo = await import('./dados/bairros-recife.json')
+  return { type: 'FeatureCollection', features: modulo.default.features as FeicaoDeBairro[] }
+}

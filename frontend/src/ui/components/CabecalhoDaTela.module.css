@@ -1,0 +1,26 @@
+.cabecalho {
+  display: grid;
+  gap: var(--espaco-1);
+}
+
+.titulo {
+  font-size: var(--texto-pagina);
+  font-weight: 700;
+}
+
+.pergunta {
+  max-width: 900px;
+  margin-bottom: var(--espaco-1);
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}
+
+.recorte {
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+  color: var(--cor-texto-terciario);
+}
+
+.atualizando {
+  color: var(--cor-azul-escuro);
+}
