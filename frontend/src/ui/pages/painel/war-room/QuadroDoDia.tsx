@@ -13,7 +13,6 @@ import type { FilaDoDia, QuadroDoDia as Quadro } from '../../../../domain/warRoo
 import { BarrasAgrupadas } from '../../../charts/BarrasAgrupadas'
 import { BarrasHorizontais } from '../../../charts/BarrasHorizontais'
 import { COR } from '../../../charts/estilo'
-import { BarraNaCelula } from '../../../components/BarraNaCelula'
 import { Cartao } from '../../../components/Cartao'
 import { GradeDeKpis } from '../../../components/GradeDeKpis'
 import { KpiCard } from '../../../components/KpiCard'
@@ -24,7 +23,6 @@ import { MapaCoropletico, type ValorDoBairro } from '../../../map/MapaCoropletic
 import estilos from './PaginaWarRoom.module.css'
 
 const NOTA_ALTA = 7
-const NOTA_MAXIMA = 10
 const ALERTA_DE_VARIACAO = 10
 const ALTURA_DO_MAPA = 470
 const SERIES = [
@@ -140,13 +138,7 @@ function colunasDaFila(nomes: ReadonlyMap<string, string>): ColunaDaTabela<FilaD
       titulo: 'Nota',
       numerica: true,
       ajuda: 'Nota de prioridade de 0 a 10 pelo AHP. Maior, mais urgente.',
-      valor: (item) => (
-        <BarraNaCelula
-          valor={item.nota}
-          maximo={NOTA_MAXIMA}
-          texto={formatarNumero(item.nota, 1)}
-        />
-      ),
+      valor: (item) => <strong>{formatarNumero(item.nota, 1)}</strong>,
     },
     { titulo: 'Serviço', valor: (item) => nomeDaCategoria(item.servico) },
     { titulo: 'Bairro', valor: (item) => nomes.get(item.bairroOficial ?? '') ?? 'não informado' },
