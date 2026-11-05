@@ -192,7 +192,7 @@ def test_arquivo_novo_atualiza_e_desfazer_restaura(ambiente: Ambiente, tmp_path:
     )
     ambiente.confirmar(ambiente.importar(antigo))
     novo = arquivo_156(
-        tmp_path, "156_2026.csv", [linha("10", "2025-03-01", "ATENDIDA", "2025-04-01")]
+        tmp_path, "156_republicado_2025.csv", [linha("10", "2025-03-01", "ATENDIDA", "2025-04-01")]
     )
 
     importacao = ambiente.importar(novo)
@@ -214,10 +214,25 @@ def test_arquivo_novo_atualiza_e_desfazer_restaura(ambiente: Ambiente, tmp_path:
     assert ambiente.contar("SELECT count(*) FROM ouro.fato_demanda_substituida") == 0
 
 
+def test_arquivo_de_outro_ano_nao_substitui_a_linha_do_ano_anterior(
+    ambiente: Ambiente, tmp_path: Path
+) -> None:
+    antigo = arquivo_156(tmp_path, "156_2025.csv", [linha("10", "2025-03-01", "EXECUCAO")])
+    ambiente.confirmar(ambiente.importar(antigo))
+    novo = arquivo_156(tmp_path, "156_2026.csv", [linha("10", "2025-03-01", "EXECUCAO")])
+
+    final = ambiente.confirmar(ambiente.importar(novo))
+
+    assert final.resultado["novas"] == 1
+    assert ambiente.contar("SELECT count(*) FROM ouro.fato_demanda") == 2
+
+
 def test_manter_atuais_nao_mexe_na_base(ambiente: Ambiente, tmp_path: Path) -> None:
     antigo = arquivo_156(tmp_path, "156_2025.csv", [linha("10", "2025-03-01", "EXECUCAO")])
     ambiente.confirmar(ambiente.importar(antigo))
-    novo = arquivo_156(tmp_path, "156_2026.csv", [linha("10", "2025-03-01", "ATENDIDA")])
+    novo = arquivo_156(
+        tmp_path, "156_republicado_2025.csv", [linha("10", "2025-03-01", "ATENDIDA")]
+    )
 
     importacao = ambiente.importar(novo)
     respostas = RespostasDePendencias(

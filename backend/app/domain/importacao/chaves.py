@@ -7,17 +7,28 @@ from app.domain.fontes import Fonte
 from app.domain.importacao.conversao import calcular_hash
 
 ORIGEM_DA_CHAVE_POR_FONTE = {
-    Fonte.CENTRAL_156.value: ("servico_codigo", "data_abertura", "bairro_oficial"),
+    Fonte.CENTRAL_156.value: (
+        "ano_do_arquivo",
+        "servico_codigo",
+        "data_abertura",
+        "bairro_oficial",
+    ),
     Fonte.DEFESA_CIVIL.value: (
+        "ano_do_arquivo",
         "data_abertura",
         "data_ult_movimento",
         "categoria",
         "tipo_registro",
         "bairro_oficial",
     ),
-    Fonte.OUVIDORIA.value: ("data_abertura", "orgao", "servico", "tipo_registro"),
+    Fonte.OUVIDORIA.value: ("ano_do_arquivo", "data_abertura", "orgao", "servico", "tipo_registro"),
 }
-ORIGEM_DA_CHAVE_SEM_IDENTIFICADOR = ("data_abertura", "categoria", "bairro_oficial")
+ORIGEM_DA_CHAVE_SEM_IDENTIFICADOR = (
+    "ano_do_arquivo",
+    "data_abertura",
+    "categoria",
+    "bairro_oficial",
+)
 
 
 @dataclass(frozen=True)
