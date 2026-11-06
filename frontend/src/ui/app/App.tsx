@@ -2,13 +2,14 @@ import { createBrowserRouter, Outlet, ScrollRestoration } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 
 import { ProvedorDeSessao } from '../../application/autenticacao/ProvedorDeSessao'
+import { ContextoDasContribuicoes } from '../../application/contribuicoes/contexto'
 import { PaginaAjudaDeAcesso } from '../pages/ajuda-de-acesso/PaginaAjudaDeAcesso'
 import { PaginaDefinirSenha } from '../pages/definir-senha/PaginaDefinirSenha'
 import { PaginaEntrar } from '../pages/entrar/PaginaEntrar'
 import { PaginaInicial } from '../pages/inicio/PaginaInicial'
 import { PaginaNaoEncontrada } from '../pages/nao-encontrada/PaginaNaoEncontrada'
 import { RotaProtegida } from './RotaProtegida'
-import { servicoDeAutenticacao } from './servicos'
+import { servicoDeAutenticacao, servicoDeContribuicoes } from './servicos'
 import { SoParaVisitantes } from './SoParaVisitantes'
 
 function Raiz() {
@@ -91,6 +92,13 @@ const roteador = createBrowserRouter([
                 }),
               },
               {
+                path: 'contribuicoes',
+                lazy: async () => ({
+                  Component: (await import('../pages/contribuicoes/PaginaContribuicoes'))
+                    .PaginaContribuicoes,
+                }),
+              },
+              {
                 path: 'importacoes',
                 lazy: async () => ({
                   Component: (await import('../pages/importacoes/PaginaHistorico')).PaginaHistorico,
@@ -122,7 +130,9 @@ const roteador = createBrowserRouter([
 export function App() {
   return (
     <ProvedorDeSessao servico={servicoDeAutenticacao}>
-      <RouterProvider router={roteador} />
+      <ContextoDasContribuicoes value={servicoDeContribuicoes}>
+        <RouterProvider router={roteador} />
+      </ContextoDasContribuicoes>
     </ProvedorDeSessao>
   )
 }
