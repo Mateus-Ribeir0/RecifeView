@@ -7,6 +7,7 @@ class Fonte(StrEnum):
     OUVIDORIA = "OUVIDORIA"
     SEDEC = "SEDEC_CHAMADOS"
     CAMARA = "CAMARA_REQUERIMENTOS"
+    FORMULARIO = "FORMULARIO_PUBLICO"
 
 
 class Iniciativa(StrEnum):
@@ -22,4 +23,5 @@ ROTULOS_DAS_FONTES = {
     Fonte.OUVIDORIA: "Ouvidoria",
     Fonte.SEDEC: "SEDEC, áreas de risco",
     Fonte.CAMARA: "Câmara Municipal",
+    Fonte.FORMULARIO: "Formulário público",
 }

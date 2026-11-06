@@ -1,5 +1,14 @@
+from dataclasses import dataclass
 from datetime import date
 from typing import NamedTuple
+
+
+@dataclass(frozen=True)
+class EnderecoDaLinha:
+    """Vive só durante a leitura do arquivo: nunca é guardado nem exibido."""
+
+    logradouro: str
+    numero: str
 
 
 class RegistroDeDemanda(NamedTuple):
