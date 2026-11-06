@@ -47,7 +47,7 @@ Adotar a vinculação de registros em camadas, nesta ordem, com regras puras em 
 **Privacidade:**
 
 - O formulário não pede identificação e recusa CPF, telefone e e-mail no texto.
-- Endereço e detalhe ficam só em `app.contribuicao`, são vistos apenas pela gestão autenticada, com auditoria, e são apagados em 90 dias. O prazo cobre a espera até o arquivo oficial ser publicado.
+- Endereço e detalhe ficam só em `app.contribuicao`, são vistos apenas pela gestão autenticada, com auditoria, e são apagados em 90 dias, por uma tarefa que roda a cada 6 horas dentro da API. O prazo cobre a espera até o arquivo oficial ser publicado.
 - O pacote, a base analítica e o histórico de importações não recebem endereço nem texto.
 - Esse é o primeiro dado que o sistema recebe direto do público. O grupo precisa revisar a base legal e o aviso antes de publicar.
 
@@ -78,4 +78,4 @@ Com 0,65, variações de prefixo e título foram reconhecidas em 100% dos casos,
 - Sinônimos não são tratados. O formulário reduz esse risco porque o serviço é escolhido numa lista, e não digitado. Se o texto livre ganhar peso, a busca vetorial pode entrar atrás da mesma comparação, com um modelo local.
 - A comparação entre duas fontes oficiais continua fora do escopo, porque elas não têm endereço comparável em comum na base.
 - Uma pessoa que recarrega a página e envia de novo gera outra chave e conta como mais um relato. O sistema não identifica pessoas de propósito.
-- O limite de envios vive na memória de um processo. Com mais de uma instância da API, ele precisa de outra implementação da porta.
+- O limite de envios vive na memória de um processo e usa o endereço da conexão. Com mais de uma instância da API ou atrás de um proxy, ele precisa de outra implementação da porta.
