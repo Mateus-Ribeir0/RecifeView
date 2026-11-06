@@ -1,8 +1,20 @@
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, field, replace
+from datetime import date, datetime
 from pathlib import Path
+from uuid import UUID
 
+from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
 from app.application.casos_de_uso.importacoes.servicos import ServicosDeImportacao
+from app.application.portas.contribuicoes import (
+    BairroDoFormulario,
+    DecisaoRegistrada,
+    OcorrenciaDoPacote,
+    PaginaDeOcorrencias,
+    ParNovo,
+    ParParaRevisar,
+    ResumoDasContribuicoes,
+)
 from app.application.portas.importacoes import (
     ArquivoRecebido,
     ComparacaoComABase,
@@ -10,9 +22,12 @@ from app.application.portas.importacoes import (
     NovaImportacao,
     PaginaDeImportacoes,
     PaginaDeRegistros,
+    PlanoDeCarga,
+    RegistroNoMesmoLocal,
     ResultadoDaCarga,
 )
-from app.domain.importacao.decisoes import PoliticaDeRepetidos
+from app.domain.contribuicao.conferencia import RelatoGuardado
+from app.domain.contribuicao.contribuicao import Contribuicao, DecisaoDoPar
 from app.domain.importacao.importacao import Importacao, StatusDaImportacao
 from app.domain.importacao.normalizador import Referencias
 from app.domain.importacao.registro import RegistroDeDemanda
@@ -125,19 +140,18 @@ class CarregadorFalso:
     comparacao: ComparacaoComABase = field(default_factory=ComparacaoComABase)
     carregados: list[RegistroDeDemanda] = field(default_factory=list)
     desfeitas: list[int] = field(default_factory=list)
+    ultimo_plano: PlanoDeCarga | None = None
 
     def comparar_com_a_base(self, assinaturas: Iterable[tuple[int, int]]) -> ComparacaoComABase:
         list(assinaturas)
         return self.comparacao
 
     def carregar(
-        self,
-        importacao_id: int,
-        registros: Iterable[RegistroDeDemanda],
-        politica: PoliticaDeRepetidos,
+        self, importacao_id: int, registros: Iterable[RegistroDeDemanda], plano: PlanoDeCarga
     ) -> ResultadoDaCarga:
         self.carregados = list(registros)
-        return ResultadoDaCarga(novas=len(self.carregados))
+        self.ultimo_plano = plano
+        return ResultadoDaCarga(novas=len(self.carregados), retiradas=len(plano.retirada.ids))
 
     def desfazer(self, importacao_id: int) -> None:
         self.desfeitas.append(importacao_id)
@@ -170,6 +184,112 @@ class FilaImediataDeTeste:
         tarefa()
 
 
+@dataclass
+class ContribuicoesEmMemoria:
+    itens: list[Contribuicao] = field(default_factory=list)
+    pares: list[ParNovo] = field(default_factory=list)
+    decisoes: dict[int, DecisaoDoPar] = field(default_factory=dict)
+    relatos: list[RelatoGuardado] = field(default_factory=list)
+    prontas: list[OcorrenciaDoPacote] = field(default_factory=list)
+    no_pacote: list[UUID] = field(default_factory=list)
+    na_base: list[RegistroNoMesmoLocal] = field(default_factory=list)
+    limites_de_expurgo: list[datetime] = field(default_factory=list)
+
+    def buscar_por_chave_de_envio(self, chave: str) -> Contribuicao | None:
+        return next((item for item in self.itens if item.chave_de_envio == chave), None)
+
+    def candidatas(self, bairro: str, categoria: str, desde: date) -> list[Contribuicao]:
+        return [
+            item
+            for item in self.itens
+            if item.bairro_oficial == bairro
+            and item.categoria == categoria
+            and item.data_relato >= desde
+            and item.principal_id is None
+        ]
+
+    def inserir(self, contribuicao: Contribuicao, pares: Sequence[ParNovo]) -> Contribuicao:
+        self.itens.append(contribuicao)
+        self.pares.extend(pares)
+        return contribuicao
+
+    def resumir(self) -> ResumoDasContribuicoes:
+        return ResumoDasContribuicoes(relatos=len(self.itens))
+
+    def listar_ocorrencias(self, limite: int, deslocamento: int) -> PaginaDeOcorrencias:
+        return PaginaDeOcorrencias([], 0)
+
+    def listar_pares_abertos(self, limite: int) -> list[ParParaRevisar]:
+        return []
+
+    def decidir_par(self, par_id: int, decisao: DecisaoRegistrada) -> bool:
+        if par_id in self.decisoes or par_id >= len(self.pares):
+            return False
+        self.decisoes[par_id] = decisao.decisao
+        return True
+
+    def contar_pares_abertos(self) -> int:
+        return len(self.pares) - len(self.decisoes)
+
+    def prontas_para_pacote(self) -> list[OcorrenciaDoPacote]:
+        return self.prontas
+
+    def marcar_no_pacote(self, ids: Sequence[UUID], importacao_id: int) -> None:
+        self.no_pacote.extend(ids)
+
+    def expurgar_enderecos(self, recebidas_ate: datetime, agora: datetime) -> int:
+        self.limites_de_expurgo.append(recebidas_ate)
+        return 0
+
+    def relatos_guardados(self) -> list[RelatoGuardado]:
+        return self.relatos
+
+    def ids_do_pacote(self, importacao_id: int) -> list[UUID]:
+        return self.no_pacote
+
+    def registros_no_mesmo_local(self, ids_locais: list[str]) -> list[RegistroNoMesmoLocal]:
+        return [item for item in self.na_base if item.id_local in ids_locais]
+
+
+@dataclass
+class ReferenciaFalsa:
+    vias: dict[str, list[str]] = field(default_factory=dict)
+    somadas: list[tuple[str, str, int]] = field(default_factory=list)
+
+    def bairros(self) -> list[BairroDoFormulario]:
+        return [BairroDoFormulario("AFOGADOS", "Afogados", "5")]
+
+    def logradouros(self, bairro: str) -> list[str]:
+        return self.vias.get(bairro, [])
+
+    def somar_logradouros(self, vias: Iterable[tuple[str, str, int]]) -> int:
+        self.somadas = list(vias)
+        return len(self.somadas)
+
+
+@dataclass
+class LimiteFalso:
+    aberto: bool = True
+
+    def permitir(self, origem: str) -> bool:
+        return self.aberto
+
+
+def criar_servicos_de_contribuicoes(
+    importacao: ServicosDeImportacao, sal: str | None = None
+) -> ServicosDeContribuicoes:
+    contribuicoes = importacao.contribuicoes
+    assert isinstance(contribuicoes, ContribuicoesEmMemoria)
+    return ServicosDeContribuicoes(
+        contribuicoes=contribuicoes,
+        referencia=ReferenciaFalsa({"AFOGADOS": ["RUA DA ESPERANCA FICTICIA"]}),
+        limite=LimiteFalso(),
+        relogio=RelogioFixo(),
+        importacao=importacao,
+        sal=sal,
+    )
+
+
 def criar_servicos(tabela: TabelaFalsa) -> ServicosDeImportacao:
     return ServicosDeImportacao(
         importacoes=ImportacoesEmMemoria(),
@@ -180,4 +300,5 @@ def criar_servicos(tabela: TabelaFalsa) -> ServicosDeImportacao:
         referencias=ReferenciasFalsas(),
         fila=FilaImediataDeTeste(),
         relogio=RelogioFixo(),
+        contribuicoes=ContribuicoesEmMemoria(),
     )

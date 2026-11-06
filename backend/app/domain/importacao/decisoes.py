@@ -22,6 +22,11 @@ class PoliticaDeDuplicados(StrEnum):
     MANTER_UM = "manter_um"
 
 
+class PoliticaEntreCanais(StrEnum):
+    MANTER_O_REGISTRO_OFICIAL = "manter_o_registro_oficial"
+    MANTER_OS_DOIS = "manter_os_dois"
+
+
 class PoliticaDeDatasInvalidas(StrEnum):
     DEIXAR_VAZIA = "deixar_vazia"
     DESCARTAR_LINHA = "descartar_linha"
@@ -41,6 +46,8 @@ class Decisoes:
     datas_invalidas: PoliticaDeDatasInvalidas | None = None
     repetidos_na_base: PoliticaDeRepetidos | None = None
     repetidos_no_arquivo: PoliticaDeDuplicados | None = None
+    coincidencias_certas: PoliticaEntreCanais | None = None
+    coincidencias_provaveis: PoliticaEntreCanais | None = None
 
     def para_dicionario(self) -> dict[str, Any]:
         dados = asdict(self)
@@ -64,6 +71,10 @@ class Decisoes:
             datas_invalidas=_opcional(PoliticaDeDatasInvalidas, dados.get("datas_invalidas")),
             repetidos_na_base=_opcional(PoliticaDeRepetidos, dados.get("repetidos_na_base")),
             repetidos_no_arquivo=_opcional(PoliticaDeDuplicados, dados.get("repetidos_no_arquivo")),
+            coincidencias_certas=_opcional(PoliticaEntreCanais, dados.get("coincidencias_certas")),
+            coincidencias_provaveis=_opcional(
+                PoliticaEntreCanais, dados.get("coincidencias_provaveis")
+            ),
         )
 
 

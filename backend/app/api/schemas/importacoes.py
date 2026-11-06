@@ -10,6 +10,7 @@ from app.domain.importacao.decisoes import (
     PoliticaDeDatasInvalidas,
     PoliticaDeDuplicados,
     PoliticaDeRepetidos,
+    PoliticaEntreCanais,
 )
 from app.domain.importacao.importacao import Importacao
 
@@ -69,6 +70,7 @@ class ResumoDaValidacaoResposta(BaseModel):
     descartes: dict[str, int] = Field(default_factory=dict)
     correcoes: dict[str, int] = Field(default_factory=dict)
     fontes: dict[str, int] = Field(default_factory=dict)
+    pente_fino: dict[str, int] = Field(default_factory=dict)
 
 
 class PreviaResposta(BaseModel):
@@ -89,11 +91,13 @@ class ResultadoResposta(BaseModel):
     atualizadas: int = 0
     iguais: int = 0
     ignoradas: int = 0
+    retiradas: int = 0
     repetidas_no_arquivo: int = 0
     sem_id_local: int = 0
     descartes: dict[str, int] = Field(default_factory=dict)
     correcoes: dict[str, int] = Field(default_factory=dict)
     fontes: dict[str, int] = Field(default_factory=dict)
+    pente_fino: dict[str, int] = Field(default_factory=dict)
 
 
 class DecisoesResposta(BaseModel):
@@ -107,6 +111,8 @@ class DecisoesResposta(BaseModel):
     datas_invalidas: str | None
     repetidos_na_base: str | None
     repetidos_no_arquivo: str | None
+    coincidencias_certas: str | None
+    coincidencias_provaveis: str | None
 
 
 class ImportacaoResumoResposta(BaseModel):
@@ -203,6 +209,8 @@ class RespostasDePendenciasEntrada(BaseModel):
     datas_invalidas: PoliticaDeDatasInvalidas | None = None
     repetidos_na_base: PoliticaDeRepetidos | None = None
     repetidos_no_arquivo: PoliticaDeDuplicados | None = None
+    coincidencias_certas: PoliticaEntreCanais | None = None
+    coincidencias_provaveis: PoliticaEntreCanais | None = None
 
 
 class RegistroImportadoResposta(BaseModel):

@@ -20,6 +20,8 @@ class TipoDePendencia(StrEnum):
     DATAS_INVALIDAS = "datas_invalidas"
     REPETIDOS_NA_BASE = "repetidos_na_base"
     REPETIDOS_NO_ARQUIVO = "repetidos_no_arquivo"
+    COINCIDENCIAS_CERTAS = "coincidencias_certas"
+    COINCIDENCIAS_PROVAVEIS = "coincidencias_provaveis"
 
 
 @dataclass(frozen=True)

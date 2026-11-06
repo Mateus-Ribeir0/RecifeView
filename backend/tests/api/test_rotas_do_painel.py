@@ -34,7 +34,11 @@ from tests.fakes import (
     UsuariosEmMemoria,
     criar_usuario,
 )
-from tests.fakes_importacao import TabelaFalsa, criar_servicos
+from tests.fakes_importacao import (
+    TabelaFalsa,
+    criar_servicos,
+    criar_servicos_de_contribuicoes,
+)
 
 BASE = "/api/v1"
 COLUNAS_PROIBIDAS = ("texto", "id_local", "logradouro", "lat", "lon", "referencia", "ementa")
@@ -94,6 +98,9 @@ def montar(consultas: ConsultasFalsas, indicadores: IndicadoresFalsos) -> FastAP
     )
     app = criar_aplicacao(configuracao)
     app.state.servicos_de_importacao = criar_servicos(TabelaFalsa([], []))
+    app.state.servicos_de_contribuicoes = criar_servicos_de_contribuicoes(
+        app.state.servicos_de_importacao
+    )
     painel = SimpleNamespace(
         catalogo=CatalogoFalso(), referencia=ReferenciaFalsa(), visao_geral=indicadores
     )
@@ -233,6 +240,9 @@ def test_importacao_nao_expoe_referencia_nem_valor_de_coluna_bloqueada(
     linhas = [["DRENAGEM", "2026-02-10", "RUA DO TESTE", "123.456.789-09"]]
     app = montar(consultas, indicadores)
     app.state.servicos_de_importacao = criar_servicos(TabelaFalsa(colunas, linhas))
+    app.state.servicos_de_contribuicoes = criar_servicos_de_contribuicoes(
+        app.state.servicos_de_importacao
+    )
 
     with TestClient(app) as cliente_de_teste:
         criada = cliente_de_teste.post(

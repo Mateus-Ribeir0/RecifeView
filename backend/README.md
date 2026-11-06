@@ -48,6 +48,14 @@ uv run recifeview importar \
 
 A carga completa leva alguns minutos, ocupa cerca de 1 GB de disco e aparece como a primeira linha do histórico de importações. O mesmo comando sem `--carga-inicial` importa outro arquivo pelo terminal, e para com aviso se houver algo para decidir: nesse caso, responda pelo painel.
 
+O formulário público sugere as ruas de cada bairro e escreve o endereço como a Central 156 escreve. A lista vem dos arquivos públicos do 156, que têm a coluna de logradouro (o dataset do grupo não tem). Baixe um deles do Drive (`Dados/02_fontes_separadas/bruto`), descompacte em `data/` e rode:
+
+```bash
+uv run recifeview carregar-logradouros --arquivo ../data/156_2025.csv
+```
+
+O comando aceita `--arquivo` mais de uma vez e guarda só o nome da via e o bairro. Sem essa lista, o formulário funciona, mas sem sugestões e com a comparação de endereço menos precisa.
+
 ## Contas de acesso
 
 Não existe cadastro aberto. A administração cria as contas pela linha de comando, e cada conta nasce com uma senha temporária que precisa ser trocada no primeiro acesso.
@@ -76,7 +84,7 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `API_ORIGENS_PERMITIDAS` | Origens que podem chamar a API direto, em JSON | `[]` |
 | `API_PASTA_DAS_IMPORTACOES` | Pasta local dos arquivos enviados. Fica fora do git | `../data/importacoes` |
 | `API_TAMANHO_MAXIMO_DA_IMPORTACAO_MB` | Limite de tamanho de um arquivo enviado | `800` |
-| `API_SAL_DO_ID_LOCAL` | Sal do pseudônimo de endereço. Vazio: registros novos ficam fora da reincidência | vem do grupo, nunca do repositório |
+| `API_SAL_DO_ID_LOCAL` | Sal do pseudônimo de endereço. Vazio: registros novos ficam fora da reincidência e os relatos do formulário não se comparam com a base | vem do grupo, nunca do repositório |
 | `API_URL_DO_BANCO_DE_TESTE` | Banco dos testes de integração. Sem ela, esses testes são pulados | `postgresql+psycopg://...@localhost:5432/recifeview_teste` |
 
 ## Comandos
@@ -92,6 +100,7 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `uv run mypy app tests` | Checagem de tipos (modo estrito) |
 | `uv run lint-imports` | Confere a regra da dependência entre as camadas |
 | `uv run recifeview importar --arquivo ... --data-do-retrato AAAA-MM-DD` | Importa um arquivo pelo terminal |
+| `uv run recifeview carregar-logradouros --arquivo ...` | Soma as vias de um arquivo público do 156 à lista do formulário |
 | `uv run recifeview --help` | Administração de contas e importação |
 
 ## Rotas
@@ -130,8 +139,16 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `POST /importacoes/{id}/cancelar` | Cancela antes da carga |
 | `POST /importacoes/{id}/desfazer` | Desfaz a importação mais recente |
 | `GET /importacoes/{id}/registros` | Registros tratados, paginados |
+| `GET /contribuicoes/catalogo` | Temas, serviços e bairros do formulário. Público |
+| `GET /contribuicoes/logradouros?bairro=...` | Vias conhecidas de um bairro. Público |
+| `POST /contribuicoes` | Recebe um relato e diz se ficou novo, somado ou em conferência. Público, com limite de envios |
+| `GET /contribuicoes/resumo` | Números da fila de relatos |
+| `GET /contribuicoes/ocorrencias` | Ocorrências consolidadas, com endereço, para a gestão |
+| `GET /contribuicoes/pares` | Relatos parecidos que esperam decisão |
+| `PUT /contribuicoes/pares/{id}` | Decide se a dupla é a mesma ocorrência |
+| `POST /contribuicoes/pacotes` | Gera o pacote e abre a importação. Recusa se houver dupla sem decisão |
 
-Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
+As rotas públicas de contribuições são as únicas de dados sem sessão, e nenhuma delas devolve relato de outra pessoa. Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
 
 Como a autenticação funciona, e por que ela ainda é uma proposta, está na [ADR 0005](../docs/adr/0005-autenticacao-com-jwt-proprio.md).
 
@@ -143,9 +160,10 @@ Camadas `domain`, `application`, `infrastructure` e `api`, conforme [docs/clean-
 app/
   domain/           usuario, sessao, senha, acesso, ahp, prioridade, filtros, uma regra por tela
     importacao/     campos, layouts, privacidade, normalizador, correções, pendências, chaves
+    contribuicao/   catálogo, endereço canônico, semelhança, comparação e conferência entre canais
   application/      portas/, sessoes.py
-    casos_de_uso/   acesso, importacoes/ (um caso de uso por passo), painel/ (um por tela)
-  infrastructure/   db/, repositories/, auth/, importacao/ (leitores, armazenamento, fila)
+    casos_de_uso/   acesso, importacoes/ (um caso de uso por passo), painel/ (um por tela), contribuicoes/
+  infrastructure/   db/, repositories/, auth/, importacao/ (leitores, armazenamento, fila), contribuicoes/
   api/              routers/, schemas/, dependencias.py, erros.py, cookies.py
   main.py           monta a aplicação
   cli.py            administração de contas
@@ -155,13 +173,13 @@ tests/              unidade/, api/, integracao/
 
 ## Regra de privacidade
 
-Nenhuma rota devolve o texto da SEDEC, `id_local`, coordenada, endereço nem o hash da senha. Os schemas de resposta são explícitos justamente para que uma coluna nova no banco não vaze por acidente. Na importação, colunas com dado pessoal são reconhecidas pelo nome e pelo conteúdo, ficam bloqueadas e não têm os valores exibidos; arquivo com esse tipo de coluna é apagado depois da carga, e a API nunca devolve o original. A auditoria guarda o tipo do evento, o usuário e o horário, sem IP e sem o e-mail digitado. Ver [docs/dados.md](../docs/dados.md#privacidade-lgpd) e a [ADR 0007](../docs/adr/0007-importacao-de-arquivos-pelo-painel.md).
+Nenhuma rota devolve o texto da SEDEC, `id_local`, coordenada nem o hash da senha, e endereço só aparece nas rotas de contribuições da gestão, para quem revisa o relato. Os schemas de resposta são explícitos justamente para que uma coluna nova no banco não vaze por acidente. Na importação, colunas com dado pessoal são reconhecidas pelo nome e pelo conteúdo, ficam bloqueadas e não têm os valores exibidos; arquivo com esse tipo de coluna é apagado depois da carga, e a API nunca devolve o original. A auditoria guarda o tipo do evento, o usuário e o horário, sem IP e sem o e-mail digitado. Ver [docs/dados.md](../docs/dados.md#privacidade-lgpd) e a [ADR 0007](../docs/adr/0007-importacao-de-arquivos-pelo-painel.md).
 
 ## Banco de dados
 
 As migrações ficam nesta pasta, para que o esquema tenha um dono só. Convenções de nomes em [docs/padroes-de-codigo.md](../docs/padroes-de-codigo.md#banco-de-dados-postgresql).
 
-- Schema `app`: `usuario`, `sessao`, `evento_de_acesso`, `importacao` e `consulta_auditada`.
-- Schema `ouro`: `dim_bairro`, `fato_demanda`, `fato_demanda_substituida` (versão anterior das linhas atualizadas, para desfazer) e as views materializadas `mv_*`, que reproduzem as tabelas do protótipo em Streamlit ([ADR 0006](../docs/adr/0006-modelo-analitico-no-postgresql.md)).
+- Schema `app`: `usuario`, `sessao`, `evento_de_acesso`, `importacao`, `consulta_auditada`, `contribuicao` (a quarentena do formulário) e `par_de_contribuicoes` (as duplas do pente fino, com a decisão de cada uma).
+- Schema `ouro`: `dim_bairro`, `dim_logradouro`, `fato_demanda`, `fato_demanda_substituida` (versão anterior das linhas atualizadas, para desfazer) e as views materializadas `mv_*`, que reproduzem as tabelas do protótipo em Streamlit ([ADR 0006](../docs/adr/0006-modelo-analitico-no-postgresql.md)).
 
 As views são atualizadas depois de cada importação, com o painel no ar.

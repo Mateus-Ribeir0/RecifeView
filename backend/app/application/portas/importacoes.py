@@ -5,10 +5,11 @@ from pathlib import Path
 from typing import Protocol
 from uuid import UUID
 
+from app.domain.contribuicao.conferencia import RelatoGuardado, ResultadoDaConferencia
 from app.domain.importacao.decisoes import PoliticaDeRepetidos
 from app.domain.importacao.importacao import Importacao, StatusDaImportacao
 from app.domain.importacao.normalizador import Referencias
-from app.domain.importacao.registro import RegistroDeDemanda
+from app.domain.importacao.registro import EnderecoDaLinha, RegistroDeDemanda
 
 
 @dataclass(frozen=True)
@@ -53,6 +54,32 @@ class ResultadoDaCarga:
     atualizadas: int = 0
     iguais: int = 0
     ignoradas: int = 0
+    retiradas: int = 0
+
+
+@dataclass(frozen=True)
+class ContribuicoesARetirar:
+    """Relatos que a pessoa decidiu tirar porque o registro oficial cobre a mesma demanda."""
+
+    ids: tuple[UUID, ...] = ()
+    chaves: tuple[int, ...] = ()
+
+
+@dataclass(frozen=True)
+class PlanoDeCarga:
+    politica: PoliticaDeRepetidos
+    retirada: ContribuicoesARetirar = field(default_factory=ContribuicoesARetirar)
+
+
+@dataclass(frozen=True)
+class RegistroNoMesmoLocal:
+    fonte: str
+    id_local: str
+    categoria: str | None
+    servico_codigo: str | None
+    bairro_oficial: str | None
+    data_abertura: date
+    numero_informado: bool
 
 
 @dataclass(frozen=True)
@@ -136,10 +163,7 @@ class CarregadorDeDemandas(Protocol):
     def comparar_com_a_base(self, assinaturas: Iterable[tuple[int, int]]) -> ComparacaoComABase: ...
 
     def carregar(
-        self,
-        importacao_id: int,
-        registros: Iterable[RegistroDeDemanda],
-        politica: PoliticaDeRepetidos,
+        self, importacao_id: int, registros: Iterable[RegistroDeDemanda], plano: PlanoDeCarga
     ) -> ResultadoDaCarga: ...
 
     def desfazer(self, importacao_id: int) -> None: ...
@@ -159,3 +183,17 @@ class ReferenciasRepository(Protocol):
 
 class FilaDeImportacoes(Protocol):
     def enfileirar(self, tarefa: Callable[[], None]) -> None: ...
+
+
+class ContribuicoesDaImportacao(Protocol):
+    def relatos_guardados(self) -> list[RelatoGuardado]: ...
+
+    def ids_do_pacote(self, importacao_id: int) -> list[UUID]: ...
+
+    def registros_no_mesmo_local(self, ids_locais: list[str]) -> list[RegistroNoMesmoLocal]: ...
+
+
+class ConferenciaEntreCanais(Protocol):
+    def conferir(self, registro: RegistroDeDemanda, endereco: EnderecoDaLinha | None) -> None: ...
+
+    def concluir(self) -> ResultadoDaConferencia: ...

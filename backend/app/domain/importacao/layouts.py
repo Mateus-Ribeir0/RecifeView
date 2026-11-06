@@ -24,6 +24,7 @@ class CodigoDoLayout(StrEnum):
     PORTAL_156 = "portal_156"
     PORTAL_OUVIDORIA = "portal_ouvidoria"
     PORTAL_DEFESA_CIVIL = "portal_defesa_civil"
+    FORMULARIO = "formulario"
     MANUAL = "manual"
 
 
@@ -116,9 +117,39 @@ DATASET = Layout(
     frozenset({"FONTE", "DATA_ABERTURA", "CATEGORIA", "BAIRRO_OFICIAL"}),
 )
 
+PACOTE_DO_FORMULARIO = Layout(
+    CodigoDoLayout.FORMULARIO,
+    "Pacote do formulário público",
+    frozenset({"CONTRIBUICAO_ID", "RELATOS_SOMADOS"}),
+    Fonte.FORMULARIO,
+    {
+        "CONTRIBUICAO_ID": "id_registro",
+        "DATA_ABERTURA": "data_abertura",
+        "CATEGORIA": "categoria",
+        "SERVICO_CODIGO": "servico_codigo",
+        "SERVICO": "servico",
+        "BAIRRO_OFICIAL": "bairro_oficial",
+        "ID_LOCAL": "id_local",
+        "NUMERO_INFORMADO": "numero_informado",
+        "RELATOS_SOMADOS": SEM_USO,
+    },
+    {
+        "tipo_registro": "CONTRIBUICAO",
+        "canal_entrada": "FORMULARIO PUBLICO",
+        "situacao": "RECEBIDA",
+        "iniciativa": Iniciativa.CIDADAO.value,
+    },
+)
+
 MANUAL = Layout(CodigoDoLayout.MANUAL, "Mapeamento manual", frozenset())
 
-LAYOUTS_RECONHECIDOS = (DATASET, PORTAL_156, PORTAL_OUVIDORIA, PORTAL_DEFESA_CIVIL)
+LAYOUTS_RECONHECIDOS = (
+    DATASET,
+    PACOTE_DO_FORMULARIO,
+    PORTAL_156,
+    PORTAL_OUVIDORIA,
+    PORTAL_DEFESA_CIVIL,
+)
 LAYOUTS_POR_CODIGO = {layout.codigo: layout for layout in (*LAYOUTS_RECONHECIDOS, MANUAL)}
 
 
