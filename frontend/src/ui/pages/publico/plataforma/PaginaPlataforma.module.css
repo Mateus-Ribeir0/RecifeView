@@ -1,0 +1,114 @@
+.abas {
+  display: flex;
+  gap: var(--espaco-2);
+  overflow-x: auto;
+  padding-bottom: var(--espaco-2);
+}
+
+.aba {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 44px;
+  padding: 0 var(--espaco-4);
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-branco);
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.aba:hover {
+  border-color: var(--cor-azul-principal);
+  color: var(--cor-azul-escuro);
+}
+
+.aba[aria-selected='true'] {
+  border-color: var(--cor-azul-principal);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+}
+
+.painel {
+  display: grid;
+  gap: var(--espaco-6);
+  margin-top: var(--espaco-6);
+  animation: surgir 420ms var(--curva-de-entrada);
+}
+
+@media (min-width: 1000px) {
+  .painel {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: start;
+  }
+}
+
+.pergunta {
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 700;
+}
+
+.permite {
+  display: grid;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-5);
+}
+
+.permite li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--espaco-2);
+  color: var(--cor-texto-secundario);
+}
+
+.permite svg {
+  margin-top: 2px;
+  color: var(--cor-azul-principal);
+}
+
+.moldura {
+  overflow: hidden;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+}
+
+.moldura img {
+  width: 100%;
+  height: auto;
+}
+
+.acesso {
+  display: grid;
+  gap: var(--espaco-5);
+  align-items: center;
+  justify-items: start;
+}
+
+@media (min-width: 800px) {
+  .acesso {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aba {
+    transition: none;
+  }
+
+  .painel {
+    animation: none;
+  }
+}

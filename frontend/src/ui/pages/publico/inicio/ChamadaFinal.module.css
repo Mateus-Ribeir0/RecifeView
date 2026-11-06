@@ -1,0 +1,32 @@
+.chamada {
+  padding-block: var(--espaco-8);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+}
+
+.grade {
+  display: grid;
+  gap: var(--espaco-7);
+}
+
+@media (min-width: 800px) {
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espaco-8);
+  }
+}
+
+.icone {
+  display: inline-flex;
+}
+
+.titulo {
+  margin-top: var(--espaco-3);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.texto {
+  max-width: 46ch;
+  margin-block: var(--espaco-3) var(--espaco-5);
+}

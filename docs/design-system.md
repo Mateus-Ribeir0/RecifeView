@@ -67,6 +67,7 @@ Quando várias fontes aparecem juntas, cada uma tem sempre a mesma cor, em todas
 | `CAMARA_REQUERIMENTOS` | `#B28600` |
 | `DEFESA_CIVIL` | `#9F1853` |
 | `SEDEC_CHAMADOS` | `#8A3800` |
+| `FORMULARIO_PUBLICO` | `#393939` |
 
 O amarelo da Câmara (`#B28600`) tem contraste de 3,3:1: serve para barra e linha, mas não para texto pequeno. Num rótulo, use `preto` ao lado de uma marca de cor.
 
@@ -127,6 +128,13 @@ Na página inicial pública, que é lida e não operada, a escala cresce:
 | Título de seção | 36px (28px no celular) | 700 | `--texto-secao` |
 | Texto de abertura | 18px | 400 | `--texto-abertura` |
 | Corpo | 16px | 400 | `--texto-corpo` |
+
+A página pública tem cinco abas, com endereço próprio: Início, O que muda, A plataforma, Dados e confiança e Relatar um problema. Ela é a vitrine do produto, então pode usar o que o painel não usa:
+
+- **Foto:** a do banner `AssetsVisuais/BannersHome/07`, já no azul da marca, em `ui/assets/imagens/`. Texto sobre ela sempre em branco puro.
+- **Capturas:** telas reais do painel em `ui/assets/capturas/`, geradas sem dado fictício. Se a tela usar dado de demonstração, a nota diz "dado fictício".
+- **Ícones de apoio:** em etapas, temas e cartões, quando ajudam a reconhecer o assunto. No painel, continua valendo a regra de ícone só para ação e navegação.
+- **Movimento:** entrada ao rolar (`Aparecer`), contagem de números (`ContadorAnimado`) e barras que crescem quando aparecem, com `--duracao-de-entrada` e `--curva-de-entrada`. Quem pede menos movimento no sistema (`prefers-reduced-motion`) vê tudo pronto, sem animação.
 
 - Números em tabela, KPI e eixo usam algarismos tabulares (`font-variant-numeric: tabular-nums`), para alinharem em coluna.
 - Altura de linha: 1,5 no corpo e 1,2 nos títulos.
@@ -191,7 +199,7 @@ Regras gerais:
 - Rótulo direto na linha ou na barra sempre que couber; a legenda separada é o último recurso.
 - Grade só horizontal, em `cinza-borda`. Sem borda na área do gráfico.
 - Eixo Y de barras começa em zero. Escala logarítmica só quando os dados pedirem (prazos, per capita da Defesa Civil), e com "escala log" escrito no eixo.
-- Animação curta (até 300ms) ou nenhuma.
+- Animação curta (até 300ms) ou nenhuma. Na página pública, a barra pode crescer em até 1s quando entra na tela, porque ali o gráfico é lido uma vez, não operado.
 - Tooltip com fundo `branco`, borda `cinza-borda`, valores formatados em pt-BR e a unidade escrita.
 
 Qual gráfico para qual pergunta:
@@ -253,7 +261,7 @@ A interface e os documentos não podem ter cara de template genérico nem de tex
 - Emoji em interface, documentação ou commit.
 - Travessão e meia-risca, em qualquer texto.
 - Gradientes (sobretudo roxo e azul), glassmorphism, neon, fundo escuro "tech" e brilhos.
-- Ícone decorativo em todo título ou cartão. Ícone só quando ajuda a reconhecer uma ação ou um destino da navegação (filtro, download, fechar, itens do menu).
+- Ícone decorativo em todo título ou cartão. No painel, ícone só quando ajuda a reconhecer uma ação ou um destino da navegação (filtro, download, fechar, itens do menu). A exceção da página pública está em [Tipografia](#tipografia).
 - Frases de efeito e enchimento: "Insights poderosos", "Transformando dados em decisões", "Bem-vindo(a)!", "Explore o poder de...".
 - Cantos muito arredondados, sombras grandes e cartões flutuando.
 - Ilustração genérica de pessoas, cidade ou robôs. A identidade já tem logo e skyline próprios.

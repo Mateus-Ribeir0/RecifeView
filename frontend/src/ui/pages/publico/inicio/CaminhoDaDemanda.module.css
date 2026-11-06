@@ -1,0 +1,77 @@
+.moldura {
+  margin-top: var(--espaco-6);
+}
+
+.diagrama {
+  display: none;
+  width: 100%;
+  height: auto;
+}
+
+.ligacao {
+  fill: none;
+  stroke: var(--cor-mapa-2);
+  stroke-width: 2;
+}
+
+.entrada {
+  fill: var(--cor-branco);
+  stroke: var(--cor-borda);
+}
+
+.nomeDaEntrada {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.etapa {
+  fill: var(--cor-azul-claro);
+  stroke: var(--cor-azul-principal);
+  stroke-width: 1.5;
+}
+
+.tituloDaEtapa {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.detalheDaEtapa {
+  font-size: 13px;
+  fill: var(--cor-texto-secundario);
+}
+
+.listaNoCelular {
+  display: grid;
+  gap: var(--espaco-3);
+  counter-reset: etapa;
+}
+
+.listaNoCelular li {
+  position: relative;
+  padding-left: var(--espaco-7);
+  counter-increment: etapa;
+}
+
+.listaNoCelular li::before {
+  position: absolute;
+  left: 0;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+  font-weight: 700;
+  place-items: center;
+  content: counter(etapa);
+}
+
+@media (min-width: 900px) {
+  .diagrama {
+    display: block;
+  }
+
+  .listaNoCelular {
+    display: none;
+  }
+}

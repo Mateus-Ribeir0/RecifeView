@@ -6,8 +6,9 @@ import { ContextoDasContribuicoes } from '../../application/contribuicoes/contex
 import { PaginaAjudaDeAcesso } from '../pages/ajuda-de-acesso/PaginaAjudaDeAcesso'
 import { PaginaDefinirSenha } from '../pages/definir-senha/PaginaDefinirSenha'
 import { PaginaEntrar } from '../pages/entrar/PaginaEntrar'
-import { PaginaInicial } from '../pages/inicio/PaginaInicial'
 import { PaginaNaoEncontrada } from '../pages/nao-encontrada/PaginaNaoEncontrada'
+import { LayoutPublico } from '../pages/publico/LayoutPublico'
+import { PaginaInicial } from '../pages/publico/inicio/PaginaInicial'
 import { RotaProtegida } from './RotaProtegida'
 import { servicoDeAutenticacao, servicoDeContribuicoes } from './servicos'
 import { SoParaVisitantes } from './SoParaVisitantes'
@@ -25,7 +26,40 @@ const roteador = createBrowserRouter([
   {
     element: <Raiz />,
     children: [
-      { index: true, element: <PaginaInicial /> },
+      {
+        element: <LayoutPublico />,
+        children: [
+          { index: true, element: <PaginaInicial /> },
+          {
+            path: 'o-que-muda',
+            lazy: async () => ({
+              Component: (await import('../pages/publico/o-que-muda/PaginaOQueMuda'))
+                .PaginaOQueMuda,
+            }),
+          },
+          {
+            path: 'plataforma',
+            lazy: async () => ({
+              Component: (await import('../pages/publico/plataforma/PaginaPlataforma'))
+                .PaginaPlataforma,
+            }),
+          },
+          {
+            path: 'dados-e-confianca',
+            lazy: async () => ({
+              Component: (await import('../pages/publico/confianca/PaginaConfianca'))
+                .PaginaConfianca,
+            }),
+          },
+          {
+            path: 'contribuir',
+            lazy: async () => ({
+              Component: (await import('../pages/publico/contribuir/PaginaContribuir'))
+                .PaginaContribuir,
+            }),
+          },
+        ],
+      },
       { element: <SoParaVisitantes />, children: [{ path: 'entrar', element: <PaginaEntrar /> }] },
       { path: 'entrar/ajuda', element: <PaginaAjudaDeAcesso /> },
       {

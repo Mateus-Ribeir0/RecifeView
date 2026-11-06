@@ -1,0 +1,19 @@
+.grade {
+  display: grid;
+  gap: var(--espaco-6);
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .grade {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: var(--espaco-8);
+  }
+}
+
+.mapa {
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+}

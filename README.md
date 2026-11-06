@@ -22,9 +22,10 @@ O projeto responde ao desafio [Fragmentação do Tratamento de Denúncias Recebi
 | Fase | Situação |
 |---|---|
 | Pesquisa, dados, EDA (N1 a N3) | Concluída. Os entregáveis estão no Drive do grupo. |
-| Página inicial e acesso | Prontos: página pública, entrada, troca de senha, sessão e saída |
+| Site público e acesso | Prontos: cinco abas públicas, entrada, troca de senha, sessão e saída |
 | Telas de dados do painel | Prontas: Início, War Room, Retorno, Reincidência, Prazos, Território, Prioridade e Sobre os dados |
 | Importação de arquivos | Pronta: envio, normalização, decisões, histórico e desfazer |
+| Formulário público | Pronto: relatos em quarentena, pente fino entre canais e pacote pela importação ([ADR 0009](docs/adr/0009-formulario-publico-e-pente-fino.md), proposta) |
 | Processor | Ainda não começou |
 
 ## Arquitetura

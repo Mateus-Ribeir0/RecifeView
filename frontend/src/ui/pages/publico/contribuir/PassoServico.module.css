@@ -1,0 +1,113 @@
+.pergunta {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ajuda {
+  margin-top: var(--espaco-1);
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}
+
+.temas {
+  display: grid;
+  gap: var(--espaco-2);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .temas {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.tema {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--espaco-2);
+  min-height: 92px;
+  padding: var(--espaco-3) var(--espaco-2);
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms var(--curva-de-entrada);
+}
+
+.tema:hover {
+  border-color: var(--cor-azul-principal);
+  transform: translateY(-2px);
+}
+
+.tema[aria-pressed='true'] {
+  border-color: var(--cor-azul-principal);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+}
+
+.servicos {
+  display: grid;
+  gap: var(--espaco-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+@media (min-width: 640px) {
+  .servicos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.servico {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: 52px;
+  padding: var(--espaco-2) var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-campo);
+  font-size: var(--texto-apoio);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.servico:hover {
+  border-color: var(--cor-azul-principal);
+}
+
+.servico:has(input:checked) {
+  border-color: var(--cor-azul-principal);
+  background: var(--cor-azul-claro);
+}
+
+.servico input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--cor-azul-principal);
+}
+
+.erro {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cor-erro);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tema {
+    transition: none;
+  }
+
+  .tema:hover {
+    transform: none;
+  }
+}

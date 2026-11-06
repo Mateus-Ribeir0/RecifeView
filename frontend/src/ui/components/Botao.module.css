@@ -72,6 +72,21 @@
   outline-color: var(--cor-branco);
 }
 
+.contorno {
+  background: transparent;
+  border-color: var(--cor-branco);
+  color: var(--cor-branco);
+}
+
+.contorno:hover {
+  background: var(--cor-branco);
+  color: var(--cor-azul-principal);
+}
+
+.contorno:focus-visible {
+  outline-color: var(--cor-branco);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .botao {
     transition: none;

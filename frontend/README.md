@@ -7,7 +7,7 @@ SPA do RecifeView: a página inicial pública e o painel usado por gestores púb
 ## Pré-requisitos
 
 - Node.js 22 LTS (a versão está no `.nvmrc`).
-- A API rodando em http://localhost:8000, com a base carregada (ver [backend/README.md](../backend/README.md#carregar-os-dados)). Sem a API, a página inicial abre, mas o login não funciona. Sem a base, as telas do painel abrem vazias.
+- A API rodando em http://localhost:8000, com a base carregada (ver [backend/README.md](../backend/README.md#carregar-os-dados)). Sem a API, o site público abre, mas o login e o formulário não funcionam. Sem a base, as telas do painel abrem vazias.
 
 ## Como rodar
 
@@ -24,7 +24,11 @@ O painel fica em http://localhost:5173. Em desenvolvimento, o Vite repassa tudo 
 
 | Caminho                  | Tela                                                                              | Acesso             |
 | ------------------------ | --------------------------------------------------------------------------------- | ------------------ |
-| `/`                      | Página inicial: o problema, os primeiros achados, o painel, as fontes e o projeto | Público            |
+| `/`                      | Início: abertura, números, o que muda, caminho da demanda e mapa                  | Público            |
+| `/o-que-muda`            | Os problemas de antes, o que muda e a evidência de cada um                        | Público            |
+| `/plataforma`            | As telas do painel, com capturas reais                                            | Público            |
+| `/dados-e-confianca`     | Pente fino, fontes, privacidade e leitura honesta dos números                     | Público            |
+| `/contribuir`            | Formulário público em três passos                                                 | Público            |
 | `/entrar`                | Entrada com e-mail e senha                                                        | Só quem não entrou |
 | `/entrar/ajuda`          | Senha esquecida, conta bloqueada, pedido de acesso                                | Público            |
 | `/definir-senha`         | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária    | Gestor             |
@@ -36,6 +40,7 @@ O painel fica em http://localhost:5173. Em desenvolvimento, o Vite repassa tudo 
 | `/painel/territorio`     | Mapa, tabela e tendência por bairro                                               | Gestor             |
 | `/painel/prioridade`     | Abas: índice AHP com mapa e ranking, ocorrências, método e sensibilidade          | Gestor             |
 | `/painel/sobre-os-dados` | Cobertura, glossário e correções aplicadas                                        | Gestor             |
+| `/painel/contribuicoes`  | Pente fino dos relatos, ocorrências e geração do pacote                           | Gestor             |
 | `/painel/importacoes`    | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório       | Gestor             |
 
 A correspondência entre telas e rotas da API está em [docs/arquitetura.md](../docs/arquitetura.md#telas-e-rotas-da-api).
@@ -71,16 +76,17 @@ Camadas `domain`, `application`, `infrastructure` e `ui`, conforme [docs/clean-a
 
 ```
 src/
-  domain/           usuario, senha, erros, acesso, territorio, formatacao, painel, filtros, importacoes
-  application/      autenticacao/, filtros/, consultas/ (cache e hooks do painel), importacoes/
+  domain/           usuario, senha, erros, acesso, territorio, formatacao, painel, filtros, importacoes, contribuicoes
+  application/      autenticacao/, filtros/, consultas/ (cache e hooks do painel), importacoes/, contribuicoes/
   infrastructure/   api/ (cliente HTTP, conversão e serviços que implementam as portas)
   ui/
     app/            rotas, guardas de rota e montagem (único lugar que conhece a infraestrutura)
-    pages/          inicio/, entrar/, ajuda-de-acesso/, definir-senha/, painel/, importacoes/, nao-encontrada/
+    pages/          publico/ (as abas do site), entrar/, ajuda-de-acesso/, definir-senha/, painel/, importacoes/, contribuicoes/, nao-encontrada/
     components/     logo, botões, campos, avisos, KPIs, cartões, abas, ícones, tabela, estados da consulta
     charts/         gráficos: os do Recharts (únicos que o importam) e funil, sparkline e composição em HTML e SVG
     map/            mapa SVG dos bairros, minimapa das RPAs, mapa coroplético (Leaflet) e a malha
     conteudo/       textos compartilhados entre páginas
+    assets/         marca, foto do Recife e capturas reais do painel
     theme/          tokens do design system e estilos base
   main.tsx          ponto de entrada
 ```

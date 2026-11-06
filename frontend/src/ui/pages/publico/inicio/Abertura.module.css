@@ -1,0 +1,112 @@
+.abertura {
+  position: relative;
+}
+
+.faixa {
+  position: relative;
+  overflow: hidden;
+  padding-block: var(--espaco-8) 200px;
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+}
+
+@media (min-width: 900px) {
+  .faixa {
+    padding-block: var(--espaco-9) 300px;
+  }
+}
+
+.foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 70% 70%;
+  animation: aproximar 24s ease-out both;
+}
+
+.texto {
+  position: relative;
+  animation: subir 800ms var(--curva-de-entrada) both;
+}
+
+.chamada {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.titulo {
+  max-width: 20ch;
+  margin-top: var(--espaco-4);
+  font-size: clamp(34px, 5vw, var(--texto-destaque));
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.descricao {
+  max-width: 56ch;
+  margin-top: var(--espaco-5);
+  font-size: var(--texto-abertura);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-6);
+}
+
+.vitrine {
+  position: relative;
+  margin-top: -160px;
+  animation: subir 1000ms 160ms var(--curva-de-entrada) both;
+}
+
+@media (min-width: 900px) {
+  .vitrine {
+    margin-top: -240px;
+  }
+}
+
+.moldura {
+  overflow: hidden;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+  box-shadow: var(--sombra-flutuante);
+}
+
+.moldura img {
+  width: 100%;
+  height: auto;
+}
+
+.legenda {
+  margin-top: var(--espaco-3);
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+@keyframes aproximar {
+  from {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .foto,
+  .texto,
+  .vitrine {
+    animation: none;
+  }
+}

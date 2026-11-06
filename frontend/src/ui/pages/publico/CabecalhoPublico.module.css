@@ -1,0 +1,140 @@
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--cor-branco);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-5);
+  min-height: var(--altura-do-cabecalho);
+}
+
+.marca {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-right: auto;
+}
+
+.navegacao {
+  display: none;
+}
+
+.navegacao ul {
+  display: flex;
+  gap: var(--espaco-5);
+}
+
+.navegacao a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--altura-do-cabecalho);
+  font-size: var(--texto-apoio);
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.navegacao a::after {
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 3px;
+  background: var(--cor-azul-principal);
+  content: '';
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 240ms var(--curva-de-entrada);
+}
+
+.navegacao a:hover {
+  color: var(--cor-preto);
+}
+
+.navegacao a:hover::after,
+.navegacao a[aria-current='page']::after {
+  transform: scaleX(1);
+}
+
+.navegacao a[aria-current='page'] {
+  font-weight: 600;
+  color: var(--cor-preto);
+}
+
+.acoes {
+  display: none;
+  gap: var(--espaco-2);
+}
+
+.botaoDoMenu {
+  display: inline-flex;
+  padding: var(--espaco-2);
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.navegacao[data-aberta] {
+  position: absolute;
+  inset: 100% 0 auto;
+  display: block;
+  padding: var(--espaco-3) var(--margem-lateral) var(--espaco-4);
+  background: var(--cor-branco);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.navegacao[data-aberta] ul {
+  flex-direction: column;
+  gap: 0;
+}
+
+.navegacao[data-aberta] a {
+  min-height: 48px;
+  font-size: var(--texto-corpo);
+}
+
+@media (min-width: 560px) {
+  .acoes {
+    display: flex;
+  }
+
+  .soNoMenu {
+    display: none;
+  }
+}
+
+@media (min-width: 1100px) {
+  .navegacao,
+  .navegacao[data-aberta] {
+    position: static;
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+
+  .navegacao ul,
+  .navegacao[data-aberta] ul {
+    flex-direction: row;
+    gap: var(--espaco-5);
+  }
+
+  .navegacao[data-aberta] a {
+    min-height: var(--altura-do-cabecalho);
+    font-size: var(--texto-apoio);
+  }
+
+  .botaoDoMenu {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navegacao a,
+  .navegacao a::after {
+    transition: none;
+  }
+}

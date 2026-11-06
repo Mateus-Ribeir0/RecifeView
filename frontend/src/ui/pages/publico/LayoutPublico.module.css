@@ -1,0 +1,19 @@
+.pagina {
+  animation: entrar 360ms var(--curva-de-entrada);
+}
+
+.pagina:focus {
+  outline: none;
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pagina {
+    animation: none;
+  }
+}
