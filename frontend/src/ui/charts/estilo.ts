@@ -19,6 +19,7 @@ export const CORES_DAS_FONTES: Readonly<Record<CodigoDaFonte, string>> = {
   CAMARA_REQUERIMENTOS: 'var(--cor-fonte-camara)',
   DEFESA_CIVIL: 'var(--cor-fonte-defesa-civil)',
   SEDEC_CHAMADOS: 'var(--cor-fonte-sedec)',
+  FORMULARIO_PUBLICO: 'var(--cor-fonte-formulario)',
 }
 
 export const ESCALA_DO_MAPA: readonly string[] = [

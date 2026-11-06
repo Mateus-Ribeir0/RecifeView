@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useServicoDeImportacoes } from '../../../application/importacoes/contexto'
 import { useCamposDaBase } from '../../../application/importacoes/useHistorico'
 import { formatarDataEHora } from '../../../domain/formatacao'
-import { NOMES_DAS_FONTES, ORDEM_DAS_FONTES } from '../../../domain/fontes'
+import { FONTES_DE_ARQUIVO, NOMES_DAS_FONTES } from '../../../domain/fontes'
 import type { ColunaDoArquivo, DetalheDaImportacao } from '../../../domain/importacoes'
 import { Aviso } from '../../components/Aviso'
 import { Botao } from '../../components/Botao'
@@ -102,7 +102,7 @@ export function PassoColunas({ importacao, aoConcluir, aoCancelar }: Propriedade
             De qual fonte é este arquivo?
             <select value={fonte} onChange={(evento) => definirFonte(evento.target.value)}>
               <option value="">Escolha</option>
-              {ORDEM_DAS_FONTES.map((codigo) => (
+              {FONTES_DE_ARQUIVO.map((codigo) => (
                 <option key={codigo} value={codigo}>
                   {NOMES_DAS_FONTES[codigo]}
                 </option>

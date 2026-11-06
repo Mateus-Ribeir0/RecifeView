@@ -6,18 +6,26 @@ export type CodigoDeErro =
   | 'senha_atual_incorreta'
   | 'senha_fraca'
   | 'dados_invalidos'
+  | 'contribuicao_invalida'
   | 'servico_indisponivel'
   | 'erro_inesperado'
 
 export class ErroDoRecifeView extends Error {
   readonly codigo: CodigoDeErro
   readonly desbloqueioEm: Date | null
+  readonly campo: string | null
 
-  constructor(codigo: CodigoDeErro, mensagem: string, desbloqueioEm: Date | null = null) {
+  constructor(
+    codigo: CodigoDeErro,
+    mensagem: string,
+    desbloqueioEm: Date | null = null,
+    campo: string | null = null,
+  ) {
     super(mensagem)
     this.name = 'ErroDoRecifeView'
     this.codigo = codigo
     this.desbloqueioEm = desbloqueioEm
+    this.campo = campo
   }
 }
 

@@ -127,6 +127,43 @@ export function PassoPendencias({ importacao, aoConcluir, aoCancelar }: Propried
         />
       )
     }
+    if (tipo === 'coincidencias_certas' || tipo === 'coincidencias_provaveis') {
+      const certas = tipo === 'coincidencias_certas'
+      const chave = certas ? 'coincidenciasCertas' : 'coincidenciasProvaveis'
+      return (
+        <PerguntaDeEscolha
+          key={tipo}
+          titulo={`${contar(quantidade, 'relato do formulário', 'relatos do formulário')} ${certas ? 'é a mesma demanda de' : 'parece a mesma demanda de'} um registro`}
+          nome={tipo}
+          valor={respostas[chave]}
+          aoEscolher={(valor) => responder(chave, valor)}
+          opcoes={[
+            {
+              valor: 'manter_o_registro_oficial',
+              rotulo: 'Manter o registro oficial e retirar o relato',
+              detalhe:
+                'O registro oficial traz situação e prazo. Desfazer a carga devolve o relato.',
+            },
+            {
+              valor: 'manter_os_dois',
+              rotulo: 'Manter os dois',
+              detalhe: 'Use se forem problemas diferentes no mesmo local.',
+            },
+          ]}
+        >
+          <p className={estilos.textoDaPergunta}>
+            {certas
+              ? 'Mesmo endereço e mesmo serviço, com até 7 dias de diferença.'
+              : 'Endereço ou serviço parecidos, com menos de 30 dias de diferença. Confira os exemplos.'}
+          </p>
+          <ul className={estilos.exemplosDoPenteFino}>
+            {pendencia.valores.map(({ valor }) => (
+              <li key={valor}>{valor}</li>
+            ))}
+          </ul>
+        </PerguntaDeEscolha>
+      )
+    }
     if (tipo === 'repetidos_na_base') {
       return (
         <PerguntaDeEscolha

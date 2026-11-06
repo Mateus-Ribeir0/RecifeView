@@ -1,5 +1,10 @@
 export type CodigoDaFonte =
-  '156_EMLURB' | 'DEFESA_CIVIL' | 'OUVIDORIA' | 'SEDEC_CHAMADOS' | 'CAMARA_REQUERIMENTOS'
+  | '156_EMLURB'
+  | 'DEFESA_CIVIL'
+  | 'OUVIDORIA'
+  | 'SEDEC_CHAMADOS'
+  | 'CAMARA_REQUERIMENTOS'
+  | 'FORMULARIO_PUBLICO'
 
 export const ORDEM_DAS_FONTES: readonly CodigoDaFonte[] = [
   '156_EMLURB',
@@ -7,7 +12,12 @@ export const ORDEM_DAS_FONTES: readonly CodigoDaFonte[] = [
   'OUVIDORIA',
   'SEDEC_CHAMADOS',
   'CAMARA_REQUERIMENTOS',
+  'FORMULARIO_PUBLICO',
 ]
+
+export const FONTES_DE_ARQUIVO: readonly CodigoDaFonte[] = ORDEM_DAS_FONTES.filter(
+  (fonte) => fonte !== 'FORMULARIO_PUBLICO',
+)
 
 export const NOMES_DAS_FONTES: Readonly<Record<CodigoDaFonte, string>> = {
   '156_EMLURB': 'Central 156 / Emlurb',
@@ -15,6 +25,7 @@ export const NOMES_DAS_FONTES: Readonly<Record<CodigoDaFonte, string>> = {
   OUVIDORIA: 'Ouvidoria',
   SEDEC_CHAMADOS: 'SEDEC, áreas de risco',
   CAMARA_REQUERIMENTOS: 'Câmara Municipal',
+  FORMULARIO_PUBLICO: 'Formulário público',
 }
 
 export const NOMES_CURTOS_DAS_FONTES: Readonly<Record<CodigoDaFonte, string>> = {
@@ -23,6 +34,7 @@ export const NOMES_CURTOS_DAS_FONTES: Readonly<Record<CodigoDaFonte, string>> = 
   OUVIDORIA: 'Ouvidoria',
   SEDEC_CHAMADOS: 'SEDEC',
   CAMARA_REQUERIMENTOS: 'Câmara',
+  FORMULARIO_PUBLICO: 'Formulário',
 }
 
 export function nomeDaFonte(codigo: string | null | undefined): string {

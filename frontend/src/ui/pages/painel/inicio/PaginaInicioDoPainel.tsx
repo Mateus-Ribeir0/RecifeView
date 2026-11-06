@@ -38,6 +38,7 @@ const FORMAS: Readonly<Record<CodigoDaFonte, FormaDoMarcador>> = {
   OUVIDORIA: 'quadrado',
   SEDEC_CHAMADOS: 'triangulo',
   CAMARA_REQUERIMENTOS: 'cruz',
+  FORMULARIO_PUBLICO: 'anel',
 }
 const UNIDADE_DO_MAPA = 'pedidos ao 156 / mil hab. / ano'
 const ALTURA_DO_GRAFICO = 320
