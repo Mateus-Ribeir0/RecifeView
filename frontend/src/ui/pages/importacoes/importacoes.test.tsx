@@ -35,6 +35,63 @@ const BAIRRO_DESCONHECIDO: Pendencia = {
   detalhes: {},
 }
 
+const COINCIDENCIA_CERTA: Pendencia = {
+  tipo: 'coincidencias_certas',
+  campo: null,
+  rotuloDoCampo: null,
+  quantidade: 1,
+  valores: [
+    {
+      valor: 'Buraco na rua, Afogados: mesmo endereço, mesmo serviço, mesmo dia',
+      quantidade: 1,
+      sugestao: null,
+    },
+  ],
+  alternativas: [],
+  totalDeValores: 1,
+  detalhes: {},
+}
+
+describe('pente fino entre canais', () => {
+  it('pergunta o que fazer com o relato igual a um registro do arquivo', async () => {
+    const servico = criarServicoDeImportacoesFalso()
+    const base = criarImportacao({ status: 'AGUARDANDO_DECISOES' })
+    const importacao = {
+      ...base,
+      pendencias: { ...base.pendencias, itens: [COINCIDENCIA_CERTA] },
+    }
+    montar(
+      servico,
+      <PassoPendencias importacao={importacao} aoConcluir={vi.fn()} aoCancelar={vi.fn()} />,
+    )
+
+    expect(screen.getByText(/mesmo endereço, mesmo serviço/)).toBeInTheDocument()
+    await userEvent.click(screen.getByLabelText(/Manter o registro oficial/))
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar decisões' }))
+
+    expect(servico.responderPendencias).toHaveBeenCalledWith(
+      importacao.id,
+      expect.objectContaining({ coincidenciasCertas: 'manter_o_registro_oficial' }),
+    )
+  })
+
+  it('mostra na revisão que o arquivo foi comparado, mesmo sem coincidência', () => {
+    const base = criarImportacao({ status: 'PRONTA' })
+    const resumo = {
+      ...base.pendencias.resumo,
+      penteFino: { comparadas: 4, semEndereco: 1, certas: 0, provaveis: 0 },
+    }
+    const importacao = { ...base, pendencias: { ...base.pendencias, resumo } }
+    montar(
+      criarServicoDeImportacoesFalso(),
+      <PassoRevisao importacao={importacao} aoConcluir={vi.fn()} aoCancelar={vi.fn()} />,
+    )
+
+    expect(screen.getByText(/4 linhas comparadas com os relatos do formulário/)).toBeInTheDocument()
+    expect(screen.getByText(/sem comparação de endereço/)).toBeVisible()
+  })
+})
+
 describe('nova importação', () => {
   it('só envia depois de escolher o arquivo', async () => {
     const servico = criarServicoDeImportacoesFalso()
