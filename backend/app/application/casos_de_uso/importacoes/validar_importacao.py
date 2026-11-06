@@ -4,7 +4,17 @@ from itertools import islice
 from typing import Any
 
 from app.application.casos_de_uso.importacoes.servicos import ServicosDeImportacao
-from app.application.portas.importacoes import ComparacaoComABase, TabelaDoArquivo
+from app.application.portas.importacoes import (
+    ComparacaoComABase,
+    ConferenciaEntreCanais,
+    TabelaDoArquivo,
+)
+from app.domain.contribuicao.comparacao import ClasseDaComparacao
+from app.domain.contribuicao.conferencia import (
+    AMOSTRAS_MOSTRADAS,
+    Coincidencia,
+    ResultadoDaConferencia,
+)
 from app.domain.erros import ArquivoIlegivel
 from app.domain.importacao.campos import CAMPOS_DE_DATA, CAMPOS_VERIFICADOS_NO_VOCABULARIO
 from app.domain.importacao.datas import formato_de_data_ambiguo, usa_barra_com_ano_no_fim
@@ -14,6 +24,7 @@ from app.domain.importacao.normalizador import NormalizadorDeLinhas, Referencias
 from app.domain.importacao.pendencias import (
     Pendencia,
     TipoDePendencia,
+    ValorEmDuvida,
     montar_pendencia_de_valores,
     valores_ainda_sem_resposta,
 )
@@ -136,6 +147,34 @@ def _pendencias_de_repetidos(
     return itens
 
 
+def _pendencia_de_coincidencias(
+    tipo: TipoDePendencia, coincidencias: list[Coincidencia]
+) -> Pendencia:
+    return Pendencia(
+        tipo,
+        quantidade=len(coincidencias),
+        valores=tuple(
+            ValorEmDuvida(item.descricao, 1) for item in coincidencias[:AMOSTRAS_MOSTRADAS]
+        ),
+        total_de_valores=len(coincidencias),
+    )
+
+
+def _pendencias_de_coincidencias(
+    resultado: ResultadoDaConferencia, decisoes: Decisoes
+) -> list[Pendencia]:
+    itens = []
+    certas = resultado.da_classe(ClasseDaComparacao.MESMA)
+    if certas and decisoes.coincidencias_certas is None:
+        itens.append(_pendencia_de_coincidencias(TipoDePendencia.COINCIDENCIAS_CERTAS, certas))
+    provaveis = resultado.da_classe(ClasseDaComparacao.PROVAVEL)
+    if provaveis and decisoes.coincidencias_provaveis is None:
+        itens.append(
+            _pendencia_de_coincidencias(TipoDePendencia.COINCIDENCIAS_PROVAVEIS, provaveis)
+        )
+    return itens
+
+
 def resumir_relatorio(relatorio: RelatorioDeLinhas) -> dict[str, Any]:
     return {
         "lidas": relatorio.lidas,
@@ -186,6 +225,13 @@ def colunas_visiveis_na_previa(importacao: Importacao) -> list[str]:
 
 
 @dataclass(frozen=True)
+class ContagensDaValidacao:
+    relatorio: RelatorioDeLinhas
+    comparacao: ComparacaoComABase
+    conferencia: ResultadoDaConferencia
+
+
+@dataclass(frozen=True)
 class ValidarImportacao:
     """Percorre o arquivo com as decisões atuais e aponta o que ainda precisa de resposta."""
 
@@ -206,29 +252,37 @@ class ValidarImportacao:
         decisoes = _decidir_formato_de_data(tabela, importacao.decisoes)
         importacao = replace(importacao, decisoes=decisoes)
         normalizador = self.servicos.preparar_normalizador(importacao, tabela)
+        conferencia = self.servicos.criar_conferencia(importacao)
         comparacao = self.servicos.carregador.comparar_com_a_base(
-            self._assinaturas(tabela, normalizador)
+            self._assinaturas(tabela, normalizador, conferencia)
         )
+        coincidencias = conferencia.concluir()
         referencias = self.servicos.referencias.carregar()
         relatorio = normalizador.relatorio
         itens = [
             *_pendencias_de_datas(relatorio, decisoes, tabela),
             *_pendencias_de_valores(relatorio, decisoes, referencias),
             *_pendencias_de_repetidos(relatorio, decisoes, comparacao),
+            *_pendencias_de_coincidencias(coincidencias, decisoes),
         ]
         previa = montar_previa(
             tabela,
             self.servicos.criar_normalizador_da_previa(importacao, tabela),
             colunas_visiveis_na_previa(importacao),
         )
-        self._concluir(importacao, itens, previa, (relatorio, comparacao))
+        contagens = ContagensDaValidacao(relatorio, comparacao, coincidencias)
+        self._concluir(importacao, itens, previa, contagens)
 
     def _assinaturas(
-        self, tabela: TabelaDoArquivo, normalizador: NormalizadorDeLinhas
+        self,
+        tabela: TabelaDoArquivo,
+        normalizador: NormalizadorDeLinhas,
+        conferencia: ConferenciaEntreCanais,
     ) -> Iterator[tuple[int, int]]:
         for linha in tabela.linhas():
             registro = normalizador.normalizar(linha)
             if registro is not None:
+                conferencia.conferir(registro, normalizador.endereco_da_linha(linha))
                 yield registro.chave_registro, registro.assinatura
 
     def _concluir(
@@ -236,12 +290,17 @@ class ValidarImportacao:
         importacao: Importacao,
         itens: list[Pendencia],
         previa: list[dict[str, dict[str, str]]],
-        contagens: tuple[RelatorioDeLinhas, ComparacaoComABase],
+        contagens: ContagensDaValidacao,
     ) -> None:
-        relatorio, comparacao = contagens
+        relatorio, comparacao = contagens.relatorio, contagens.comparacao
         resumo = resumir_relatorio(relatorio)
         novas = relatorio.aceitas - comparacao.iguais - comparacao.alteradas
-        resumo.update(novas=novas, iguais=comparacao.iguais, alteradas=comparacao.alteradas)
+        resumo.update(
+            novas=novas,
+            iguais=comparacao.iguais,
+            alteradas=comparacao.alteradas,
+            pente_fino=contagens.conferencia.resumir(),
+        )
         status = StatusDaImportacao.AGUARDANDO_DECISOES if itens else StatusDaImportacao.PRONTA
         self.servicos.importacoes.salvar(
             replace(
@@ -252,6 +311,9 @@ class ValidarImportacao:
                     "itens": [asdict(item) for item in itens],
                     "resumo": resumo,
                     "previa": previa,
+                    "coincidencias": [
+                        item.para_dicionario() for item in contagens.conferencia.coincidencias
+                    ],
                 },
             )
         )

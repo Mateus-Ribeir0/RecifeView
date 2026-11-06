@@ -5,6 +5,7 @@ Baseada no rascunho C4 v0.1 de 15/10/2026, feito a partir do esboço do Prof. Ma
 ## C1 · Contexto
 
 - **Gestor público:** acessa o painel pelo navegador, com login.
+- **Pessoa que mora no Recife:** usa a página pública e pode enviar um relato anônimo pelo formulário ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md), proposta).
 - **RecifeView:** o sistema.
 - **Fontes externas:** Portal de Dados Abertos do Recife, Câmara Municipal (SAGL), IBGE/SIDRA, catálogo de serviços do Conecta Recife, cópia do Internet Archive do dataset da SEDEC e, no futuro, o SGDE/Emprel (depende do pedido LAI). APAC/INMET (chuva) aparece no diagrama, mas o clima é estudo futuro.
 
@@ -63,7 +64,8 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 
 | Tela | O que mostra | Router da API |
 |---|---|---|
-| Página inicial (`/`, pública) | O problema, os primeiros achados, as telas previstas, as fontes e o projeto | Nenhum (conteúdo estático e a malha dos bairros) |
+| Página pública (`/`, `/o-que-muda`, `/plataforma`, `/dados-e-confianca`) | O que a plataforma é, o que muda em relação a antes, as telas, as fontes, o pente fino e a privacidade | Nenhum (conteúdo estático e a malha dos bairros) |
+| Relatar um problema (`/contribuir`, pública) | Formulário em três passos, sem identificação | Contribuições |
 | Entrar, ajuda e definir senha | Autenticação do gestor, orientação de acesso, troca da senha temporária | Autenticação |
 | Início (`/painel`) | KPIs-síntese e volume por fonte | Indicadores |
 | War Room (`/painel/war-room`) | Estado de um dia simulado: entradas, estoque, fila e alertas | War Room |
@@ -73,6 +75,7 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 | Território (`/painel/territorio`) | Taxas por bairro, faixas e tendência, com mapa e tabela | Território |
 | Prioridade (`/painel/prioridade`) | Abas: índice AHP com seis comparações, mapa e ranking; fila de ocorrências; método e sensibilidade | Prioridade |
 | Sobre os dados (`/painel/sobre-os-dados`) | Abas: fontes e cobertura, correções, cuidados e privacidade, glossário | Sobre |
+| Contribuições (`/painel/contribuicoes`) | Pente fino dos relatos parecidos, ocorrências e geração do pacote | Contribuições |
 | Importações (`/painel/importacoes`, `/nova` e `/:id`) | Histórico, envio de arquivo, decisões, relatório e desfazer | Importações |
 | (apoio a todas) | Anos, RPAs, bairros, categorias e fontes para os filtros | Catálogos |
 | (bônus) | Demanda esperada e classificador | Modelos |
@@ -86,6 +89,7 @@ Componentes do C3:
 3. **Serviços de análise:** casos de uso e regras de negócio (agregações, percentis, per capita, reincidência, priorização). É aqui que se garante que o texto da SEDEC nunca sai.
 4. **Repositórios:** SQLAlchemy e SQL parametrizado, views materializadas e paginação.
 5. **Importação:** leitores de arquivo, normalização no domínio, fila em processo e carga por `COPY`, tudo atrás de portas. Depois da carga, as views são atualizadas com o painel no ar. Enquanto o Processor não existe, é por aqui que os dados entram ([ADR 0007](adr/0007-importacao-de-arquivos-pelo-painel.md)).
+6. **Contribuições:** recebe os relatos do formulário público numa quarentena, aplica o pente fino e gera o pacote que segue pela importação. É a única rota de escrita sem sessão, e nada do que chega por ela aparece no painel sem revisão ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md)).
 
 Esses componentes se distribuem nas camadas da Clean Architecture (`api`, `application`, `domain`, `infrastructure`). A correspondência está em [clean-architecture.md](clean-architecture.md#backend-fastapi).
 
@@ -117,6 +121,7 @@ O Processor é a versão de produção do pipeline que já existe no Drive (`Dad
 - Senhas com hash Argon2; bloqueio de 15 minutos depois de 5 tentativas erradas seguidas; senha temporária trocada no primeiro acesso.
 - Token de acesso de 15 minutos só na memória do navegador; sessão de 12 horas num cookie `httpOnly` e `SameSite=Strict`, revogável no servidor. Detalhes e alternativas na [ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md) (proposta).
 - O texto da SEDEC não tem rota, não entra em resposta e não vai para log.
+- O formulário público não pede identificação, recusa CPF, telefone e e-mail no texto, tem limite de envios por origem e um campo-armadilha para robôs. O endereço e o detalhe do relato só aparecem para a gestão autenticada, com auditoria, e são apagados em 90 dias.
 - O sal do `id_local` fica no gerenciador de segredos (proposta: AWS Secrets Manager) e nunca no repositório nem no banco.
 - Os acessos são auditados (entrada, recusa, bloqueio, saída, troca de senha) sem IP e sem o e-mail digitado. As consultas aos dados também são auditadas, com usuário, rota, filtros e horário.
 - Os segredos de cada container chegam por variável de ambiente, e cada pasta tem um `.env.example` sem valores reais.

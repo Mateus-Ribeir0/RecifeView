@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.portas.importacoes import (
     ComparacaoComABase,
+    ContribuicoesARetirar,
     PaginaDeRegistros,
+    PlanoDeCarga,
     RegistroImportado,
     ResultadoDaCarga,
 )
@@ -55,6 +57,15 @@ UPDATE ouro.fato_demanda f SET
 FROM carga c
 WHERE f.chave_registro = c.chave_registro
     AND f.assinatura <> c.assinatura AND f.importacao_id <> :importacao_id
+"""
+GUARDAR_RETIRADAS = f"""
+INSERT INTO ouro.fato_demanda_substituida (substituida_por, {COLUNAS_DA_TABELA})
+SELECT :importacao_id, {COLUNAS_DA_TABELA} FROM ouro.fato_demanda
+WHERE chave_registro = ANY(:chaves)
+"""
+APAGAR_RETIRADAS = "DELETE FROM ouro.fato_demanda WHERE chave_registro = ANY(:chaves)"
+MARCAR_RETIRADAS = """
+UPDATE app.contribuicao SET retirada_por = :importacao_id WHERE id = ANY(:ids)
 """
 APAGAR_DA_IMPORTACAO = "DELETE FROM ouro.fato_demanda WHERE importacao_id = :importacao_id"
 RESTAURAR_VERSOES_ANTERIORES = f"""
@@ -135,13 +146,10 @@ class CarregadorSql:
         return ComparacaoComABase(iguais, alteradas)
 
     def carregar(
-        self,
-        importacao_id: int,
-        registros: Iterable[RegistroDeDemanda],
-        politica: PoliticaDeRepetidos,
+        self, importacao_id: int, registros: Iterable[RegistroDeDemanda], plano: PlanoDeCarga
     ) -> ResultadoDaCarga:
         contagem = _Contagem()
-        atualizar = politica is PoliticaDeRepetidos.ATUALIZAR
+        atualizar = plano.politica is PoliticaDeRepetidos.ATUALIZAR
         parametros = {"importacao_id": importacao_id}
         with self._fabrica.begin() as sessao:
             sessao.execute(text(CRIAR_CARGA))
@@ -154,8 +162,25 @@ class CarregadorSql:
                     sessao.execute(text(ATUALIZAR_ALTERADOS), parametros)
                 contagem.somar_lote(len(lote), novas, alteradas, atualizar)
                 sessao.execute(text("TRUNCATE carga"))
+            self._retirar(sessao, importacao_id, plano.retirada)
         return ResultadoDaCarga(
-            contagem.novas, contagem.atualizadas, contagem.iguais, contagem.ignoradas
+            contagem.novas,
+            contagem.atualizadas,
+            contagem.iguais,
+            contagem.ignoradas,
+            len(plano.retirada.ids),
+        )
+
+    @staticmethod
+    def _retirar(sessao: Session, importacao_id: int, retirada: ContribuicoesARetirar) -> None:
+        """A versão retirada vai para a tabela que o desfazer já restaura."""
+        if not retirada.ids:
+            return
+        chaves = {"importacao_id": importacao_id, "chaves": list(retirada.chaves)}
+        sessao.execute(text(GUARDAR_RETIRADAS), chaves)
+        sessao.execute(text(APAGAR_RETIRADAS), chaves)
+        sessao.execute(
+            text(MARCAR_RETIRADAS), {"importacao_id": importacao_id, "ids": list(retirada.ids)}
         )
 
     def desfazer(self, importacao_id: int) -> None:

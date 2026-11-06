@@ -21,7 +21,7 @@ O desafio é "Fragmentação do Tratamento de Denúncias Recebidas via Conecta R
 
 O cidadão já tem bons canais de entrada. A dificuldade está do lado de dentro da Prefeitura: consolidar registros de áreas diferentes, perceber que dois registros falam do mesmo problema, priorizar, encaminhar ao órgão certo e transformar o histórico em informação para a gestão. As bases públicas (156/Emlurb, Ouvidoria, Defesa Civil, SEDEC, Câmara) não têm chave em comum, e o cruzamento só é possível por bairro, serviço e período.
 
-**Usuário do produto:** o gestor público. O RecifeView não faz triagem do lado do cidadão. Ele é análise e visualização para quem decide. É isso que o diferencia das três soluções já submetidas por terceiros ao mesmo desafio.
+**Usuário do produto:** o gestor público. O RecifeView não faz triagem do lado do cidadão. Ele é análise e visualização para quem decide. É isso que o diferencia das três soluções já submetidas por terceiros ao mesmo desafio. O formulário público de 06/11/2026 só alimenta a análise, sem atendimento nem protocolo, mas amplia o escopo e precisa da confirmação do grupo ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md)).
 
 **Pergunta central (N1):** onde, em quais serviços e em que etapa do caminho entre canal e órgão as demandas se repetem, demoram ou ficam sem resposta, e como mostrar isso à gestão?
 

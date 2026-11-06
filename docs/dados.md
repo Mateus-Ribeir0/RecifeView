@@ -25,6 +25,8 @@ Quando o Processor estiver pronto, ele passa a ser o caminho oficial para popula
 | `SEDEC_CHAMADOS` | 90.659 | 2012 a 2024 | Chamado em área de risco, com texto do cidadão (mascarado) |
 | `CAMARA_REQUERIMENTOS` | 66.546 | 2021 a 2025 | Indicação ou requerimento de vereador, com a tramitação |
 
+Além do dataset, a base recebe a sexta fonte, `FORMULARIO_PUBLICO`: relatos do formulário público revisados pela gestão ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md), proposta). Uma linha é uma ocorrência, que pode somar vários relatos. Ela usa as categorias e os códigos de serviço da Central 156 e fica fora das métricas do 156.
+
 Dados de apoio: IBGE Censo 2022 por bairro (94 bairros, 1.488.920 habitantes), malha de bairros e RPAs em GeoJSON e o catálogo de serviços do Conecta Recife (840 serviços).
 
 Papel de cada fonte (N2): o **núcleo** é formado por 156/Emlurb, Ouvidoria e Câmara; o **complemento**, por SEDEC e Defesa Civil; o **apoio**, por IBGE, malha e catálogo.
@@ -37,6 +39,7 @@ Papel de cada fonte (N2): o **núcleo** é formado por 156/Emlurb, Ouvidoria e C
 | SEDEC Chamados | Cópia de 09/03/2024 no Internet Archive (o dataset foi retirado do portal) | Dado público arquivado |
 | Câmara Municipal | Sistema público SAGL (publico.recife.pe.leg.br), coletado em 07 e 08/10/2026 | Dado público |
 | IBGE | Censo 2022, tabelas 9922, 9923 e 10206 | Dado público |
+| Formulário público | Enviado por quem mora no Recife, sem identificação | Relato em quarentena até a revisão. Endereço e texto apagados em 90 dias |
 
 A ODbL exige atribuição. O rodapé do painel cita as fontes.
 
@@ -72,6 +75,7 @@ Regras para o código:
 | `id_local` não é exibido junto com coordenada | A combinação ajuda a reidentificar o endereço |
 | O sal só existe no gerenciador de segredos ou no `.env` local | Com o sal, o hash pode ser revertido por força bruta sobre a lista de endereços |
 | Classificação por texto (bônus) roda no backend ou no Processor; só o rótulo previsto sai | Pela mesma razão do texto SEDEC |
+| Endereço e detalhe do formulário ficam só em `app.contribuicao`, nunca em `ouro.*`, no pacote, em log ou em rota pública, e são apagados em 90 dias | O texto é livre e o endereço pode ser o de quem relatou |
 
 Algumas bases publicadas trazem dado pessoal exposto por defeito da própria fonte. Os detalhes ficam no Drive do grupo, fora deste repositório público, até a Prefeitura ser avisada. Esses registros nunca devem ser reproduzidos. Se o Processor encontrar algo parecido, ele descarta a linha e registra só a contagem.
 
@@ -116,6 +120,7 @@ Toda métrica exibida no painel precisa de uma definição única, registrada aq
 |---|---|---|
 | Reincidência | Hoje convivem três definições: 38,6% (156, 2026, logradouro + número + serviço, antes de deduplicar), 36,3% (156, 2026, depois de deduplicar, n = 54.755, usada no SR1) e 53,3% (156, 2015 a 2025, só com número no endereço, dataset único, H3 da N1/N3) | **Em aberto.** O grupo precisa escolher uma. O painel usa a terceira, chamada de "local repetido", e escreve a definição na tela |
 | Duplicidade × reincidência | A N3 separa: repetição em até 7 dias é duplicidade; em 30 dias ou mais é reincidência | Proposta da N3 |
+| Mesma ocorrência no pente fino | Mesmo bairro e categoria. Soma sozinho com endereço igual, número informado, mesmo serviço e até 7 dias. Vai para revisão com pontuação de 0,72 ou mais (local 60%, serviço 20%, tempo 15%, detalhe 5%). Com 30 dias ou mais, nunca é duplicidade | Proposta ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md)), pesos ainda sem calibração com dados rotulados |
 | Prazo | Mediana e p90 de `dias_ate_movimento`, excluindo valores negativos. Pedido sem conclusão é tempo censurado, não zero nem descarte | Definido na N2 |
 | Demanda per capita | Pedidos por mil habitantes por ano, só em bairros com 1.000 moradores ou mais | Definido na N2 |
 | Resposta da Câmara | Percentual de indicações com `camara_desfecho = ENVIADO E COM RESPOSTA REGISTRADA` | Definido na N1 |

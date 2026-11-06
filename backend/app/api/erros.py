@@ -12,15 +12,20 @@ from app.domain.erros import (
     ArquivoVazio,
     ContaBloqueada,
     ContaInativa,
+    ContribuicaoInvalida,
     CredenciaisInvalidas,
     DecisaoInvalida,
     DiaForaDaJanela,
     EmailInvalido,
     EmailJaCadastrado,
+    EnviosDemais,
     ErroDeDominio,
     ImportacaoEmEstadoInvalido,
     ImportacaoNaoEncontrada,
     ImportacaoNaoPodeSerDesfeita,
+    PacoteVazio,
+    ParNaoEncontrado,
+    PenteFinoPendente,
     PeriodoInvalido,
     SenhaAtualIncorreta,
     SenhaFraca,
@@ -117,6 +122,27 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
         "dia_fora_da_janela",
         "Não há dados para o dia escolhido.",
     ),
+    ContribuicaoInvalida: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, "contribuicao_invalida", "Confira os campos."
+    ),
+    EnviosDemais: RespostaDeErro(
+        status.HTTP_429_TOO_MANY_REQUESTS,
+        "envios_demais",
+        "Muitos relatos em pouco tempo. Tente de novo em alguns minutos.",
+    ),
+    ParNaoEncontrado: RespostaDeErro(
+        status.HTTP_404_NOT_FOUND,
+        "par_nao_encontrado",
+        "Esta dupla já foi decidida. Atualize a página.",
+    ),
+    PenteFinoPendente: RespostaDeErro(
+        status.HTTP_409_CONFLICT,
+        "pente_fino_pendente",
+        "Ainda há relatos parecidos sem decisão. Revise todos antes de gerar o pacote.",
+    ),
+    PacoteVazio: RespostaDeErro(
+        status.HTTP_409_CONFLICT, "pacote_vazio", "Não há ocorrências novas para gerar um pacote."
+    ),
 }
 
 
@@ -127,7 +153,8 @@ def registrar_tratadores_de_erro(app: FastAPI) -> None:
 
 def _tratar_erro_de_dominio(_: Request, erro: ErroDeDominio) -> JSONResponse:
     resposta = RESPOSTAS_POR_ERRO.get(type(erro), ERRO_GENERICO)
-    mensagem = erro.motivo if isinstance(erro, (SenhaFraca, DecisaoInvalida)) else resposta.mensagem
+    com_motivo = (SenhaFraca, DecisaoInvalida, ContribuicaoInvalida)
+    mensagem = erro.motivo if isinstance(erro, com_motivo) else resposta.mensagem
     detalhes = _detalhes_do_erro(erro)
     return _responder(
         resposta.status, DetalheDoErro(codigo=resposta.codigo, mensagem=mensagem, detalhes=detalhes)
@@ -137,6 +164,8 @@ def _tratar_erro_de_dominio(_: Request, erro: ErroDeDominio) -> JSONResponse:
 def _detalhes_do_erro(erro: ErroDeDominio) -> dict[str, Any] | None:
     if isinstance(erro, ContaBloqueada):
         return {"desbloqueio_em": erro.desbloqueio_em.isoformat()}
+    if isinstance(erro, ContribuicaoInvalida):
+        return {"campo": erro.campo}
     return None
 
 

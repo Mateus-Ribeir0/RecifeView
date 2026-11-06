@@ -8,6 +8,7 @@ from app.domain.importacao.decisoes import (
     PoliticaDeDatasInvalidas,
     PoliticaDeDuplicados,
     PoliticaDeRepetidos,
+    PoliticaEntreCanais,
 )
 from app.domain.importacao.importacao import Importacao, StatusDaImportacao
 
@@ -20,6 +21,8 @@ class RespostasDePendencias:
     datas_invalidas: PoliticaDeDatasInvalidas | None = None
     repetidos_na_base: PoliticaDeRepetidos | None = None
     repetidos_no_arquivo: PoliticaDeDuplicados | None = None
+    coincidencias_certas: PoliticaEntreCanais | None = None
+    coincidencias_provaveis: PoliticaEntreCanais | None = None
 
 
 def _combinar(decisoes: Decisoes, respostas: RespostasDePendencias) -> Decisoes:
@@ -34,6 +37,10 @@ def _combinar(decisoes: Decisoes, respostas: RespostasDePendencias) -> Decisoes:
         datas_invalidas=respostas.datas_invalidas or decisoes.datas_invalidas,
         repetidos_na_base=respostas.repetidos_na_base or decisoes.repetidos_na_base,
         repetidos_no_arquivo=respostas.repetidos_no_arquivo or decisoes.repetidos_no_arquivo,
+        coincidencias_certas=respostas.coincidencias_certas or decisoes.coincidencias_certas,
+        coincidencias_provaveis=(
+            respostas.coincidencias_provaveis or decisoes.coincidencias_provaveis
+        ),
     )
 
 

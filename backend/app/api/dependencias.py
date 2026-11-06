@@ -7,6 +7,7 @@ from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
 from app.application.casos_de_uso.entrar import Entrar
 from app.application.casos_de_uso.identificar_usuario import IdentificarUsuario
 from app.application.casos_de_uso.importacoes.servicos import ServicosDeImportacao
@@ -102,6 +103,11 @@ def obter_servicos_de_importacao(request: Request) -> ServicosDeImportacao:
     return servicos
 
 
+def obter_servicos_de_contribuicoes(request: Request) -> ServicosDeContribuicoes:
+    servicos: ServicosDeContribuicoes = request.app.state.servicos_de_contribuicoes
+    return servicos
+
+
 def abrir_transacao(request: Request) -> Iterator[Session]:
     fabrica: sessionmaker[Session] = request.app.state.fabrica_de_sessoes
     with fabrica() as sessao:
@@ -129,6 +135,9 @@ def obter_repositorios(sessao: Annotated[Session, Depends(abrir_transacao)]) -> 
 ConfiguracaoDep = Annotated[Configuracao, Depends(obter_configuracao)]
 SegurancaDep = Annotated[Seguranca, Depends(obter_seguranca)]
 ServicosDeImportacaoDep = Annotated[ServicosDeImportacao, Depends(obter_servicos_de_importacao)]
+ServicosDeContribuicoesDep = Annotated[
+    ServicosDeContribuicoes, Depends(obter_servicos_de_contribuicoes)
+]
 RepositoriosDep = Annotated[Repositorios, Depends(obter_repositorios)]
 
 

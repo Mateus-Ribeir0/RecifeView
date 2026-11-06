@@ -22,7 +22,11 @@ from tests.fakes import (
     UsuariosEmMemoria,
     criar_usuario,
 )
-from tests.fakes_importacao import TabelaFalsa, criar_servicos
+from tests.fakes_importacao import (
+    TabelaFalsa,
+    criar_servicos,
+    criar_servicos_de_contribuicoes,
+)
 
 EMAIL = "gestora@recife.pe.gov.br"
 ENTRAR = "/api/v1/autenticacao/entrar"
@@ -40,6 +44,9 @@ def montar_aplicacao(usuario: Usuario, relogio: RelogioFixo) -> FastAPI:
     )
     app = criar_aplicacao(configuracao)
     app.state.servicos_de_importacao = criar_servicos(TabelaFalsa([], []))
+    app.state.servicos_de_contribuicoes = criar_servicos_de_contribuicoes(
+        app.state.servicos_de_importacao
+    )
     repositorios = Repositorios(UsuariosEmMemoria(usuario), SessoesEmMemoria(), AcessosEmMemoria())
     seguranca = Seguranca(
         HashDeSenhaDeTeste(),

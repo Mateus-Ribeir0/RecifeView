@@ -8,6 +8,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.casos_de_uso.cadastrar_usuario import CadastrarUsuario
+from app.application.casos_de_uso.contribuicoes.carregar_logradouros import CarregarLogradouros
 from app.application.casos_de_uso.importacoes.importar_pelo_terminal import (
     ImportacaoPendente,
     ImportarPeloTerminal,
@@ -19,12 +20,15 @@ from app.domain.usuario import Perfil
 from app.infrastructure.auth.senhas import HashDeSenhaArgon2
 from app.infrastructure.auth.tokens import EmissorDeTokenJwt
 from app.infrastructure.db.conexao import criar_fabrica_de_sessoes
+from app.infrastructure.importacao.leitores import LeitorDeArquivos
 from app.infrastructure.importacao.montagem import (
     FilaImediata,
     montar_servicos_de_importacao,
 )
 from app.infrastructure.relogio import RelogioDoSistema
 from app.infrastructure.repositories.acessos import RegistroDeAcessosSql
+from app.infrastructure.repositories.contribuicoes import ReferenciaDoFormularioSql
+from app.infrastructure.repositories.referencias import ReferenciasSql
 from app.infrastructure.repositories.sessoes import SessaoRepositorySql
 from app.infrastructure.repositories.usuarios import UsuarioRepositorySql
 from app.infrastructure.settings import Configuracao, carregar_configuracao
@@ -42,6 +46,8 @@ def main(argumentos: Sequence[str] | None = None) -> int:
     fabrica = criar_fabrica_de_sessoes(configuracao.url_do_banco)
     if comando.comando == "importar":
         return _importar(comando, configuracao, fabrica)
+    if comando.comando == "carregar-logradouros":
+        return _carregar_logradouros(comando, fabrica)
     try:
         with fabrica.begin() as sessao:
             if comando.comando == "cadastrar-usuario":
@@ -81,6 +87,11 @@ def _ler_comando(argumentos: Sequence[str] | None) -> argparse.Namespace:
         action="store_true",
         help="Primeira carga da base: não compara com o que já existe",
     )
+
+    logradouros = comandos.add_parser(
+        "carregar-logradouros", help="Monta a lista de vias a partir de arquivos públicos do 156"
+    )
+    logradouros.add_argument("--arquivo", required=True, type=Path, action="append")
     return leitor.parse_args(argumentos)
 
 
@@ -101,6 +112,15 @@ def _importar(
         return 1
     print(f"Importação {importacao.id}: {importacao.status.value}")
     print(importacao.mensagem_de_erro or json.dumps(importacao.resultado, ensure_ascii=False))
+    return 0
+
+
+def _carregar_logradouros(comando: argparse.Namespace, fabrica: sessionmaker[Session]) -> int:
+    leitor = LeitorDeArquivos()
+    tabelas = [leitor.abrir(caminho) for caminho in comando.arquivo]
+    bairros = ReferenciasSql(fabrica).carregar().bairros
+    carga = CarregarLogradouros(ReferenciaDoFormularioSql(fabrica))
+    print(f"Vias somadas à lista: {carga.executar(tabelas, bairros)}")
     return 0
 
 

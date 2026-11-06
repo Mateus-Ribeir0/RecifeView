@@ -2,10 +2,13 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import PurePath
 
+from app.application.casos_de_uso.importacoes.conferencia_do_pacote import ConferenciaDoPacote
 from app.application.portas.importacoes import (
     ArmazenamentoDeArquivos,
     AtualizadorDoPainel,
     CarregadorDeDemandas,
+    ConferenciaEntreCanais,
+    ContribuicoesDaImportacao,
     FilaDeImportacoes,
     ImportacaoRepository,
     LeitorDeTabelas,
@@ -13,6 +16,7 @@ from app.application.portas.importacoes import (
     TabelaDoArquivo,
 )
 from app.application.portas.relogio import Relogio
+from app.domain.contribuicao.conferencia import ConferenciaDoArquivo
 from app.domain.erros import ImportacaoNaoEncontrada
 from app.domain.importacao.chaves import OrdemPorConteudo
 from app.domain.importacao.importacao import Importacao
@@ -36,6 +40,7 @@ class ServicosDeImportacao:
     referencias: ReferenciasRepository
     fila: FilaDeImportacoes
     relogio: Relogio
+    contribuicoes: ContribuicoesDaImportacao
     sal: str | None = None
 
     def obter(self, importacao_id: int) -> Importacao:
@@ -73,6 +78,12 @@ class ServicosDeImportacao:
             primeira_passada.anotar(linha)
         ordem.fechar()
         return self._criar_normalizador(importacao, tabela, ordem)
+
+    def criar_conferencia(self, importacao: Importacao) -> ConferenciaEntreCanais:
+        """Pacote se confere com a base; arquivo manual, com os relatos do formulário."""
+        if importacao.layout == CodigoDoLayout.FORMULARIO:
+            return ConferenciaDoPacote(self.contribuicoes, importacao.id)
+        return ConferenciaDoArquivo(self.contribuicoes.relatos_guardados())
 
     def criar_normalizador_da_previa(
         self, importacao: Importacao, tabela: TabelaDoArquivo

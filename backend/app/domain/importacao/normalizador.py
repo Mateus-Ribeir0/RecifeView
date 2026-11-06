@@ -44,7 +44,7 @@ from app.domain.importacao.layouts import (
 from app.domain.importacao.linha_recusada import LinhaRecusada, recusar
 from app.domain.importacao.privacidade import motivo_pelo_conteudo
 from app.domain.importacao.pseudonimizacao import gerar_id_local, numero_foi_informado
-from app.domain.importacao.registro import RegistroDeDemanda
+from app.domain.importacao.registro import EnderecoDaLinha, RegistroDeDemanda
 from app.domain.importacao.relatorio import Correcao, MotivoDeDescarte, RelatorioDeLinhas
 from app.domain.importacao.territorio_da_linha import (
     ResolvedorDeTerritorio,
@@ -67,6 +67,7 @@ INDICE_DA_FONTE = 0
 INDICE_DA_ABERTURA = 2
 INDICE_DO_MOVIMENTO = 3
 INDICE_DO_BAIRRO = 12
+LAYOUTS_JA_NORMALIZADOS = frozenset({CodigoDoLayout.DATASET, CodigoDoLayout.FORMULARIO})
 
 
 @dataclass(frozen=True)
@@ -112,7 +113,8 @@ class NormalizadorDeLinhas:
         ]
         self._campos_mapeados = {campo for campo, _ in self._leitura}
         self._ultima_coluna_usada = max((indice for _, indice in self._leitura), default=0)
-        self._ja_normalizado = plano.layout is CodigoDoLayout.DATASET
+        self._indices_dos_campos = dict(self._leitura)
+        self._ja_normalizado = plano.layout in LAYOUTS_JA_NORMALIZADOS
         self._formato_barra = plano.decisoes.formato_de_data or FormatoDeData.DIA_MES_ANO
         self._territorio = ResolvedorDeTerritorio(
             referencias.bairros, plano.decisoes, self._campos_mapeados, self.relatorio
@@ -145,6 +147,15 @@ class NormalizadorDeLinhas:
         self.relatorio.aceitas += 1
         self.relatorio.fontes[registro.fonte] += 1
         return registro
+
+    def endereco_da_linha(self, celulas: Sequence[str]) -> EnderecoDaLinha | None:
+        """Lê o endereço só para o pente fino, que compara e descarta sem guardar."""
+        coluna_da_via = self._indices_dos_campos.get(ENDERECO)
+        if coluna_da_via is None or coluna_da_via >= len(celulas) or not celulas[coluna_da_via]:
+            return None
+        coluna_do_numero = self._indices_dos_campos.get(NUMERO, len(celulas))
+        numero = celulas[coluna_do_numero] if coluna_do_numero < len(celulas) else ""
+        return EnderecoDaLinha(celulas[coluna_da_via], numero)
 
     def _escolher_adaptador(self) -> Callable[[dict[str, str]], None]:
         adaptadores: dict[CodigoDoLayout, Callable[[dict[str, str]], None]] = {
@@ -233,6 +244,8 @@ class NormalizadorDeLinhas:
             valores[campo] = decisao
 
     def _conferir_vocabulario(self, valores: dict[str, str], fonte: str) -> None:
+        if self._plano.layout is CodigoDoLayout.FORMULARIO:
+            return
         for campo in CAMPOS_VERIFICADOS_NO_VOCABULARIO:
             valor = valores.get(campo)
             conhecidos = self._referencias.vocabularios.get((fonte, campo))
