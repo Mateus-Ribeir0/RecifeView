@@ -29,6 +29,7 @@ Cada decisão técnica que muda a forma do sistema ganha um arquivo curto aqui: 
 | [0006](0006-modelo-analitico-no-postgresql.md) | Base analítica numa tabela fato com views materializadas | Proposta | 05/11/2026 |
 | [0007](0007-importacao-de-arquivos-pelo-painel.md) | Importação de arquivos pelo painel, com a normalização no backend | Proposta | 05/11/2026 |
 | [0008](0008-navegacao-lateral-com-filtros.md) | Lateral recolhível e filtros numa linha acima do conteúdo | Proposta | 05/11/2026 |
+| [0009](0009-formulario-publico-e-pente-fino.md) | Formulário público com quarentena e pente fino entre canais | Proposta | 06/11/2026 |
 
 ## Decisões em aberto
 
