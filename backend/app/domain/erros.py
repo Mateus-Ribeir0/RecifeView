@@ -85,3 +85,26 @@ class ValorDeFiltroInvalido(ErroDeDominio):
 
 class DiaForaDaJanela(ErroDeDominio):
     pass
+
+
+class ContribuicaoInvalida(ErroDeDominio):
+    def __init__(self, campo: str, motivo: str) -> None:
+        super().__init__(motivo)
+        self.campo = campo
+        self.motivo = motivo
+
+
+class EnviosDemais(ErroDeDominio):
+    pass
+
+
+class ParNaoEncontrado(ErroDeDominio):
+    pass
+
+
+class PenteFinoPendente(ErroDeDominio):
+    pass
+
+
+class PacoteVazio(ErroDeDominio):
+    pass

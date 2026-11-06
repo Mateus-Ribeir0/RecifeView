@@ -47,6 +47,7 @@ class CatalogoRepositorySql:
         fontes = [
             FonteDoCatalogo(fonte.value, rotulo, registros.get(fonte.value, 0))
             for fonte, rotulo in ROTULOS_DAS_FONTES.items()
+            if registros.get(fonte.value) or fonte is not Fonte.FORMULARIO
         ]
         rpas = sorted({bairro.rpa for bairro in bairros})
         return CatalogoDeFiltros(ano_minimo, ano_maximo, rpas, bairros, list(categorias), fontes)
