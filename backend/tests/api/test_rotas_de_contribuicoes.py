@@ -1,3 +1,4 @@
+import time
 from collections.abc import Iterator
 from typing import cast
 
@@ -21,6 +22,7 @@ from tests.fakes_importacao import (
 )
 
 BASE = "/api/v1/contribuicoes"
+ESPERAS_PELO_EXPURGO = 100
 ENVIO = {
     "chave_de_envio": "a" * 16,
     "servico_codigo": "131",
@@ -64,6 +66,19 @@ def cliente(servicos: ServicosDeContribuicoes) -> Iterator[TestClient]:
 def entrar_como_gestor(cliente: TestClient) -> None:
     gestor = criar_usuario()
     cliente.app.dependency_overrides[obter_usuario_atual] = lambda: gestor  # type: ignore[attr-defined]
+
+
+def test_expurgo_comeca_junto_com_a_api(
+    cliente: TestClient, servicos: ServicosDeContribuicoes
+) -> None:
+    memoria = cast(ContribuicoesEmMemoria, servicos.contribuicoes)
+
+    for _ in range(ESPERAS_PELO_EXPURGO):
+        if memoria.limites_de_expurgo:
+            break
+        time.sleep(0.01)
+
+    assert memoria.limites_de_expurgo
 
 
 def test_catalogo_e_publico(cliente: TestClient) -> None:

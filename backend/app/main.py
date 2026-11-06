@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import timedelta
@@ -9,6 +11,7 @@ from app.api.dependencias import Seguranca
 from app.api.erros import registrar_tratadores_de_erro
 from app.api.routers import autenticacao, contribuicoes, importacoes, painel, saude
 from app.application.casos_de_uso.contribuicoes.expurgar_enderecos import ExpurgarEnderecos
+from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
 from app.application.casos_de_uso.importacoes.retomar_importacoes import RetomarImportacoes
 from app.infrastructure.auth.senhas import HashDeSenhaArgon2
 from app.infrastructure.auth.tokens import EmissorDeTokenJwt
@@ -22,14 +25,28 @@ from app.infrastructure.relogio import RelogioDoSistema
 from app.infrastructure.settings import Configuracao, carregar_configuracao
 
 PREFIXO_DA_API = "/api/v1"
+SEGUNDOS_ENTRE_EXPURGOS = 6 * 60 * 60
+
+registro_de_log = logging.getLogger(__name__)
+
+
+async def _expurgar_sempre(servicos: ServicosDeContribuicoes) -> None:
+    """O prazo de guarda é uma promessa ao público: não pode depender de alguém gerar pacote."""
+    expurgar = ExpurgarEnderecos(servicos.contribuicoes, servicos.relogio)
+    while True:
+        try:
+            await asyncio.to_thread(expurgar.executar)
+        except Exception:
+            registro_de_log.exception("Falha ao apagar endereços vencidos")
+        await asyncio.sleep(SEGUNDOS_ENTRE_EXPURGOS)
 
 
 @asynccontextmanager
 async def _ciclo_de_vida(app: FastAPI) -> AsyncIterator[None]:
     RetomarImportacoes(app.state.servicos_de_importacao).executar()
-    servicos = app.state.servicos_de_contribuicoes
-    ExpurgarEnderecos(servicos.contribuicoes, servicos.relogio).executar()
+    expurgo = asyncio.create_task(_expurgar_sempre(app.state.servicos_de_contribuicoes))
     yield
+    expurgo.cancel()
 
 
 def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
