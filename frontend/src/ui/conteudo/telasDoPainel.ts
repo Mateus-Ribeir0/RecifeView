@@ -89,6 +89,13 @@ export const GRUPOS_DE_TELAS: readonly GrupoDeTelas[] = [
     grupo: 'Dados',
     telas: [
       {
+        nome: 'Contribuições',
+        caminho: '/painel/contribuicoes',
+        mostra: 'Relatos do formulário público: pente fino e pacote para a base.',
+        icone: 'relato',
+        filtros: SEM_FILTROS,
+      },
+      {
         nome: 'Importações',
         caminho: '/painel/importacoes',
         mostra: 'Enviar arquivos novos e ver o histórico do que entrou na base.',
