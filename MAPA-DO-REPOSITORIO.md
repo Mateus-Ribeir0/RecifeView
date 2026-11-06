@@ -68,6 +68,7 @@ Uma tarefa típica de código passa por eles nesta ordem:
 | [docs/adr/0006-modelo-analitico-no-postgresql.md](docs/adr/0006-modelo-analitico-no-postgresql.md) | Proposta: tabela fato e views materializadas no PostgreSQL |
 | [docs/adr/0007-importacao-de-arquivos-pelo-painel.md](docs/adr/0007-importacao-de-arquivos-pelo-painel.md) | Proposta: importação pelo painel, com decisões humanas, privacidade e desfazer |
 | [docs/adr/0008-navegacao-lateral-com-filtros.md](docs/adr/0008-navegacao-lateral-com-filtros.md) | Proposta: lateral recolhível, filtros numa linha acima do conteúdo, cache de consultas próprio e Leaflet direto |
+| [docs/adr/0009-formulario-publico-e-pente-fino.md](docs/adr/0009-formulario-publico-e-pente-fino.md) | Proposta: formulário público em quarentena, pente fino entre canais, comparação com busca vetorial e medição do limite |
 
 As ADRs alimentam a Documentação Final (N9), que pede o histórico de decisões.
 
