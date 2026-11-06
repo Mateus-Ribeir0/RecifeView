@@ -1,0 +1,49 @@
+.pergunta {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ajuda {
+  margin-top: var(--espaco-1);
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}
+
+.grade {
+  display: grid;
+  gap: var(--espaco-5);
+}
+
+@media (min-width: 720px) {
+  .grade {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+.campos {
+  display: grid;
+  gap: var(--espaco-4);
+}
+
+.mapa {
+  display: grid;
+  gap: var(--espaco-2);
+  justify-items: center;
+}
+
+.mapa svg {
+  width: auto;
+  height: 280px;
+}
+
+.reservaDoMapa {
+  width: 100%;
+  height: 280px;
+}
+
+.mapa figcaption {
+  font-size: var(--texto-legenda);
+  font-weight: 500;
+  color: var(--cor-texto-secundario);
+}

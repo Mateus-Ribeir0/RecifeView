@@ -1,6 +1,6 @@
 import estilos from './Botao.module.css'
 
-export type VarianteDoBotao = 'primario' | 'secundario' | 'claro'
+export type VarianteDoBotao = 'primario' | 'secundario' | 'claro' | 'contorno'
 
 interface OpcoesDoBotao {
   larguraTotal?: boolean

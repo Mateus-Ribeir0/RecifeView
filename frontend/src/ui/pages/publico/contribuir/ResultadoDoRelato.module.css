@@ -1,0 +1,65 @@
+.cartao {
+  padding: var(--espaco-7) var(--espaco-5);
+  border: 1px solid var(--cor-azul-principal);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+  text-align: center;
+  animation: chegar 520ms var(--curva-de-entrada);
+}
+
+.icone {
+  display: inline-grid;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+  place-items: center;
+  animation: destacar 640ms 120ms var(--curva-de-entrada) both;
+}
+
+.titulo {
+  margin-top: var(--espaco-5);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.texto {
+  max-width: 52ch;
+  margin: var(--espaco-3) auto 0;
+  color: var(--cor-texto-secundario);
+}
+
+.lembrete {
+  margin-top: var(--espaco-4);
+  font-size: 13px;
+  color: var(--cor-texto-terciario);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-6);
+}
+
+@keyframes chegar {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes destacar {
+  from {
+    transform: scale(0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cartao,
+  .icone {
+    animation: none;
+  }
+}

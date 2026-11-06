@@ -1,0 +1,36 @@
+.faixa {
+  padding-block: var(--espaco-7);
+}
+
+.numeros {
+  display: grid;
+  gap: var(--espaco-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 900px) {
+  .numeros {
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: var(--espaco-6);
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--espaco-1);
+  padding-left: var(--espaco-4);
+  border-left: 3px solid var(--cor-azul-principal);
+}
+
+.rotulo {
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}
+
+.valor {
+  font-size: clamp(28px, 3.6vw, 40px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}

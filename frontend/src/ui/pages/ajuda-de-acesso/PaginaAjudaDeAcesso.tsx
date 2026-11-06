@@ -34,7 +34,8 @@ export function PaginaAjudaDeAcesso() {
     <LayoutDeAcesso>
       <h1 className={acesso.titulo}>Não consegue entrar?</h1>
       <p className={acesso.subtitulo}>
-        As contas do RecifeView são criadas pela administração do projeto, para gestores públicos.
+        As contas do RecifeView são criadas pela administração da plataforma, para gestores
+        públicos.
       </p>
       <dl className={estilos.duvidas}>
         {DUVIDAS.map(({ pergunta, resposta }) => (

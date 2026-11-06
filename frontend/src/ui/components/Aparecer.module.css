@@ -1,0 +1,20 @@
+.aparecer {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity var(--duracao-de-entrada) var(--curva-de-entrada) var(--atraso, 0ms),
+    transform var(--duracao-de-entrada) var(--curva-de-entrada) var(--atraso, 0ms);
+}
+
+.aparecer[data-visivel] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aparecer {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

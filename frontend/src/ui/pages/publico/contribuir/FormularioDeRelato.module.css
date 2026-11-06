@@ -1,0 +1,101 @@
+.cartao {
+  scroll-margin-top: calc(var(--altura-do-cabecalho) + var(--espaco-4));
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+}
+
+@media (min-width: 720px) {
+  .cartao {
+    padding: var(--espaco-6);
+  }
+}
+
+.reserva {
+  min-height: 420px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-fundo-alternativo);
+}
+
+.progresso {
+  display: flex;
+  gap: var(--espaco-2);
+  margin-bottom: var(--espaco-6);
+}
+
+.progresso li {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding-bottom: var(--espaco-2);
+  border-bottom: 3px solid var(--cor-borda);
+  color: var(--cor-texto-secundario);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    border-color 240ms ease,
+    color 240ms ease;
+}
+
+.progresso li[aria-current='step'],
+.progresso li[data-feito] {
+  border-bottom-color: var(--cor-azul-principal);
+  color: var(--cor-preto);
+}
+
+.marcaDoPasso {
+  display: grid;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-fundo-alternativo);
+  place-items: center;
+}
+
+[aria-current='step'] > .marcaDoPasso,
+[data-feito] > .marcaDoPasso {
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+}
+
+.passo {
+  display: grid;
+  gap: var(--espaco-5);
+  animation: deslizar 320ms var(--curva-de-entrada);
+}
+
+.armadilha {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-6);
+}
+
+@keyframes deslizar {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progresso li {
+    transition: none;
+  }
+
+  .passo {
+    animation: none;
+  }
+}
