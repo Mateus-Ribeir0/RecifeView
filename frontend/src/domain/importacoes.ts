@@ -22,6 +22,8 @@ export type TipoDePendencia =
   | 'datas_invalidas'
   | 'repetidos_na_base'
   | 'repetidos_no_arquivo'
+  | 'coincidencias_certas'
+  | 'coincidencias_provaveis'
 
 export const DEIXAR_VAZIO = '__deixar_vazio__'
 export const DESCARTAR_LINHA = '__descartar_linha__'
@@ -110,6 +112,13 @@ export interface Pendencia {
   detalhes: Readonly<Record<string, number>>
 }
 
+export interface PenteFino {
+  comparadas: number
+  semEndereco: number
+  certas: number
+  provaveis: number
+}
+
 export interface ResumoDaValidacao {
   lidas: number
   aceitas: number
@@ -123,6 +132,7 @@ export interface ResumoDaValidacao {
   descartes: Readonly<Record<string, number>>
   correcoes: Readonly<Record<string, number>>
   fontes: Readonly<Record<string, number>>
+  penteFino: Partial<PenteFino>
 }
 
 export interface ResultadoDaCarga {
@@ -132,11 +142,13 @@ export interface ResultadoDaCarga {
   atualizadas: number
   iguais: number
   ignoradas: number
+  retiradas: number
   repetidasNoArquivo: number
   semIdLocal: number
   descartes: Readonly<Record<string, number>>
   correcoes: Readonly<Record<string, number>>
   fontes: Readonly<Record<string, number>>
+  penteFino: Partial<PenteFino>
 }
 
 export interface PreviaDeLinha {
@@ -175,6 +187,8 @@ export interface DecisoesDaImportacao {
   datasInvalidas: string | null
   repetidosNaBase: string | null
   repetidosNoArquivo: string | null
+  coincidenciasCertas: string | null
+  coincidenciasProvaveis: string | null
 }
 
 export interface DetalheDaImportacao extends ResumoDaImportacao {
@@ -218,6 +232,8 @@ export interface RespostasDePendencias {
   datasInvalidas?: string
   repetidosNaBase?: string
   repetidosNoArquivo?: string
+  coincidenciasCertas?: string
+  coincidenciasProvaveis?: string
 }
 
 export interface FiltroDoHistorico {
@@ -266,6 +282,8 @@ const ROTULOS_DAS_ESCOLHAS: Readonly<Record<string, string>> = {
   inserir_como_novos: 'inserir como novos',
   manter_todos: 'manter todos',
   manter_um: 'manter só um de cada',
+  manter_o_registro_oficial: 'manter o registro oficial e retirar o relato',
+  manter_os_dois: 'manter os dois',
   deixar_vazia: 'deixar vazia',
   descartar_linha: 'descartar a linha',
   iso: 'ano-mês-dia',
@@ -295,6 +313,8 @@ export function descreverDecisoes(decisoes: DecisoesDaImportacao): string[] {
   return [
     ...descreverEscolha('Registros já na base', decisoes.repetidosNaBase),
     ...descreverEscolha('Repetidos no arquivo', decisoes.repetidosNoArquivo),
+    ...descreverEscolha('Mesma demanda no formulário', decisoes.coincidenciasCertas),
+    ...descreverEscolha('Provável demanda no formulário', decisoes.coincidenciasProvaveis),
     ...descreverEscolha('Datas inválidas', decisoes.datasInvalidas),
     ...descreverEscolha('Ordem das datas', decisoes.formatoDeData),
     ...valores,

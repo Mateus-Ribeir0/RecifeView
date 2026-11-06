@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import { useServicoDeImportacoes } from '../../../application/importacoes/contexto'
-import { formatarData, formatarNumero } from '../../../domain/formatacao'
+import { contar, formatarData, formatarNumero } from '../../../domain/formatacao'
 import { nomeDaFonte } from '../../../domain/fontes'
-import type { DetalheDaImportacao, PreviaDeLinha } from '../../../domain/importacoes'
+import type { DetalheDaImportacao, PenteFino, PreviaDeLinha } from '../../../domain/importacoes'
 import { Aviso } from '../../components/Aviso'
 import { Botao } from '../../components/Botao'
 import { mensagemDeFalha } from '../../components/mensagemDeFalha'
@@ -85,6 +85,27 @@ function PreviaAntesEDepois({ previa, colunasDoArquivo }: PropriedadesDaPrevia) 
   )
 }
 
+const LAYOUT_DO_PACOTE = 'formulario'
+
+interface PropriedadesDoPenteFino {
+  penteFino: Partial<PenteFino>
+  layout: string | null
+}
+
+function ResumoDoPenteFino({ penteFino, layout }: PropriedadesDoPenteFino) {
+  const { comparadas = 0, semEndereco = 0, certas = 0, provaveis = 0 } = penteFino
+  const comparadoCom = layout === LAYOUT_DO_PACOTE ? 'a base' : 'os relatos do formulário'
+  return (
+    <Aviso tipo="info" titulo="Pente fino entre canais">
+      {comparadas === 0
+        ? 'Nenhuma linha caiu no mesmo bairro e tema de um relato do formulário.'
+        : `${contar(comparadas, 'linha comparada', 'linhas comparadas')} com ${comparadoCom}: ${formatarNumero(certas)} iguais e ${formatarNumero(provaveis)} parecidas.`}
+      {semEndereco > 0 &&
+        ` ${formatarNumero(semEndereco)} ficaram sem comparação de endereço, porque o endereço não veio ou o pseudônimo não está disponível.`}
+    </Aviso>
+  )
+}
+
 interface Propriedades {
   importacao: DetalheDaImportacao
   aoConcluir: () => void
@@ -134,6 +155,7 @@ export function PassoRevisao({ importacao, aoConcluir, aoCancelar }: Propriedade
         descartes={resumo.descartes}
         correcoes={resumo.correcoes}
       />
+      <ResumoDoPenteFino penteFino={resumo.penteFino} layout={importacao.layout} />
       {resumo.semIdLocal > 0 && (
         <Aviso tipo="alerta" titulo="Registros fora da reincidência">
           O sal do pseudônimo de endereço não está configurado nesta instalação.{' '}

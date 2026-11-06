@@ -37,6 +37,8 @@ function respostasEmJson(respostas: RespostasDePendencias) {
     datas_invalidas: respostas.datasInvalidas,
     repetidos_na_base: respostas.repetidosNaBase,
     repetidos_no_arquivo: respostas.repetidosNoArquivo,
+    coincidencias_certas: respostas.coincidenciasCertas,
+    coincidencias_provaveis: respostas.coincidenciasProvaveis,
   }
 }
 

@@ -1,6 +1,6 @@
 import { COR } from './estilo'
 
-export type FormaDoMarcador = 'circulo' | 'quadrado' | 'triangulo' | 'losango' | 'cruz'
+export type FormaDoMarcador = 'circulo' | 'quadrado' | 'triangulo' | 'losango' | 'cruz' | 'anel'
 
 interface Propriedades {
   x?: number
@@ -23,6 +23,19 @@ function caminhoDaForma(forma: FormaDoMarcador): string {
 /** A forma ajuda a separar fontes de cor parecida, como Defesa Civil e SEDEC. */
 export function Marcador({ x, y, cor, forma, opacidade = 1 }: Propriedades) {
   if (x === undefined || y === undefined) return null
+  if (forma === 'anel') {
+    return (
+      <circle
+        cx={x}
+        cy={y}
+        r={TAMANHO}
+        fill={COR.fundo}
+        stroke={cor}
+        strokeWidth={2}
+        opacity={opacidade}
+      />
+    )
+  }
   if (forma === 'circulo') {
     return (
       <circle

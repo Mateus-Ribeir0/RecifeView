@@ -32,6 +32,7 @@
   --cor-fonte-camara: #b28600;
   --cor-fonte-defesa-civil: #9f1853;
   --cor-fonte-sedec: #8a3800;
+  --cor-fonte-formulario: #393939;
 
   --cor-selecao: #ff832b;
 
@@ -64,6 +65,9 @@
   --raio-de-campo: 4px;
   --raio-de-cartao: 8px;
   --sombra-flutuante: 0 8px 24px rgb(0 0 0 / 0.12);
+
+  --duracao-de-entrada: 640ms;
+  --curva-de-entrada: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --largura-do-conteudo: 1200px;
   --margem-lateral: 16px;

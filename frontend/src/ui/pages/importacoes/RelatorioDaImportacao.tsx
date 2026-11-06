@@ -135,6 +135,11 @@ export function RelatorioDaImportacao({ importacao, aoMudar }: Propriedades) {
           { rotulo: 'Linhas lidas', valor: resultado.lidas },
           { rotulo: 'Novas', valor: resultado.novas },
           { rotulo: 'Atualizadas', valor: resultado.atualizadas },
+          {
+            rotulo: 'Relatos retirados',
+            valor: resultado.retiradas,
+            contexto: 'cobertos pelo registro oficial',
+          },
           { rotulo: 'Idênticas', valor: resultado.iguais },
           { rotulo: 'Ignoradas', valor: resultado.ignoradas },
           { rotulo: 'Descartadas', valor: descartadas },

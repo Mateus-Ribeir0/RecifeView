@@ -1,7 +1,7 @@
 import { useSobreOsDados } from '../../../../application/consultas/usePainel'
 import { formatarDataEHora, formatarNumero } from '../../../../domain/formatacao'
 import { ROTULOS_DAS_CORRECOES } from '../../../../domain/importacoes'
-import { nomeDaFonte, ORDEM_DAS_FONTES } from '../../../../domain/fontes'
+import { FONTES_DE_ARQUIVO, nomeDaFonte, ORDEM_DAS_FONTES } from '../../../../domain/fontes'
 import type { SobreOsDados } from '../../../../domain/painel'
 import { BarrasHorizontais } from '../../../charts/BarrasHorizontais'
 import { MapaDeCobertura } from '../../../charts/MapaDeCobertura'
@@ -124,7 +124,9 @@ function FontesECobertura({ dados }: { dados: SobreOsDados }) {
           nota="2025 e 2026 são parciais: a Ouvidoria de 2025 só traz parte do ano, o arquivo de 2025 da Defesa Civil foi publicado vazio e 2026 vai até a data do retrato."
         >
           <MapaDeCobertura
-            fontes={ORDEM_DAS_FONTES.map((fonte) => ({ chave: fonte, rotulo: nomeDaFonte(fonte) }))}
+            fontes={ORDEM_DAS_FONTES.filter((fonte) =>
+              dados.cobertura.some((celula) => celula.fonte === fonte),
+            ).map((fonte) => ({ chave: fonte, rotulo: nomeDaFonte(fonte) }))}
             celulas={dados.cobertura}
           />
         </Cartao>
@@ -201,7 +203,7 @@ export function PaginaSobreOsDados() {
 
   return (
     <>
-      <CabecalhoDaTela titulo="Sobre os dados" fontes={ORDEM_DAS_FONTES}>
+      <CabecalhoDaTela titulo="Sobre os dados" fontes={FONTES_DE_ARQUIVO}>
         Registros de cinco portas de entrada, de 2012 a 2026, só do Recife, com as correções da EDA.
       </CabecalhoDaTela>
       <Abas

@@ -13,6 +13,8 @@ const SEM_DECISOES: DecisoesDaImportacao = {
   datasInvalidas: null,
   repetidosNaBase: null,
   repetidosNoArquivo: null,
+  coincidenciasCertas: null,
+  coincidenciasProvaveis: null,
 }
 
 describe('descreverFonte', () => {

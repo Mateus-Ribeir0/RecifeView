@@ -17,6 +17,7 @@ const CODIGOS_CONHECIDOS: ReadonlySet<string> = new Set<CodigoDeErro>([
   'senha_atual_incorreta',
   'senha_fraca',
   'dados_invalidos',
+  'contribuicao_invalida',
 ])
 
 export interface Requisicao {
@@ -27,7 +28,11 @@ export interface Requisicao {
 }
 
 interface CorpoDeErro {
-  erro?: { codigo?: string; mensagem?: string; detalhes?: { desbloqueio_em?: string } }
+  erro?: {
+    codigo?: string
+    mensagem?: string
+    detalhes?: { desbloqueio_em?: string; campo?: string }
+  }
 }
 
 type Buscar = typeof fetch
@@ -118,6 +123,7 @@ function converterErro(status: number, corpo: CorpoDeErro | null): ErroDoRecifeV
       erro.codigo as CodigoDeErro,
       erro.mensagem ?? MENSAGEM_PADRAO,
       desbloqueio ? new Date(desbloqueio) : null,
+      erro.detalhes?.campo ?? null,
     )
   }
   if (status >= STATUS_DE_ERRO_DO_SERVIDOR) {

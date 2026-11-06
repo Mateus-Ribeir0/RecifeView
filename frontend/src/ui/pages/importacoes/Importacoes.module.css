@@ -269,6 +269,18 @@
   color: var(--cor-texto-secundario);
 }
 
+.exemplosDoPenteFino {
+  display: grid;
+  gap: var(--espaco-1);
+  max-height: 160px;
+  overflow-y: auto;
+  margin-block: var(--espaco-2);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-fundo-alternativo);
+  font-size: 13px;
+}
+
 .opcaoDaPergunta {
   display: flex;
   align-items: flex-start;

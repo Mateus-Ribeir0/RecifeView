@@ -10,11 +10,13 @@ const RESULTADO_VAZIO: ResultadoDaCarga = {
   atualizadas: 0,
   iguais: 0,
   ignoradas: 0,
+  retiradas: 0,
   repetidasNoArquivo: 0,
   semIdLocal: 0,
   descartes: {},
   correcoes: {},
   fontes: {},
+  penteFino: {},
 }
 
 export function criarImportacao(mudancas: Partial<DetalheDaImportacao> = {}): DetalheDaImportacao {
@@ -81,6 +83,8 @@ export function criarImportacao(mudancas: Partial<DetalheDaImportacao> = {}): De
       datasInvalidas: null,
       repetidosNaBase: null,
       repetidosNoArquivo: null,
+      coincidenciasCertas: null,
+      coincidenciasProvaveis: null,
     },
     pendencias: {
       itens: [],
@@ -98,6 +102,7 @@ export function criarImportacao(mudancas: Partial<DetalheDaImportacao> = {}): De
         descartes: { linha_quebrada: 1 },
         correcoes: {},
         fontes: { '156_EMLURB': 9 },
+        penteFino: {},
       },
     },
     mensagemDeErro: null,
