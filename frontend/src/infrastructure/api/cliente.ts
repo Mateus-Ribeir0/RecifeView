@@ -18,7 +18,6 @@ const CODIGOS_CONHECIDOS: ReadonlySet<string> = new Set<CodigoDeErro>([
   'senha_fraca',
   'dados_invalidos',
   'contribuicao_invalida',
-  'email_nao_confirmado',
   'area_da_gestao_negada',
   'acesso_negado',
   'codigo_invalido',

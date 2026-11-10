@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { ProvedorDeSessao } from '../../application/autenticacao/ProvedorDeSessao'
 import type { ServicoDeAutenticacao } from '../../application/autenticacao/servico'
-import { ErroDoRecifeView } from '../../domain/erros'
 import { CIDADA, criarServicoFalso, GESTORA } from '../../testes/servicoFalso'
 import { PaginaEntrar } from '../pages/entrar/PaginaEntrar'
 import { RotaProtegida } from './RotaProtegida'
@@ -22,7 +21,6 @@ function montar(servico: ServicoDeAutenticacao, rotaInicial: string) {
           { path: '/entrar/gestao', element: <PaginaEntrar area="gestao" /> },
         ],
       },
-      { path: '/confirmar-email', element: <h1>Confirmar o e-mail</h1> },
       {
         element: <RotaProtegida />,
         children: [
@@ -82,15 +80,5 @@ describe('áreas por perfil', () => {
 
     expect(entrarNoServico).toHaveBeenCalledWith(expect.objectContaining({ area: 'gestao' }))
     expect(await screen.findByRole('heading', { name: 'Painel da gestão' })).toBeInTheDocument()
-  })
-
-  it('e-mail sem confirmação mostra o caminho para confirmar', async () => {
-    const recusa = new ErroDoRecifeView('email_nao_confirmado', 'Falta confirmar o seu e-mail.')
-    montar(criarServicoFalso({ entrar: vi.fn().mockRejectedValue(recusa) }), '/entrar')
-
-    await entrar()
-    await userEvent.click(await screen.findByRole('link', { name: 'Confirmar o e-mail' }))
-
-    expect(await screen.findByRole('heading', { name: 'Confirmar o e-mail' })).toBeInTheDocument()
   })
 })

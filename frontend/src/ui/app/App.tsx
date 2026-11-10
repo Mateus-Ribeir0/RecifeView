@@ -7,7 +7,6 @@ import { ContextoDasContribuicoes } from '../../application/contribuicoes/contex
 import { PaginaAjudaDeAcesso } from '../pages/ajuda-de-acesso/PaginaAjudaDeAcesso'
 import { PaginaCadastrar } from '../pages/cadastrar/PaginaCadastrar'
 import { LayoutDaCidade } from '../pages/cidade/LayoutDaCidade'
-import { PaginaConfirmarEmail } from '../pages/confirmar-email/PaginaConfirmarEmail'
 import { PaginaDefinirSenha } from '../pages/definir-senha/PaginaDefinirSenha'
 import { PaginaEntrar } from '../pages/entrar/PaginaEntrar'
 import { PaginaNaoEncontrada } from '../pages/nao-encontrada/PaginaNaoEncontrada'
@@ -69,7 +68,6 @@ const roteador = createBrowserRouter([
           { path: 'entrar', element: <PaginaEntrar area="cidade" /> },
           { path: 'entrar/gestao', element: <PaginaEntrar area="gestao" /> },
           { path: 'cadastrar', element: <PaginaCadastrar /> },
-          { path: 'confirmar-email', element: <PaginaConfirmarEmail /> },
         ],
       },
       { path: 'entrar/ajuda', element: <PaginaAjudaDeAcesso /> },

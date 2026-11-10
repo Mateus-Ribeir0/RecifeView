@@ -39,8 +39,7 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 | `/contribuir`            | Formulário público em três passos (relatar sem conta)                          | Público            |
 | `/entrar`                | Entrada do cidadão (cabeçalho azul e foto do Recife)                           | Só quem não entrou |
 | `/entrar/gestao`         | Entrada da gestão (cabeçalho azul-marinho); recusa conta de cidadão            | Só quem não entrou |
-| `/cadastrar`             | Criação da conta de cidadão em dois passos: dados e código enviado por e-mail  | Só quem não entrou |
-| `/confirmar-email`       | Confirmação com código e senha, para quem fechou a página no meio do cadastro  | Só quem não entrou |
+| `/cadastrar`             | Criação da conta de cidadão, que já entra na área do cidadão                   | Só quem não entrou |
 | `/recuperar-senha`       | Nova senha com código por e-mail (só contas de cidadão)                        | Público            |
 | `/entrar/ajuda`          | Senha esquecida, conta bloqueada, pedido de acesso da gestão                   | Público            |
 | `/definir-senha`         | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária | Quem entrou        |
@@ -99,7 +98,7 @@ src/
   infrastructure/   api/ (cliente HTTP, conversão e serviços que implementam as portas)
   ui/
     app/            rotas, guardas de rota e montagem (único lugar que conhece a infraestrutura)
-    pages/          publico/ (as abas do site), entrar/, cadastrar/, confirmar-email/, recuperar-senha/, ajuda-de-acesso/, definir-senha/, cidade/, painel/, importacoes/, contribuicoes/, nao-encontrada/
+    pages/          publico/ (as abas do site), entrar/, cadastrar/, recuperar-senha/, ajuda-de-acesso/, definir-senha/, cidade/, painel/, importacoes/, contribuicoes/, nao-encontrada/
     components/     logo, botões, campos, avisos, KPIs, cartões, abas, ícones, tabela, estados da consulta
     charts/         gráficos: os do Recharts (únicos que o importam) e funil, sparkline e composição em HTML e SVG
     map/            mapa SVG dos bairros, mapa de escolha do bairro, minimapa das RPAs, mapa coroplético (Leaflet) e a malha
