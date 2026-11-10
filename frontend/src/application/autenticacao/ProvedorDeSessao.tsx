@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 
 import { ContextoDaSessao, type EstadoDaSessao } from './contexto'
 import type {
-  ConfirmacaoDeEmail,
   Credenciais,
   DadosDaConta,
   NovaConta,
@@ -67,9 +66,9 @@ export function ProvedorDeSessao({ servico, children }: Propriedades) {
     [servico],
   )
 
-  const confirmarEmail = useCallback(
-    async (confirmacao: ConfirmacaoDeEmail) => {
-      const usuario = await servico.confirmarEmail(confirmacao)
+  const criarConta = useCallback(
+    async (conta: NovaConta) => {
+      const usuario = await servico.criarConta(conta)
       definirEstado({ situacao: 'autenticada', usuario })
       return usuario
     },
@@ -99,15 +98,13 @@ export function ProvedorDeSessao({ servico, children }: Propriedades) {
       entrar,
       sair,
       trocarSenha,
-      confirmarEmail,
+      criarConta,
       atualizarConta,
       excluirConta,
-      criarConta: (conta: NovaConta) => servico.criarConta(conta),
-      reenviarCodigo: (email: string) => servico.reenviarCodigo(email),
       pedirNovaSenha: (email: string) => servico.pedirNovaSenha(email),
       criarNovaSenha: (pedido: NovaSenhaComCodigo) => servico.criarNovaSenha(pedido),
     }),
-    [servico, estado, entrar, sair, trocarSenha, confirmarEmail, atualizarConta, excluirConta],
+    [servico, estado, entrar, sair, trocarSenha, criarConta, atualizarConta, excluirConta],
   )
 
   return <ContextoDaSessao value={sessao}>{children}</ContextoDaSessao>

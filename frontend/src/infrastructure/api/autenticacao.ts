@@ -28,8 +28,6 @@ const CAMINHOS = {
   sair: '/autenticacao/sair',
   trocarSenha: '/autenticacao/trocar-senha',
   contas: '/contas',
-  confirmar: '/contas/confirmar',
-  reenviar: '/contas/reenviar-codigo',
   recuperar: '/contas/recuperar-senha',
   novaSenha: '/contas/nova-senha',
   minhaConta: '/contas/eu',
@@ -102,26 +100,9 @@ export function criarServicoDeAutenticacao(cliente: ClienteHttp): ServicoDeAuten
         aceitou_os_termos: conta.aceitouOsTermos,
         site: conta.site,
       }
-      const resposta = await cliente.enviar<PedidoRecebidoJson>(CAMINHOS.contas, {
-        metodo: 'POST',
-        corpo,
-      })
-      return resposta.mensagem
-    },
-    async confirmarEmail({ email, codigo, senha }) {
       return guardarAcesso(
-        await cliente.enviar<AcessoJson>(CAMINHOS.confirmar, {
-          metodo: 'POST',
-          corpo: { email, codigo, senha },
-        }),
+        await cliente.enviar<AcessoJson>(CAMINHOS.contas, { metodo: 'POST', corpo }),
       )
-    },
-    async reenviarCodigo(email) {
-      const resposta = await cliente.enviar<PedidoRecebidoJson>(CAMINHOS.reenviar, {
-        metodo: 'POST',
-        corpo: { email },
-      })
-      return resposta.mensagem
     },
     async pedirNovaSenha(email) {
       const resposta = await cliente.enviar<PedidoRecebidoJson>(CAMINHOS.recuperar, {

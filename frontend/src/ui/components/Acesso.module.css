@@ -57,27 +57,6 @@
   font-weight: 600;
 }
 
-.passos {
-  display: flex;
-  gap: var(--espaco-2);
-  margin-top: var(--espaco-4);
-  font-size: var(--texto-legenda);
-  font-weight: 600;
-  color: var(--cor-texto-secundario);
-}
-
-.passos li {
-  flex: 1;
-  padding-top: var(--espaco-2);
-  border-top: 3px solid var(--cor-borda);
-}
-
-.passos li[aria-current='step'],
-.passos li[data-feito] {
-  border-top-color: var(--cor-azul-principal);
-  color: var(--cor-preto);
-}
-
 .campoDeEscolha {
   display: grid;
   gap: var(--espaco-2);
@@ -108,9 +87,4 @@
   left: -9999px;
   width: 1px;
   height: 1px;
-}
-
-.emailDestacado {
-  font-weight: 600;
-  overflow-wrap: anywhere;
 }

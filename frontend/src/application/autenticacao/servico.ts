@@ -15,12 +15,6 @@ export interface NovaConta {
   site: string
 }
 
-export interface ConfirmacaoDeEmail {
-  email: string
-  codigo: string
-  senha: string
-}
-
 export interface NovaSenhaComCodigo {
   email: string
   codigo: string
@@ -43,9 +37,7 @@ export interface ServicoDeAutenticacao {
   sair(): Promise<void>
   trocarSenha(troca: TrocaDeSenha): Promise<Usuario>
   observarPerdaDeSessao(aoPerder: () => void): () => void
-  criarConta(conta: NovaConta): Promise<string>
-  confirmarEmail(confirmacao: ConfirmacaoDeEmail): Promise<Usuario>
-  reenviarCodigo(email: string): Promise<string>
+  criarConta(conta: NovaConta): Promise<Usuario>
   pedirNovaSenha(email: string): Promise<string>
   criarNovaSenha(pedido: NovaSenhaComCodigo): Promise<void>
   atualizarConta(dados: DadosDaConta): Promise<Usuario>

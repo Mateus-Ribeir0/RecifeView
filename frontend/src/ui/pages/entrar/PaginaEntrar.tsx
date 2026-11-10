@@ -4,7 +4,6 @@ import { Link, useLocation } from 'react-router'
 import type { MotivoDaSaida } from '../../../application/autenticacao/contexto'
 import { useSessao } from '../../../application/autenticacao/useSessao'
 import { normalizarEmail } from '../../../domain/conta'
-import { ErroDoRecifeView } from '../../../domain/erros'
 import type { AreaDeAcesso } from '../../../domain/usuario'
 import estilos from '../../components/Acesso.module.css'
 import { Aviso } from '../../components/Aviso'
@@ -103,23 +102,13 @@ export function PaginaEntrar({ area = 'cidade' }: { area?: AreaDeAcesso }) {
     }
   }
 
-  const precisaConfirmar =
-    falha instanceof ErroDoRecifeView && falha.codigo === 'email_nao_confirmado'
-
   return (
     <LayoutDeAcesso tom={area}>
       <h1 className={estilos.titulo}>{TEXTOS[area].titulo}</h1>
       <p className={estilos.subtitulo}>{TEXTOS[area].subtitulo}</p>
       <div className={estilos.avisos}>
         {falha ? (
-          <Aviso tipo={precisaConfirmar ? 'alerta' : 'erro'}>
-            {mensagemDeFalha(falha)}{' '}
-            {precisaConfirmar && (
-              <Link to="/confirmar-email" state={{ email: normalizarEmail(email) }}>
-                Confirmar o e-mail
-              </Link>
-            )}
-          </Aviso>
+          <Aviso tipo="erro">{mensagemDeFalha(falha)}</Aviso>
         ) : (
           <AvisoDeSaida motivo={motivo} />
         )}

@@ -1,23 +1,30 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 
 import { ProvedorDeSessao } from '../../../application/autenticacao/ProvedorDeSessao'
 import type { ServicoDeAutenticacao } from '../../../application/autenticacao/servico'
 import { ContextoDasContribuicoes } from '../../../application/contribuicoes/contexto'
 import { criarContribuicoesFalsas } from '../../../testes/contribuicaoFalsa'
+import { ErroDoRecifeView } from '../../../domain/erros'
 import { criarServicoFalso } from '../../../testes/servicoFalso'
+import { SoParaVisitantes } from '../../app/SoParaVisitantes'
 import { PaginaCadastrar } from './PaginaCadastrar'
 
 const SENHA = 'uma senha bem comprida'
 
 function montar(servico: ServicoDeAutenticacao) {
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/cadastrar']}>
       <ProvedorDeSessao servico={servico}>
         <ContextoDasContribuicoes value={criarContribuicoesFalsas()}>
-          <PaginaCadastrar />
+          <Routes>
+            <Route element={<SoParaVisitantes />}>
+              <Route path="/cadastrar" element={<PaginaCadastrar />} />
+            </Route>
+            <Route path="/cidade" element={<h1>Área do cidadão</h1>} />
+          </Routes>
         </ContextoDasContribuicoes>
       </ProvedorDeSessao>
     </MemoryRouter>,
@@ -26,7 +33,7 @@ function montar(servico: ServicoDeAutenticacao) {
 }
 
 async function preencher(usuario: ReturnType<typeof userEvent.setup>, email: string) {
-  await usuario.type(screen.getByLabelText('Nome'), 'Maria da Silva')
+  await usuario.type(await screen.findByLabelText('Nome'), 'Maria da Silva')
   await usuario.type(screen.getByLabelText('E-mail'), email)
   await usuario.type(screen.getByLabelText('Senha'), SENHA)
   await usuario.type(screen.getByLabelText('Repita a senha'), SENHA)
@@ -37,7 +44,7 @@ describe('cadastro de cidadão', () => {
   it('sugere o domínio certo e corrige com um clique', async () => {
     const usuario = montar(criarServicoFalso())
 
-    await usuario.type(screen.getByLabelText('E-mail'), 'maria@gmial.com')
+    await usuario.type(await screen.findByLabelText('E-mail'), 'maria@gmial.com')
     await usuario.click(await screen.findByRole('button', { name: 'Usar este' }))
 
     expect(screen.getByLabelText('E-mail')).toHaveValue('maria@gmail.com')
@@ -47,33 +54,38 @@ describe('cadastro de cidadão', () => {
     const criarConta = vi.fn()
     const usuario = montar(criarServicoFalso({ criarConta }))
 
-    await usuario.type(screen.getByLabelText('Nome'), 'Maria da Silva')
-    await usuario.click(screen.getByRole('button', { name: 'Criar conta e receber o código' }))
+    await usuario.type(await screen.findByLabelText('Nome'), 'Maria da Silva')
+    await usuario.click(screen.getByRole('button', { name: 'Criar conta e entrar' }))
 
     expect(await screen.findByText(/aceite como usamos os seus dados/)).toBeInTheDocument()
     expect(criarConta).not.toHaveBeenCalled()
   })
 
-  it('cria a conta, pede o código e confirma com a mesma senha', async () => {
-    const criarConta = vi.fn().mockResolvedValue('Enviamos um código.')
-    const confirmarEmail = vi.fn().mockResolvedValue(undefined)
-    const usuario = montar(criarServicoFalso({ criarConta, confirmarEmail }))
+  it('cria a conta e já entra na área do cidadão', async () => {
+    const usuario = montar(criarServicoFalso())
 
     await preencher(usuario, ' Maria@Exemplo.com ')
-    await usuario.click(screen.getByRole('button', { name: 'Criar conta e receber o código' }))
+    await usuario.click(screen.getByRole('button', { name: 'Criar conta e entrar' }))
+
+    expect(await screen.findByRole('heading', { name: 'Área do cidadão' })).toBeInTheDocument()
+  })
+
+  it('envia o e-mail normalizado e mostra no campo quando ele já tem conta', async () => {
+    const recusa = new ErroDoRecifeView(
+      'cadastro_invalido',
+      'Este e-mail já tem conta.',
+      null,
+      'email',
+    )
+    const criarConta = vi.fn().mockRejectedValue(recusa)
+    const usuario = montar(criarServicoFalso({ criarConta }))
+
+    await preencher(usuario, ' Maria@Exemplo.com ')
+    await usuario.click(screen.getByRole('button', { name: 'Criar conta e entrar' }))
 
     expect(criarConta).toHaveBeenCalledWith(
       expect.objectContaining({ email: 'maria@exemplo.com', aceitouOsTermos: true, site: '' }),
     )
-    const codigo = await screen.findByLabelText('Código de 6 dígitos')
-    await usuario.type(codigo, '123456')
-    expect(codigo).toHaveValue('123 456')
-    await usuario.click(screen.getByRole('button', { name: 'Confirmar e entrar' }))
-
-    expect(confirmarEmail).toHaveBeenCalledWith({
-      email: 'maria@exemplo.com',
-      codigo: '123456',
-      senha: SENHA,
-    })
+    expect(await screen.findByText('Este e-mail já tem conta.')).toBeInTheDocument()
   })
 })

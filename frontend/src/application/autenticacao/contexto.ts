@@ -2,7 +2,6 @@ import { createContext } from 'react'
 
 import type { Usuario } from '../../domain/usuario'
 import type {
-  ConfirmacaoDeEmail,
   Credenciais,
   DadosDaConta,
   NovaConta,
@@ -22,11 +21,9 @@ export interface Sessao {
   entrar(credenciais: Credenciais): Promise<Usuario>
   sair(): Promise<void>
   trocarSenha(troca: TrocaDeSenha): Promise<Usuario>
-  confirmarEmail(confirmacao: ConfirmacaoDeEmail): Promise<Usuario>
   atualizarConta(dados: DadosDaConta): Promise<Usuario>
   excluirConta(senha: string): Promise<void>
-  criarConta(conta: NovaConta): Promise<string>
-  reenviarCodigo(email: string): Promise<string>
+  criarConta(conta: NovaConta): Promise<Usuario>
   pedirNovaSenha(email: string): Promise<string>
   criarNovaSenha(pedido: NovaSenhaComCodigo): Promise<void>
 }
