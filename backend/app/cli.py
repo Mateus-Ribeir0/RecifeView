@@ -16,7 +16,7 @@ from app.application.casos_de_uso.importacoes.importar_pelo_terminal import (
 from app.application.casos_de_uso.redefinir_senha import RedefinirSenha
 from app.application.sessoes import GestaoDeSessoes
 from app.domain.erros import EmailInvalido, EmailJaCadastrado, ErroDeDominio, UsuarioNaoEncontrado
-from app.domain.usuario import Perfil
+from app.domain.usuario import PERFIS_DA_GESTAO, Perfil
 from app.infrastructure.auth.senhas import HashDeSenhaArgon2
 from app.infrastructure.auth.tokens import EmissorDeTokenJwt
 from app.infrastructure.db.conexao import criar_fabrica_de_sessoes
@@ -68,7 +68,9 @@ def _ler_comando(argumentos: Sequence[str] | None) -> argparse.Namespace:
     cadastro.add_argument("--email", required=True)
     cadastro.add_argument("--nome", required=True)
     cadastro.add_argument(
-        "--perfil", choices=[perfil.value for perfil in Perfil], default=Perfil.GESTOR.value
+        "--perfil",
+        choices=[perfil.value for perfil in Perfil if perfil in PERFIS_DA_GESTAO],
+        default=Perfil.GESTOR.value,
     )
 
     redefinicao = comandos.add_parser("redefinir-senha", help="Gera uma nova senha temporária")
