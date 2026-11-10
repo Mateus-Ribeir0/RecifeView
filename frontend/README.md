@@ -20,6 +20,15 @@ npm run dev
 
 O painel fica em http://localhost:5173. Em desenvolvimento, o Vite repassa tudo que começa com `/api` para a API em `localhost:8000`, então navegador, cookie de sessão e API ficam na mesma origem.
 
+Para conferir a versão de produção, gere o build e sirva a pasta `dist/`, com a API rodando:
+
+```bash
+npm run build
+npm run preview
+```
+
+Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
+
 ## Telas
 
 | Caminho                  | Tela                                                                              | Acesso             |
@@ -59,7 +68,7 @@ Nenhuma é obrigatória em desenvolvimento. O modelo é o [.env.example](.env.ex
 | ------------------- | --------------------------------------------------------------- |
 | `npm run dev`       | Servidor de desenvolvimento com recarga                         |
 | `npm run build`     | Checa os tipos e gera a versão de produção em `dist/`           |
-| `npm run preview`   | Serve a versão de produção localmente                           |
+| `npm run preview`   | Serve a versão de produção em http://localhost:4173             |
 | `npm test`          | Roda os testes (Vitest e Testing Library)                       |
 | `npm run lint`      | ESLint, incluindo a regra de camadas e a proibição de travessão |
 | `npm run typecheck` | Checagem de tipos                                               |
