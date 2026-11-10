@@ -1,9 +1,9 @@
 import { useTituloDaPagina } from '../../../components/useTituloDaPagina'
 import { Abertura } from './Abertura'
-import { CaminhoDaDemanda } from './CaminhoDaDemanda'
 import { ChamadaFinal } from './ChamadaFinal'
+import { ComOuSemConta } from './ComOuSemConta'
 import { FaixaDeNumeros } from './FaixaDeNumeros'
-import { ResumoDoQueMuda } from './ResumoDoQueMuda'
+import { RazoesParaRelatar } from './RazoesParaRelatar'
 import { SecaoDoMapa } from './SecaoDoMapa'
 
 export function PaginaInicial() {
@@ -13,8 +13,8 @@ export function PaginaInicial() {
     <>
       <Abertura />
       <FaixaDeNumeros />
-      <ResumoDoQueMuda />
-      <CaminhoDaDemanda />
+      <RazoesParaRelatar />
+      <ComOuSemConta />
       <SecaoDoMapa />
       <ChamadaFinal />
     </>

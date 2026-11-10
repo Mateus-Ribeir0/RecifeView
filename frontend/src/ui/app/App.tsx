@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet, ScrollRestoration } from 'react-router'
+import { createBrowserRouter, Navigate, Outlet, ScrollRestoration } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 
 import { ProvedorDeSessao } from '../../application/autenticacao/ProvedorDeSessao'
@@ -37,26 +37,23 @@ const roteador = createBrowserRouter([
         children: [
           { index: true, element: <PaginaInicial /> },
           {
-            path: 'o-que-muda',
+            path: 'como-funciona',
             lazy: async () => ({
-              Component: (await import('../pages/publico/o-que-muda/PaginaOQueMuda'))
-                .PaginaOQueMuda,
+              Component: (await import('../pages/publico/como-funciona/PaginaComoFunciona'))
+                .PaginaComoFunciona,
             }),
           },
           {
-            path: 'plataforma',
+            path: 'a-cidade-em-numeros',
             lazy: async () => ({
-              Component: (await import('../pages/publico/plataforma/PaginaPlataforma'))
-                .PaginaPlataforma,
+              Component: (
+                await import('../pages/publico/a-cidade-em-numeros/PaginaCidadeEmNumeros')
+              ).PaginaCidadeEmNumeros,
             }),
           },
-          {
-            path: 'dados-e-confianca',
-            lazy: async () => ({
-              Component: (await import('../pages/publico/confianca/PaginaConfianca'))
-                .PaginaConfianca,
-            }),
-          },
+          { path: 'o-que-muda', element: <Navigate to="/a-cidade-em-numeros" replace /> },
+          { path: 'plataforma', element: <Navigate to="/como-funciona" replace /> },
+          { path: 'dados-e-confianca', element: <Navigate to="/como-funciona" replace /> },
           {
             path: 'contribuir',
             lazy: async () => ({

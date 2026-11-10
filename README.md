@@ -22,7 +22,7 @@ O projeto responde ao desafio [Fragmentação do Tratamento de Denúncias Recebi
 | Fase | Situação |
 |---|---|
 | Pesquisa, dados, EDA (N1 a N3) | Concluída. Os entregáveis estão no Drive do grupo. |
-| Site público e acesso | Prontos: cinco abas públicas, entrada, troca de senha, sessão e saída |
+| Site público e acesso | Prontos: quatro abas públicas, entrada, troca de senha, sessão e saída |
 | Contas de cidadão | Prontas: cadastro com código por e-mail, área do cidadão com relatos da cidade e números do bairro, entrada separada da gestão ([ADR 0010](docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta) |
 | Telas de dados do painel | Prontas: Início, War Room, Retorno, Reincidência, Prazos, Território, Prioridade e Sobre os dados |
 | Importação de arquivos | Pronta: envio, normalização, decisões, histórico e desfazer |

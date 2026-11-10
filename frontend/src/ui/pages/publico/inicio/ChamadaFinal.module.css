@@ -30,3 +30,16 @@
   max-width: 46ch;
   margin-block: var(--espaco-3) var(--espaco-5);
 }
+
+.gestao {
+  padding-block: var(--espaco-4);
+  border-bottom: 1px solid rgb(255 255 255 / 0.2);
+  background: var(--cor-cabecalho-da-gestao);
+  color: var(--cor-branco);
+  font-size: var(--texto-apoio);
+}
+
+.gestao a {
+  color: var(--cor-branco);
+  font-weight: 600;
+}

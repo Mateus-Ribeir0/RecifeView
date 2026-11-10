@@ -66,7 +66,7 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 
 | Tela | O que mostra | Router da API |
 |---|---|---|
-| Página pública (`/`, `/o-que-muda`, `/plataforma`, `/dados-e-confianca`) | O que a plataforma é, o que muda em relação a antes, as telas, as fontes, o pente fino e a privacidade | Nenhum (conteúdo estático e a malha dos bairros) |
+| Página pública (`/`, `/como-funciona`, `/a-cidade-em-numeros`) | O que a plataforma é para quem mora no Recife, o caminho do relato, os níveis de acesso, o pente fino, a privacidade e os achados da base aberta | Nenhum (conteúdo estático e a malha dos bairros) |
 | Relatar um problema (`/contribuir`, pública) | Formulário em três passos, sem identificação | Contribuições |
 | Entrar, ajuda e definir senha (`/entrar`, `/entrar/gestao`, `/entrar/ajuda`, `/definir-senha`) | Entrada do cidadão e da gestão, orientação de acesso, troca da senha | Autenticação |
 | Criar conta, confirmar e-mail e recuperar senha (`/cadastrar`, `/confirmar-email`, `/recuperar-senha`) | Cadastro do cidadão com código por e-mail e nova senha com código | Contas |

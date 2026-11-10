@@ -1,0 +1,73 @@
+.grade {
+  display: grid;
+  gap: var(--espaco-4);
+  margin-top: var(--espaco-6);
+}
+
+@media (min-width: 800px) {
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cartao {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: var(--espaco-2) var(--espaco-4);
+  height: 100%;
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+  transition: border-color 200ms ease;
+}
+
+.cartao:hover {
+  border-color: var(--cor-azul-principal);
+}
+
+.icone {
+  display: grid;
+  grid-row: span 2;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-azul-claro);
+  color: var(--cor-azul-escuro);
+  place-items: center;
+}
+
+.antes,
+.agora {
+  display: grid;
+  gap: 2px;
+}
+
+.antes span,
+.agora span {
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+}
+
+.antes {
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}
+
+.antes span {
+  color: var(--cor-texto-terciario);
+}
+
+.agora {
+  font-weight: 600;
+}
+
+.agora span {
+  color: var(--cor-azul-principal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cartao {
+    transition: none;
+  }
+}
