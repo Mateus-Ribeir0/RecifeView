@@ -67,6 +67,7 @@ class Contribuicao:
     retorno: RetornoAnterior
     resultado: ResultadoDoEnvio
     principal_id: UUID | None = None
+    usuario_id: UUID | None = None
 
     def como_relato(self) -> Relato:
         return Relato(

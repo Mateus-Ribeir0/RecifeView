@@ -61,7 +61,7 @@ O comando aceita `--arquivo` mais de uma vez e guarda só o nome da via e o bair
 Existem dois tipos de conta ([ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)):
 
 - **Gestão** (`GESTOR` e `ADMINISTRADOR`): criadas pela administração, pela linha de comando abaixo. Veem o painel, o pente fino e a importação.
-- **Cidadão** (`CIDADAO`): criadas pela própria pessoa em `/cadastrar`, sem confirmação por e-mail: o cadastro já abre a sessão. Veem os relatos da cidade (sem número exato nem texto) e os indicadores do bairro. Toda rota da gestão responde 403 para elas.
+- **Cidadão** (`CIDADAO`): criadas pela própria pessoa em `/cadastrar`, sem confirmação por e-mail: o cadastro já abre a sessão. Veem os relatos da cidade (sem número exato nem texto), os próprios relatos com a situação de cada um e os indicadores do bairro. Toda rota da gestão responde 403 para elas, e as rotas `/cidade` respondem 403 para a gestão.
 
 O único e-mail que a API manda é o código de "Esqueci minha senha". Sem servidor SMTP configurado, ele não é enviado: fica num arquivo `.txt` na pasta de `API_PASTA_DOS_EMAILS` (padrão `../data/emails`, fora do git). Abra o arquivo mais recente para ver o código. Para o código chegar na caixa de entrada, configure o SMTP (seção abaixo).
 
@@ -157,6 +157,7 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `POST /contas/eu/excluir` | Exclui a conta de cidadão, com a senha |
 | `GET /cidade/ocorrencias` | Relatos dos últimos 90 dias, com rua só da lista oficial e número em faixa de centena |
 | `GET /cidade/bairros/{bairro}` | Indicadores do bairro comparados com o Recife |
+| `GET /cidade/meus-relatos` | Os relatos que a própria pessoa enviou com a conta aberta, com endereço e situação. A de um relato somado é a da ocorrência que o recebeu |
 | `POST /autenticacao/trocar-senha` | Troca a senha, derruba as outras sessões e abre uma nova |
 
 | `GET /catalogos/filtros` | Anos, RPAs, bairros, categorias e fontes para os filtros |
@@ -184,7 +185,7 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `GET /importacoes/{id}/registros` | Registros tratados, paginados |
 | `GET /contribuicoes/catalogo` | Temas, serviços e bairros do formulário. Público |
 | `GET /contribuicoes/logradouros?bairro=...` | Vias conhecidas de um bairro. Público |
-| `POST /contribuicoes` | Recebe um relato e diz se ficou novo, somado ou em conferência. Público, com limite de envios |
+| `POST /contribuicoes` | Recebe um relato e diz se ficou novo, somado ou em conferência. Público, com limite de envios. Com token de conta de cidadão, o relato fica ligado a ela para aparecer em "Meus relatos" |
 | `GET /contribuicoes/resumo` | Números da fila de relatos |
 | `GET /contribuicoes/ocorrencias` | Ocorrências consolidadas, com endereço, para a gestão |
 | `GET /contribuicoes/pares` | Relatos parecidos que esperam decisão |

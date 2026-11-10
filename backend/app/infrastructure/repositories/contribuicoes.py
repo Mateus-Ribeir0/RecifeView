@@ -20,6 +20,7 @@ from app.application.portas.contribuicoes import (
     PaginaDeOcorrencias,
     ParNovo,
     ParParaRevisar,
+    RelatoDoCidadao,
     ResumoDasContribuicoes,
 )
 from app.application.portas.importacoes import RegistroNoMesmoLocal
@@ -37,17 +38,17 @@ from app.domain.fontes import Fonte
 COLUNAS = """
     id, chave_de_envio, recebida_em, data_relato, categoria, servico_codigo, servico,
     bairro_oficial, logradouro, numero, detalhe, id_local, numero_informado, retorno, resultado,
-    principal_id
+    principal_id, usuario_id
 """
 INSERIR = """
 INSERT INTO app.contribuicao (
     id, chave_de_envio, recebida_em, data_relato, categoria, servico_codigo, servico,
     bairro_oficial, logradouro, numero, detalhe, id_local, numero_informado, retorno, resultado,
-    principal_id
+    principal_id, usuario_id
 ) VALUES (
     :id, :chave_de_envio, :recebida_em, :data_relato, :categoria, :servico_codigo, :servico,
     :bairro_oficial, :logradouro, :numero, :detalhe, :id_local, :numero_informado, :retorno,
-    :resultado, :principal_id
+    :resultado, :principal_id, :usuario_id
 )
 ON CONFLICT (chave_de_envio) DO NOTHING
 """
@@ -196,6 +197,27 @@ ORDER BY s.data_relato DESC, s.recebida_em DESC
 LIMIT :limite
 """
 LIMITE_DA_VISAO_DA_CIDADE = 300
+# A situação de um relato somado é a da ocorrência que o recebeu.
+RELATOS_DO_CIDADAO = f"""
+{COM_SITUACAO}
+SELECT
+    meu.id, meu.recebida_em, meu.servico_codigo, meu.servico, b.nome,
+    meu.logradouro, meu.numero, meu.detalhe, meu.expurgada_em IS NOT NULL,
+    meu.principal_id IS NOT NULL,
+    1 + (SELECT count(*) FROM app.contribuicao f WHERE f.principal_id = ocorrencia.id),
+    ocorrencia.situacao,
+    EXISTS (
+        SELECT 1 FROM app.par_de_contribuicoes p
+        WHERE p.decisao IS NULL AND ocorrencia.id IN (p.primeira_id, p.segunda_id)
+    )
+FROM situacoes meu
+JOIN situacoes ocorrencia ON ocorrencia.id = coalesce(meu.principal_id, meu.id)
+JOIN ouro.dim_bairro b ON b.bairro_oficial = meu.bairro_oficial
+WHERE meu.usuario_id = :usuario
+ORDER BY meu.recebida_em DESC
+LIMIT :limite
+"""
+LIMITE_DOS_RELATOS_DO_CIDADAO = 200
 EXPURGAR = """
 UPDATE app.contribuicao
 SET logradouro = NULL, numero = NULL, detalhe = NULL, expurgada_em = :agora
@@ -398,6 +420,12 @@ class ContribuicaoRepositorySql:
         with self._fabrica() as sessao:
             linhas = sessao.execute(text(OCORRENCIAS_DA_CIDADE), parametros)
             return [OcorrenciaDaCidade(*linha) for linha in linhas]
+
+    def relatos_do_cidadao(self, usuario_id: UUID) -> list[RelatoDoCidadao]:
+        parametros = {"usuario": usuario_id, "limite": LIMITE_DOS_RELATOS_DO_CIDADAO}
+        with self._fabrica() as sessao:
+            linhas = sessao.execute(text(RELATOS_DO_CIDADAO), parametros)
+            return [RelatoDoCidadao(*linha) for linha in linhas]
 
     def relatos_guardados(self) -> list[RelatoGuardado]:
         with self._fabrica() as sessao:

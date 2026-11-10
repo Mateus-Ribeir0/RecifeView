@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 from datetime import timedelta
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
 from app.application.portas.contribuicoes import ParNovo
@@ -20,6 +20,7 @@ from app.domain.contribuicao.contribuicao import (
 from app.domain.contribuicao.enderecos import reconhecer_logradouro
 from app.domain.erros import ContribuicaoInvalida
 from app.domain.importacao.pseudonimizacao import gerar_id_local, numero_foi_informado
+from app.domain.usuario import Usuario
 
 
 @dataclass(frozen=True)
@@ -44,19 +45,28 @@ def _avaliar(nova: Contribuicao, candidatas: list[Contribuicao]) -> Avaliacao:
     return Avaliacao(None, pares)
 
 
+def _dono(quem_enviou: Usuario | None) -> UUID | None:
+    """Só a conta de cidadão acompanha os próprios relatos; o da gestão segue sem dono."""
+    if quem_enviou is None or quem_enviou.e_da_gestao:
+        return None
+    return quem_enviou.id
+
+
 @dataclass(frozen=True)
 class ReceberContribuicao:
     """Guarda o relato em quarentena: nada do que chega aqui aparece no painel sem revisão."""
 
     servicos: ServicosDeContribuicoes
 
-    def executar(self, formulario: FormularioPreenchido) -> ResultadoDoEnvio:
+    def executar(
+        self, formulario: FormularioPreenchido, quem_enviou: Usuario | None = None
+    ) -> ResultadoDoEnvio:
         repetido = self.servicos.contribuicoes.buscar_por_chave_de_envio(formulario.chave_de_envio)
         if repetido is not None:
             return repetido.resultado
         servico = localizar_servico(formulario.servico_codigo)
         self._validar(formulario)
-        nova = self._montar(formulario, servico)
+        nova = replace(self._montar(formulario, servico), usuario_id=_dono(quem_enviou))
         desde = nova.data_relato - timedelta(days=DIAS_DE_REINCIDENCIA - 1)
         candidatas = self.servicos.contribuicoes.candidatas(
             nova.bairro_oficial, nova.categoria, desde

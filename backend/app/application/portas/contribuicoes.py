@@ -96,6 +96,25 @@ class FiltroDaCidade:
 
 
 @dataclass(frozen=True)
+class RelatoDoCidadao:
+    """Um relato visto por quem o enviou: o endereço é dele, então pode voltar inteiro."""
+
+    id: UUID
+    recebida_em: datetime
+    servico_codigo: str
+    servico: str
+    bairro: str
+    logradouro: str | None
+    numero: str | None
+    detalhe: str | None
+    endereco_apagado: bool
+    somado: bool
+    relatos: int
+    situacao: str
+    tem_dupla_aberta: bool
+
+
+@dataclass(frozen=True)
 class OcorrenciaDaCidade:
     """Linha crua da quarentena: o número sai daqui só para virar faixa no caso de uso."""
 
@@ -145,6 +164,8 @@ class ContribuicaoRepository(ContribuicoesDaImportacao, Protocol):
     def expurgar_enderecos(self, recebidas_ate: datetime, agora: datetime) -> int: ...
 
     def ocorrencias_da_cidade(self, filtro: FiltroDaCidade) -> list[OcorrenciaDaCidade]: ...
+
+    def relatos_do_cidadao(self, usuario_id: UUID) -> list[RelatoDoCidadao]: ...
 
 
 class ReferenciaDoFormulario(Protocol):

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -22,6 +22,24 @@ class OcorrenciaPublicaResposta(BaseModel):
     faixa_de_numeracao: str | None
     relatos: int
     sem_retorno: int
+    situacao: SituacaoPublica
+
+
+class MeuRelatoResposta(BaseModel):
+    """Vai só para quem enviou: por isso o endereço e o texto podem voltar."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    recebido_em: datetime
+    servico: str
+    tema: str
+    bairro: str
+    endereco: str | None
+    detalhe: str | None
+    endereco_apagado: bool
+    somado: bool
+    relatos: int
     situacao: SituacaoPublica
 
 

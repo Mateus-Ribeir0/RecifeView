@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from app.api.dependencias import (
     GestorAtualDep,
     ServicosDeContribuicoesDep,
+    UsuarioSeEntrouDep,
     auditar_consulta,
 )
 from app.api.schemas.contribuicoes import (
@@ -58,21 +59,27 @@ def listar_logradouros(
     "",
     status_code=status.HTTP_201_CREATED,
     summary="Recebe um relato do formulário público",
-    description="Não exige sessão. O relato fica em quarentena até a gestão revisar.",
+    description=(
+        "Não exige sessão. O relato fica em quarentena até a gestão revisar. Com a conta de "
+        "cidadão aberta, ele também aparece em /cidade/meus-relatos."
+    ),
     responses={
         422: {"model": ErroResposta, "description": "Campo recusado"},
         429: {"model": ErroResposta, "description": "Muitos envios em pouco tempo"},
     },
 )
 def receber(
-    dados: ContribuicaoEntrada, request: Request, servicos: ServicosDeContribuicoesDep
+    dados: ContribuicaoEntrada,
+    request: Request,
+    servicos: ServicosDeContribuicoesDep,
+    quem_enviou: UsuarioSeEntrouDep,
 ) -> ResultadoDoEnvioResposta:
     if dados.site:
         return ResultadoDoEnvioResposta(resultado=ResultadoDoEnvio.NOVA)
     origem = request.client.host if request.client else ORIGEM_DESCONHECIDA
     if not servicos.limite.permitir(origem):
         raise EnviosDemais
-    resultado = ReceberContribuicao(servicos).executar(dados.para_formulario())
+    resultado = ReceberContribuicao(servicos).executar(dados.para_formulario(), quem_enviou)
     return ResultadoDoEnvioResposta(resultado=resultado)
 
 
