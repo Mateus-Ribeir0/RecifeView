@@ -32,7 +32,6 @@ class UsuarioModelo(Base):
     deve_trocar_senha: Mapped[bool]
     tentativas_falhas: Mapped[int]
     bloqueado_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    email_confirmado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     bairro_oficial: Mapped[str | None] = mapped_column(Text)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     atualizado_em: Mapped[datetime] = mapped_column(

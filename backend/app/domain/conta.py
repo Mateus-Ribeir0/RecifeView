@@ -22,7 +22,6 @@ ESPACOS = re.compile(r"\s+")
 
 
 class FinalidadeDoCodigo(StrEnum):
-    CONFIRMAR_EMAIL = "CONFIRMAR_EMAIL"
     REDEFINIR_SENHA = "REDEFINIR_SENHA"
 
 

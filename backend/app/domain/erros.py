@@ -94,10 +94,6 @@ class CadastroInvalido(ErroDeDominio):
         self.motivo = motivo
 
 
-class EmailNaoConfirmado(ErroDeDominio):
-    pass
-
-
 class AcessoNegado(ErroDeDominio):
     pass
 

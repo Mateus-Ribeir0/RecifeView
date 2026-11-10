@@ -13,7 +13,6 @@ from app.api.dependencias import (
 from app.api.schemas.autenticacao import AcessoResposta, UsuarioResposta
 from app.api.schemas.contas import (
     AtualizacaoDaContaEntrada,
-    ConfirmacaoEntrada,
     EmailEntrada,
     ExclusaoDaContaEntrada,
     NovaContaEntrada,
@@ -21,10 +20,6 @@ from app.api.schemas.contas import (
     PedidoRecebidoResposta,
 )
 from app.api.schemas.erros import ErroResposta
-from app.application.casos_de_uso.contas.confirmar_email import (
-    ConfirmacaoDeEmail,
-    ConfirmarEmail,
-)
 from app.application.casos_de_uso.contas.criar_conta import CriarConta, NovaConta
 from app.application.casos_de_uso.contas.minha_conta import (
     AtualizarMinhaConta,
@@ -35,15 +30,12 @@ from app.application.casos_de_uso.contas.recuperar_senha import (
     NovaSenhaComCodigo,
     PedirNovaSenha,
 )
-from app.application.casos_de_uso.contas.reenviar_codigo import ReenviarCodigoDeConfirmacao
+from app.domain.erros import CadastroInvalido
 
 roteador = APIRouter(prefix="/contas", tags=["Contas de cidadão"])
 
 LIMITADA = [Depends(limitar_operacoes_de_conta)]
-RESPOSTA_DO_CADASTRO = (
-    "Se o e-mail puder ser usado, enviamos um código de 6 dígitos. Ele vale por 15 minutos."
-)
-RESPOSTA_DO_REENVIO = "Se houver um cadastro esperando confirmação, enviamos um novo código."
+RECUSA_DO_ROBO = "Não foi possível criar a conta."
 RESPOSTA_DA_RECUPERACAO = "Se o e-mail tiver uma conta de cidadão, enviamos um código."
 MUITAS_TENTATIVAS: dict[int | str, dict[str, Any]] = {
     429: {"model": ErroResposta, "description": "Muitas tentativas"}
@@ -52,51 +44,26 @@ MUITAS_TENTATIVAS: dict[int | str, dict[str, Any]] = {
 
 @roteador.post(
     "",
-    status_code=status.HTTP_202_ACCEPTED,
+    status_code=status.HTTP_201_CREATED,
     dependencies=LIMITADA,
-    summary="Cria uma conta de cidadão e envia o código de confirmação",
-    description="A resposta é a mesma para e-mail novo e e-mail que já tem conta.",
+    summary="Cria uma conta de cidadão e já entra nela",
     responses={422: {"model": ErroResposta}, **MUITAS_TENTATIVAS},
 )
 def criar_conta(
-    dados: NovaContaEntrada, servicos: ServicosDeContaDep, bairros: BairrosOficiaisDep
-) -> PedidoRecebidoResposta:
-    if not dados.site:
-        nova = NovaConta(
-            dados.nome, dados.email, dados.senha, dados.bairro_oficial, dados.aceitou_os_termos
-        )
-        CriarConta(servicos, bairros).executar(nova)
-    return PedidoRecebidoResposta(mensagem=RESPOSTA_DO_CADASTRO)
-
-
-@roteador.post(
-    "/confirmar",
-    dependencies=LIMITADA,
-    summary="Confirma o e-mail com o código e a senha, e já entra na conta",
-    responses={400: {"model": ErroResposta, "description": "Código incorreto ou vencido"}},
-)
-def confirmar(
-    dados: ConfirmacaoEntrada,
+    dados: NovaContaEntrada,
     resposta: Response,
     servicos: ServicosDeContaDep,
+    bairros: BairrosOficiaisDep,
     configuracao: ConfiguracaoDep,
 ) -> AcessoResposta:
-    confirmacao = ConfirmacaoDeEmail(dados.email, dados.codigo, dados.senha)
-    sessao = ConfirmarEmail(servicos).executar(confirmacao)
+    if dados.site:
+        raise CadastroInvalido("site", RECUSA_DO_ROBO)
+    nova = NovaConta(
+        dados.nome, dados.email, dados.senha, dados.bairro_oficial, dados.aceitou_os_termos
+    )
+    sessao = CriarConta(servicos, bairros).executar(nova)
     gravar_cookie_de_sessao(resposta, sessao, configuracao.cookie_seguro)
     return AcessoResposta.de_acesso(sessao.acesso)
-
-
-@roteador.post(
-    "/reenviar-codigo",
-    status_code=status.HTTP_202_ACCEPTED,
-    dependencies=LIMITADA,
-    summary="Envia outro código de confirmação",
-    responses=MUITAS_TENTATIVAS,
-)
-def reenviar_codigo(dados: EmailEntrada, servicos: ServicosDeContaDep) -> PedidoRecebidoResposta:
-    ReenviarCodigoDeConfirmacao(servicos).executar(dados.email)
-    return PedidoRecebidoResposta(mensagem=RESPOSTA_DO_REENVIO)
 
 
 @roteador.post(

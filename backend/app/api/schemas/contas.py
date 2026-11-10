@@ -22,12 +22,6 @@ class EmailEntrada(BaseModel):
     email: str = Email
 
 
-class ConfirmacaoEntrada(BaseModel):
-    email: str = Email
-    codigo: str = Field(pattern=PADRAO_DO_CODIGO)
-    senha: str = Senha
-
-
 class NovaSenhaEntrada(BaseModel):
     email: str = Email
     codigo: str = Field(pattern=PADRAO_DO_CODIGO)

@@ -61,9 +61,9 @@ O comando aceita `--arquivo` mais de uma vez e guarda só o nome da via e o bair
 Existem dois tipos de conta ([ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)):
 
 - **Gestão** (`GESTOR` e `ADMINISTRADOR`): criadas pela administração, pela linha de comando abaixo. Veem o painel, o pente fino e a importação.
-- **Cidadão** (`CIDADAO`): criadas pela própria pessoa em `/cadastrar`, com confirmação do e-mail por código. Veem os relatos da cidade (sem número exato nem texto) e os indicadores do bairro. Toda rota da gestão responde 403 para elas.
+- **Cidadão** (`CIDADAO`): criadas pela própria pessoa em `/cadastrar`, sem confirmação por e-mail: o cadastro já abre a sessão. Veem os relatos da cidade (sem número exato nem texto) e os indicadores do bairro. Toda rota da gestão responde 403 para elas.
 
-Sem servidor SMTP configurado, os e-mails com os códigos não são enviados: ficam em arquivos `.txt` na pasta de `API_PASTA_DOS_EMAILS` (padrão `../data/emails`, fora do git). Abra o arquivo mais recente para ver o código. Para o código chegar na caixa de entrada, configure o SMTP (seção abaixo).
+O único e-mail que a API manda é o código de "Esqueci minha senha". Sem servidor SMTP configurado, ele não é enviado: fica num arquivo `.txt` na pasta de `API_PASTA_DOS_EMAILS` (padrão `../data/emails`, fora do git). Abra o arquivo mais recente para ver o código. Para o código chegar na caixa de entrada, configure o SMTP (seção abaixo).
 
 ### Enviar os e-mails de verdade (SMTP)
 
@@ -83,7 +83,7 @@ API_SMTP_SENHA=abcdefghijklmnop
 
 4. Reinicie a API. No início do log aparece `E-mails saem pelo servidor SMTP smtp.gmail.com`.
 
-Outros provedores funcionam do mesmo jeito: Outlook (`smtp.office365.com`, 587, `starttls`), Brevo (`smtp-relay.brevo.com`, 587) ou Amazon SES (endpoint SMTP da região, 587). Se o servidor recusar o envio, o cadastro responde 503 com `envio_de_email_indisponivel`, nada é gravado e o log diz o motivo (usuário e senha recusados ou servidor fora do ar), sem o conteúdo da mensagem.
+Outros provedores funcionam do mesmo jeito: Outlook (`smtp.office365.com`, 587, `starttls`), Brevo (`smtp-relay.brevo.com`, 587) ou Amazon SES (endpoint SMTP da região, 587). Se o servidor recusar o envio, o pedido de nova senha responde 503 com `envio_de_email_indisponivel`, nada é gravado e o log diz o motivo (usuário e senha recusados ou servidor fora do ar), sem o conteúdo da mensagem.
 
 > O `.env` não vai para o git. Nunca coloque a senha do SMTP em outro arquivo, em issue ou em mensagem do grupo.
 
@@ -150,9 +150,7 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `POST /autenticacao/renovar` | Emite um token de acesso novo a partir do cookie de sessão |
 | `POST /autenticacao/sair` | Encerra a sessão e apaga o cookie |
 | `GET /autenticacao/eu` | Devolve o usuário do token de acesso |
-| `POST /contas` | Cria uma conta de cidadão e envia o código. Responde igual para e-mail novo ou já usado |
-| `POST /contas/confirmar` | Confirma o e-mail com código e senha, e já abre a sessão |
-| `POST /contas/reenviar-codigo` | Envia outro código, no máximo um por minuto |
+| `POST /contas` | Cria uma conta de cidadão e já abre a sessão. E-mail que já tem conta volta como erro no campo `email` |
 | `POST /contas/recuperar-senha` | Envia um código para nova senha (só contas de cidadão) |
 | `POST /contas/nova-senha` | Troca a senha com o código e derruba as sessões |
 | `PUT /contas/eu` | Atualiza nome e bairro |
