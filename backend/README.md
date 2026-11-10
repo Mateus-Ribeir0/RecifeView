@@ -58,7 +58,14 @@ O comando aceita `--arquivo` mais de uma vez e guarda só o nome da via e o bair
 
 ## Contas de acesso
 
-Não existe cadastro aberto. A administração cria as contas pela linha de comando, e cada conta nasce com uma senha temporária que precisa ser trocada no primeiro acesso.
+Existem dois tipos de conta ([ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)):
+
+- **Gestão** (`GESTOR` e `ADMINISTRADOR`): criadas pela administração, pela linha de comando abaixo. Veem o painel, o pente fino e a importação.
+- **Cidadão** (`CIDADAO`): criadas pela própria pessoa em `/cadastrar`, com confirmação do e-mail por código. Veem os relatos da cidade (sem número exato nem texto) e os indicadores do bairro. Toda rota da gestão responde 403 para elas.
+
+Em desenvolvimento, os e-mails com os códigos não são enviados: ficam em arquivos `.txt` na pasta de `API_PASTA_DOS_EMAILS` (padrão `../data/emails`, fora do git). Abra o arquivo mais recente para ver o código.
+
+As contas da gestão nascem com uma senha temporária que precisa ser trocada no primeiro acesso.
 
 ```bash
 uv run recifeview cadastrar-usuario --email nome@recife.pe.gov.br --nome "Nome Completo"
@@ -84,6 +91,7 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `API_ORIGENS_PERMITIDAS` | Origens que podem chamar a API direto, em JSON | `[]` |
 | `API_PASTA_DAS_IMPORTACOES` | Pasta local dos arquivos enviados. Fica fora do git | `../data/importacoes` |
 | `API_TAMANHO_MAXIMO_DA_IMPORTACAO_MB` | Limite de tamanho de um arquivo enviado | `800` |
+| `API_PASTA_DOS_EMAILS` | Onde os e-mails de conta são gravados em desenvolvimento. O provedor real está em aberto | `../data/emails` |
 | `API_SAL_DO_ID_LOCAL` | Sal do pseudônimo de endereço. Vazio: registros novos ficam fora da reincidência e os relatos do formulário não se comparam com a base | vem do grupo, nunca do repositório |
 | `API_URL_DO_BANCO_DE_TESTE` | Banco dos testes de integração. Sem ela, esses testes são pulados | `postgresql+psycopg://...@localhost:5432/recifeview_teste` |
 
@@ -114,6 +122,15 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `POST /autenticacao/renovar` | Emite um token de acesso novo a partir do cookie de sessão |
 | `POST /autenticacao/sair` | Encerra a sessão e apaga o cookie |
 | `GET /autenticacao/eu` | Devolve o usuário do token de acesso |
+| `POST /contas` | Cria uma conta de cidadão e envia o código. Responde igual para e-mail novo ou já usado |
+| `POST /contas/confirmar` | Confirma o e-mail com código e senha, e já abre a sessão |
+| `POST /contas/reenviar-codigo` | Envia outro código, no máximo um por minuto |
+| `POST /contas/recuperar-senha` | Envia um código para nova senha (só contas de cidadão) |
+| `POST /contas/nova-senha` | Troca a senha com o código e derruba as sessões |
+| `PUT /contas/eu` | Atualiza nome e bairro |
+| `POST /contas/eu/excluir` | Exclui a conta de cidadão, com a senha |
+| `GET /cidade/ocorrencias` | Relatos dos últimos 90 dias, com rua só da lista oficial e número em faixa de centena |
+| `GET /cidade/bairros/{bairro}` | Indicadores do bairro comparados com o Recife |
 | `POST /autenticacao/trocar-senha` | Troca a senha, derruba as outras sessões e abre uma nova |
 
 | `GET /catalogos/filtros` | Anos, RPAs, bairros, categorias e fontes para os filtros |
@@ -148,7 +165,7 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `PUT /contribuicoes/pares/{id}` | Decide se a dupla é a mesma ocorrência |
 | `POST /contribuicoes/pacotes` | Gera o pacote e abre a importação. Recusa se houver dupla sem decisão |
 
-As rotas públicas de contribuições são as únicas de dados sem sessão, e nenhuma delas devolve relato de outra pessoa. Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
+O `POST /autenticacao/entrar` aceita `area` (`cidade` ou `gestao`): pela porta da gestão, conta de cidadão recebe 403. As rotas de `/contas` que mandam e-mail têm limite de 10 chamadas a cada 10 minutos por origem. As rotas de painel, importações e pente fino exigem conta da gestão. As rotas públicas de contribuições são as únicas de dados sem sessão, e nenhuma delas devolve relato de outra pessoa. Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
 
 Como a autenticação funciona, e por que ela ainda é uma proposta, está na [ADR 0005](../docs/adr/0005-autenticacao-com-jwt-proprio.md).
 
@@ -179,7 +196,7 @@ Nenhuma rota devolve o texto da SEDEC, `id_local`, coordenada nem o hash da senh
 
 As migrações ficam nesta pasta, para que o esquema tenha um dono só. Convenções de nomes em [docs/padroes-de-codigo.md](../docs/padroes-de-codigo.md#banco-de-dados-postgresql).
 
-- Schema `app`: `usuario`, `sessao`, `evento_de_acesso`, `importacao`, `consulta_auditada`, `contribuicao` (a quarentena do formulário) e `par_de_contribuicoes` (as duplas do pente fino, com a decisão de cada uma).
+- Schema `app`: `usuario` (com `email_confirmado_em` e `bairro_oficial`), `codigo_de_conta` (só o hash do código), `sessao`, `evento_de_acesso`, `importacao`, `consulta_auditada`, `contribuicao` (a quarentena do formulário) e `par_de_contribuicoes` (as duplas do pente fino, com a decisão de cada uma).
 - Schema `ouro`: `dim_bairro`, `dim_logradouro`, `fato_demanda`, `fato_demanda_substituida` (versão anterior das linhas atualizadas, para desfazer) e as views materializadas `mv_*`, que reproduzem as tabelas do protótipo em Streamlit ([ADR 0006](../docs/adr/0006-modelo-analitico-no-postgresql.md)).
 
 As views são atualizadas depois de cada importação, com o painel no ar.

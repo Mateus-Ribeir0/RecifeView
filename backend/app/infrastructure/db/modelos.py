@@ -32,6 +32,8 @@ class UsuarioModelo(Base):
     deve_trocar_senha: Mapped[bool]
     tentativas_falhas: Mapped[int]
     bloqueado_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    email_confirmado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    bairro_oficial: Mapped[str | None] = mapped_column(Text)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     atualizado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -47,6 +49,19 @@ class SessaoModelo(Base):
     criada_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     expira_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     revogada_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class CodigoDeContaModelo(Base):
+    __tablename__ = "codigo_de_conta"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    usuario_id: Mapped[UUID] = mapped_column(ForeignKey(UsuarioModelo.id), index=True)
+    finalidade: Mapped[str] = mapped_column(String(30))
+    hash_do_codigo: Mapped[str] = mapped_column(String(64))
+    criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    expira_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tentativas: Mapped[int] = mapped_column(SmallInteger, default=0)
+    usado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class EventoDeAcessoModelo(Base):

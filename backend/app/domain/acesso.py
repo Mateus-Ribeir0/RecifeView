@@ -11,6 +11,16 @@ class TipoDeEventoDeAcesso(StrEnum):
     SAIDA = "SAIDA"
     SENHA_ALTERADA = "SENHA_ALTERADA"
     SENHA_REDEFINIDA = "SENHA_REDEFINIDA"
+    CONTA_CRIADA = "CONTA_CRIADA"
+    EMAIL_CONFIRMADO = "EMAIL_CONFIRMADO"
+    CODIGO_RECUSADO = "CODIGO_RECUSADO"
+    SENHA_RECUPERADA = "SENHA_RECUPERADA"
+    CONTA_EXCLUIDA = "CONTA_EXCLUIDA"
+
+
+class AreaDeAcesso(StrEnum):
+    CIDADE = "cidade"
+    GESTAO = "gestao"
 
 
 @dataclass(frozen=True)

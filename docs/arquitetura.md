@@ -5,7 +5,7 @@ Baseada no rascunho C4 v0.1 de 15/10/2026, feito a partir do esboço do Prof. Ma
 ## C1 · Contexto
 
 - **Gestor público:** acessa o painel pelo navegador, com login.
-- **Pessoa que mora no Recife:** usa a página pública e pode enviar um relato anônimo pelo formulário ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md), proposta).
+- **Cidadão:** usa a página pública, envia relato anônimo e, com conta própria, acompanha os relatos da cidade e o seu bairro ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta). Antes, só ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md), proposta).
 - **RecifeView:** o sistema.
 - **Fontes externas:** Portal de Dados Abertos do Recife, Câmara Municipal (SAGL), IBGE/SIDRA, catálogo de serviços do Conecta Recife, cópia do Internet Archive do dataset da SEDEC e, no futuro, o SGDE/Emprel (depende do pedido LAI). APAC/INMET (chuva) aparece no diagrama, mas o clima é estudo futuro.
 
@@ -117,7 +117,8 @@ O Processor é a versão de produção do pipeline que já existe no Drive (`Dad
 
 ## Segurança
 
-- O app real exige login. Só gestores autenticados veem o painel.
+- O app real exige login. Só contas da gestão veem o painel, o pente fino e a importação: a dependência `exigir_gestao` devolve 403 para conta de cidadão, e um teste cobra isso em cada rota da gestão.
+- Contas de cidadão confirmam o e-mail com código de 6 dígitos (hash, 15 minutos, 5 tentativas), têm limite de operações por origem e nunca recebem número exato nem texto de relato ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)).
 - Senhas com hash Argon2; bloqueio de 15 minutos depois de 5 tentativas erradas seguidas; senha temporária trocada no primeiro acesso.
 - Token de acesso de 15 minutos só na memória do navegador; sessão de 12 horas num cookie `httpOnly` e `SameSite=Strict`, revogável no servidor. Detalhes e alternativas na [ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md) (proposta).
 - O texto da SEDEC não tem rota, não entra em resposta e não vai para log.

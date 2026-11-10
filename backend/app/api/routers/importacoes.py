@@ -2,7 +2,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Query, Request, status
 
-from app.api.dependencias import ServicosDeImportacaoDep, UsuarioAtualDep
+from app.api.dependencias import GestorAtualDep, ServicosDeImportacaoDep
 from app.api.schemas.erros import ErroResposta
 from app.api.schemas.importacoes import (
     CampoResposta,
@@ -45,13 +45,13 @@ RESPOSTA_DE_ESTADO_INVALIDO: dict[int | str, dict[str, Any]] = {
 
 
 @roteador.get("/campos", summary="Lista os campos da base para o mapeamento de colunas")
-def listar_campos(_: UsuarioAtualDep) -> list[CampoResposta]:
+def listar_campos(_: GestorAtualDep) -> list[CampoResposta]:
     return [CampoResposta.model_validate(campo) for campo in CAMPOS]
 
 
 @roteador.get("", summary="Lista o histórico de importações")
 def listar(
-    _: UsuarioAtualDep,
+    _: GestorAtualDep,
     servicos: ServicosDeImportacaoDep,
     busca: str | None = None,
     situacao: str | None = None,
@@ -80,7 +80,7 @@ def listar(
 async def enviar_arquivo(
     request: Request,
     nome: Annotated[str, Query(min_length=1, max_length=255)],
-    usuario: UsuarioAtualDep,
+    usuario: GestorAtualDep,
     servicos: ServicosDeImportacaoDep,
 ) -> ImportacaoResumoResposta:
     recebimento = servicos.armazenamento.iniciar_recebimento(nome)
@@ -102,7 +102,7 @@ async def enviar_arquivo(
     responses={404: {"model": ErroResposta, "description": "Importação não encontrada"}},
 )
 def consultar(
-    importacao_id: int, _: UsuarioAtualDep, servicos: ServicosDeImportacaoDep
+    importacao_id: int, _: GestorAtualDep, servicos: ServicosDeImportacaoDep
 ) -> ImportacaoDetalheResposta:
     return ImportacaoDetalheResposta.de_detalhe(
         ConsultarImportacao(servicos).executar(importacao_id)
@@ -117,7 +117,7 @@ def consultar(
 def definir_colunas(
     importacao_id: int,
     dados: EscolhaDeColunasEntrada,
-    _: UsuarioAtualDep,
+    _: GestorAtualDep,
     servicos: ServicosDeImportacaoDep,
 ) -> ImportacaoResumoResposta:
     escolha = EscolhaDeColunas(
@@ -135,7 +135,7 @@ def definir_colunas(
 def responder_pendencias(
     importacao_id: int,
     dados: RespostasDePendenciasEntrada,
-    _: UsuarioAtualDep,
+    _: GestorAtualDep,
     servicos: ServicosDeImportacaoDep,
 ) -> ImportacaoResumoResposta:
     respostas = RespostasDePendencias(**dados.model_dump())
@@ -149,7 +149,7 @@ def responder_pendencias(
     responses=RESPOSTA_DE_ESTADO_INVALIDO,
 )
 def confirmar(
-    importacao_id: int, _: UsuarioAtualDep, servicos: ServicosDeImportacaoDep
+    importacao_id: int, _: GestorAtualDep, servicos: ServicosDeImportacaoDep
 ) -> ImportacaoResumoResposta:
     importacao = ConfirmarImportacao(servicos).executar(importacao_id)
     return ImportacaoResumoResposta.de_importacao(importacao)
@@ -161,7 +161,7 @@ def confirmar(
     responses=RESPOSTA_DE_ESTADO_INVALIDO,
 )
 def cancelar(
-    importacao_id: int, _: UsuarioAtualDep, servicos: ServicosDeImportacaoDep
+    importacao_id: int, _: GestorAtualDep, servicos: ServicosDeImportacaoDep
 ) -> ImportacaoResumoResposta:
     importacao = CancelarImportacao(servicos).executar(importacao_id)
     return ImportacaoResumoResposta.de_importacao(importacao)
@@ -173,7 +173,7 @@ def cancelar(
     responses=RESPOSTA_DE_ESTADO_INVALIDO,
 )
 def desfazer(
-    importacao_id: int, _: UsuarioAtualDep, servicos: ServicosDeImportacaoDep
+    importacao_id: int, _: GestorAtualDep, servicos: ServicosDeImportacaoDep
 ) -> ImportacaoResumoResposta:
     importacao = DesfazerImportacao(servicos).executar(importacao_id)
     return ImportacaoResumoResposta.de_importacao(importacao)
@@ -187,7 +187,7 @@ def desfazer(
 )
 def listar_registros(
     importacao_id: int,
-    _: UsuarioAtualDep,
+    _: GestorAtualDep,
     servicos: ServicosDeImportacaoDep,
     limite: Limite = 50,
     deslocamento: Deslocamento = 0,

@@ -89,6 +89,32 @@ class OcorrenciaDoPacote:
 
 
 @dataclass(frozen=True)
+class FiltroDaCidade:
+    desde: date
+    bairro: str | None = None
+    categorias: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class OcorrenciaDaCidade:
+    """Linha crua da quarentena: o número sai daqui só para virar faixa no caso de uso."""
+
+    id: UUID
+    data_relato: date
+    servico_codigo: str
+    servico: str
+    bairro_oficial: str
+    bairro: str
+    rpa: str
+    via_reconhecida: str | None
+    numero: str | None
+    relatos: int
+    sem_retorno: int
+    situacao: str
+    tem_dupla_aberta: bool
+
+
+@dataclass(frozen=True)
 class DecisaoRegistrada:
     decisao: DecisaoDoPar
     usuario_id: UUID
@@ -117,6 +143,8 @@ class ContribuicaoRepository(ContribuicoesDaImportacao, Protocol):
     def marcar_no_pacote(self, ids: Sequence[UUID], importacao_id: int) -> None: ...
 
     def expurgar_enderecos(self, recebidas_ate: datetime, agora: datetime) -> int: ...
+
+    def ocorrencias_da_cidade(self, filtro: FiltroDaCidade) -> list[OcorrenciaDaCidade]: ...
 
 
 class ReferenciaDoFormulario(Protocol):

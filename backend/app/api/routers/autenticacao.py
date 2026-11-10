@@ -33,7 +33,10 @@ TokenDeSessao = Annotated[str | None, Cookie(alias=NOME_DO_COOKIE_DE_SESSAO)]
     summary="Entra no painel com e-mail e senha",
     responses={
         401: {"model": ErroResposta, "description": "E-mail ou senha incorretos"},
-        403: {"model": ErroResposta, "description": "Conta desativada"},
+        403: {
+            "model": ErroResposta,
+            "description": "Conta desativada, e-mail sem confirmação ou conta sem acesso à gestão",
+        },
         429: {"model": ErroResposta, "description": "Conta bloqueada por tentativas"},
     },
 )
@@ -43,7 +46,7 @@ def entrar(
     entrar: EntrarDep,
     configuracao: ConfiguracaoDep,
 ) -> AcessoResposta:
-    sessao = entrar.executar(credenciais.email, credenciais.senha)
+    sessao = entrar.executar(credenciais.email, credenciais.senha, credenciais.area)
     gravar_cookie_de_sessao(resposta, sessao, configuracao.cookie_seguro)
     return AcessoResposta.de_acesso(sessao.acesso)
 
