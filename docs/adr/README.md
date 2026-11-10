@@ -30,6 +30,7 @@ Cada decisão técnica que muda a forma do sistema ganha um arquivo curto aqui: 
 | [0007](0007-importacao-de-arquivos-pelo-painel.md) | Importação de arquivos pelo painel, com a normalização no backend | Proposta | 05/11/2026 |
 | [0008](0008-navegacao-lateral-com-filtros.md) | Lateral recolhível e filtros numa linha acima do conteúdo | Proposta | 05/11/2026 |
 | [0009](0009-formulario-publico-e-pente-fino.md) | Formulário público com quarentena e pente fino entre canais | Proposta | 06/11/2026 |
+| [0010](0010-contas-de-cidadao-e-niveis-de-acesso.md) | Contas de cidadão e três níveis de acesso | Proposta | 10/11/2026 |
 
 ## Decisões em aberto
 
@@ -39,6 +40,7 @@ Levantadas ao montar o C4 v0.1 (15/10/2026) e ao definir a stack. Cada uma vira 
 |---|---|---|
 | Onde guardar a camada bruta | Amazon S3 ou schema `raw` no PostgreSQL | A N2 exige separar bruto e tratado. O S3 é barato para arquivo grande; no schema `raw` fica tudo num lugar só |
 | Onde roda o Processor | AWS Lambda ou ECS/Fargate | O Lambda tem limite de 15 minutos, e a carga histórica tem cerca de 2,6 milhões de linhas. Dá para combinar: Fargate na carga completa e Lambda no incremental |
+| Provedor de e-mail | SMTP, Amazon SES ou outro serviço | As contas de cidadão dependem dele para o código de confirmação. Hoje só existe a caixa de saída local ([ADR 0010](0010-contas-de-cidadao-e-niveis-de-acesso.md)) |
 | Autenticação | JWT próprio ou serviço gerenciado (ex.: Amazon Cognito) | Já existe uma implementação local com JWT próprio atrás de portas, descrita na [ADR 0005](0005-autenticacao-com-jwt-proprio.md) (proposta). Falta o grupo aceitar ou trocar pelo serviço gerenciado |
 | Seta sem destino abaixo da API no esboço | Cache, fila, módulo de ML ou outro serviço | Perguntar ao Prof. Marcelo |
 | Ferramentas ainda propostas | TanStack Query, react-leaflet, GitHub Actions, pre-commit com commitlint | Confirmar quando forem necessárias (ver [stack.md](../stack.md)) |
