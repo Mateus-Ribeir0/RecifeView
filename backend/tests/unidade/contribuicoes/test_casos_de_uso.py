@@ -30,7 +30,8 @@ from app.domain.erros import (
     PenteFinoPendente,
 )
 from app.domain.importacao.importacao import StatusDaImportacao
-from tests.fakes import INICIO_DOS_TESTES
+from app.domain.usuario import Perfil
+from tests.fakes import INICIO_DOS_TESTES, criar_usuario
 from tests.fakes_importacao import (
     ContribuicoesEmMemoria,
     ReferenciaFalsa,
@@ -97,6 +98,25 @@ def test_primeiro_relato_entra_como_novo(servicos: ServicosDeContribuicoes) -> N
     guardada = memoria(servicos).itens[0]
     assert guardada.logradouro == "RUA DA ESPERANCA FICTICIA"
     assert guardada.categoria == "PAVIMENTACAO"
+
+
+def test_relato_do_cidadao_fica_na_conta_dele(servicos: ServicosDeContribuicoes) -> None:
+    cidadao = criar_usuario(perfil=Perfil.CIDADAO)
+
+    ReceberContribuicao(servicos).executar(formulario(), cidadao)
+
+    assert memoria(servicos).itens[0].usuario_id == cidadao.id
+
+
+@pytest.mark.parametrize("perfil", [None, Perfil.GESTOR])
+def test_relato_sem_conta_ou_da_gestao_fica_sem_dono(
+    servicos: ServicosDeContribuicoes, perfil: Perfil | None
+) -> None:
+    quem_enviou = criar_usuario(perfil=perfil) if perfil else None
+
+    ReceberContribuicao(servicos).executar(formulario(), quem_enviou)
+
+    assert memoria(servicos).itens[0].usuario_id is None
 
 
 def test_reenvio_do_mesmo_formulario_nao_conta_duas_vezes(

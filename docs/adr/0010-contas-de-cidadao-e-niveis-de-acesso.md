@@ -30,7 +30,7 @@ Perfil `CIDADAO` na tabela `app.usuario`, com guarda por perfil. Três níveis d
 
 **O que o cidadão vê de um relato:** serviço, tema, bairro, rua (só se ela estiver na lista oficial de vias), faixa de numeração de 100 em 100, data, quantas pessoas relataram, quantas disseram que não tiveram retorno e a situação (recebido, em análise, no painel da gestão, coberto por pedido oficial). Nunca vê o número exato, o texto escrito, o pseudônimo nem quem relatou. A faixa segue a mesma ideia do arredondamento das coordenadas para cerca de 100 m ([dados.md](../dados.md#privacidade-lgpd)). Rua fora da lista oficial some, para o campo de rua não virar mural de recado.
 
-**O relato continua anônimo:** a conta não fica ligada ao relato. Quem relata não precisa entrar, e a gestão não sabe quem relatou.
+**Quem relatou continua oculto para a gestão:** quem relata não precisa entrar. Desde 10/11/2026, a pedido do grupo, o relato enviado com a conta de cidadão aberta fica ligado a ela (`contribuicao.usuario_id`) e aparece em "Meus relatos", com endereço, texto e o andamento (recebido, em análise, no painel da gestão ou já com pedido oficial). Só a própria pessoa vê essa lista. Nenhuma tela, rota ou pacote da gestão lê a coluna, e relato enviado sem conta ou por conta da gestão fica sem dono. Excluir a conta apaga nome e e-mail, e o relato passa a apontar para uma conta sem nada que identifique alguém. O endereço e o texto continuam apagados em 90 dias.
 
 **Cadastro e proteções:**
 
@@ -41,6 +41,7 @@ Perfil `CIDADAO` na tabela `app.usuario`, com guarda por perfil. Três níveis d
 - Nova senha por código, só para contas de cidadão. A da gestão continua com a administração.
 - Excluir a conta pede a senha, apaga nome, e-mail e bairro, derruba as sessões e mantém só a linha que a auditoria referencia.
 - Pela porta da gestão (`area=gestao`), conta de cidadão recebe 403.
+- Cada perfil tem só a sua área: a conta da gestão recebe 403 nas rotas `/cidade` e é levada ao painel se abrir a área do cidadão no navegador (10/11/2026, a pedido do grupo).
 
 **E-mail:** só a recuperação de senha usa e-mail. O provedor de envio está em aberto. A porta `EnvioDeEmail` tem duas implementações: a local, que grava cada mensagem em `API_PASTA_DOS_EMAILS`, fora do git, e uma por SMTP genérico (`API_SMTP_*`), que serve para qualquer provedor (Gmail para teste, Amazon SES, Brevo, o servidor da Prefeitura). Sem `API_SMTP_SERVIDOR`, vale a local. Se o servidor recusar o envio, a operação é desfeita e a API responde 503. O que falta decidir é qual provedor e qual remetente o RecifeView usa de verdade.
 

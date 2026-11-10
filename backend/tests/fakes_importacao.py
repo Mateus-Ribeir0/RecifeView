@@ -15,6 +15,7 @@ from app.application.portas.contribuicoes import (
     PaginaDeOcorrencias,
     ParNovo,
     ParParaRevisar,
+    RelatoDoCidadao,
     ResumoDasContribuicoes,
 )
 from app.application.portas.importacoes import (
@@ -198,10 +199,14 @@ class ContribuicoesEmMemoria:
     limites_de_expurgo: list[datetime] = field(default_factory=list)
     da_cidade: list[OcorrenciaDaCidade] = field(default_factory=list)
     filtros_da_cidade: list[FiltroDaCidade] = field(default_factory=list)
+    do_cidadao: dict[UUID, list[RelatoDoCidadao]] = field(default_factory=dict)
 
     def ocorrencias_da_cidade(self, filtro: FiltroDaCidade) -> list[OcorrenciaDaCidade]:
         self.filtros_da_cidade.append(filtro)
         return self.da_cidade
+
+    def relatos_do_cidadao(self, usuario_id: UUID) -> list[RelatoDoCidadao]:
+        return self.do_cidadao.get(usuario_id, [])
 
     def buscar_por_chave_de_envio(self, chave: str) -> Contribuicao | None:
         return next((item for item in self.itens if item.chave_de_envio == chave), None)

@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 from datetime import timedelta
+from typing import cast
 
 import httpx2
 import pytest
@@ -25,6 +26,7 @@ from app.domain.usuario import Perfil, Usuario
 from app.infrastructure.auth.tokens import EmissorDeTokenJwt
 from app.infrastructure.settings import Configuracao
 from app.main import criar_aplicacao
+from tests.api.test_rotas_de_contribuicoes import ENVIO
 from tests.conftest import SEGREDO_DE_TESTE
 from tests.fakes import (
     SENHA_DE_TESTE,
@@ -37,12 +39,18 @@ from tests.fakes import (
     UsuariosEmMemoria,
     criar_usuario,
 )
-from tests.fakes_importacao import TabelaFalsa, criar_servicos, criar_servicos_de_contribuicoes
+from tests.fakes_importacao import (
+    ContribuicoesEmMemoria,
+    TabelaFalsa,
+    criar_servicos,
+    criar_servicos_de_contribuicoes,
+)
 
 BASE = "/api/v1"
 EMAIL_DO_CIDADAO = "morador@exemplo.com"
 EMAIL_DA_GESTORA = "gestora@recife.pe.gov.br"
 SENHA_NOVA = "uma senha bem comprida"
+ROTAS_DO_CIDADAO = ["/cidade/ocorrencias", "/cidade/meus-relatos", "/cidade/bairros/AFOGADOS"]
 ROTAS_DA_GESTAO = [
     ("get", "/indicadores/visao-geral"),
     ("get", "/war-room/calendario"),
@@ -154,10 +162,52 @@ def test_relatos_da_cidade_exigem_conta(cliente: TestClient) -> None:
     assert cliente.get(f"{BASE}/cidade/ocorrencias").status_code == 401
 
 
-def test_gestora_tambem_ve_a_area_do_cidadao(cliente: TestClient, ambiente: Ambiente) -> None:
+@pytest.mark.parametrize("caminho", ROTAS_DO_CIDADAO)
+def test_gestora_recebe_403_na_area_do_cidadao(
+    cliente: TestClient, ambiente: Ambiente, caminho: str
+) -> None:
     cabecalho = {"Authorization": f"Bearer {token_de(cliente, ambiente.gestora, 'gestao')}"}
 
-    assert cliente.get(f"{BASE}/cidade/ocorrencias", headers=cabecalho).status_code == 200
+    resposta = cliente.get(f"{BASE}{caminho}", headers=cabecalho)
+
+    assert resposta.status_code == 403
+    assert resposta.json()["erro"]["codigo"] == "acesso_negado"
+
+
+def contribuicoes_de(cliente: TestClient) -> ContribuicoesEmMemoria:
+    app = cast(FastAPI, cliente.app)
+    return cast(ContribuicoesEmMemoria, app.state.servicos_de_contribuicoes.contribuicoes)
+
+
+def test_relato_enviado_com_a_conta_aberta_fica_com_o_cidadao(
+    cliente: TestClient, ambiente: Ambiente
+) -> None:
+    cabecalho = {"Authorization": f"Bearer {token_de(cliente, ambiente.cidadao)}"}
+
+    resposta = cliente.post(f"{BASE}/contribuicoes", json=ENVIO, headers=cabecalho)
+
+    assert resposta.status_code == 201
+    assert contribuicoes_de(cliente).itens[-1].usuario_id == ambiente.cidadao.id
+
+
+def test_relato_sem_conta_continua_sem_dono(cliente: TestClient) -> None:
+    resposta = cliente.post(f"{BASE}/contribuicoes", json=ENVIO)
+
+    assert resposta.status_code == 201
+    assert contribuicoes_de(cliente).itens[-1].usuario_id is None
+
+
+def test_meus_relatos_exigem_conta(cliente: TestClient) -> None:
+    assert cliente.get(f"{BASE}/cidade/meus-relatos").status_code == 401
+
+
+def test_cidadao_ve_os_proprios_relatos(cliente: TestClient, ambiente: Ambiente) -> None:
+    cabecalho = {"Authorization": f"Bearer {token_de(cliente, ambiente.cidadao)}"}
+
+    resposta = cliente.get(f"{BASE}/cidade/meus-relatos", headers=cabecalho)
+
+    assert resposta.status_code == 200
+    assert resposta.json() == []
 
 
 def test_cidadao_nao_entra_pela_porta_da_gestao(cliente: TestClient, ambiente: Ambiente) -> None:

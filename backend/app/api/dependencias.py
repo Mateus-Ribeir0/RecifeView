@@ -253,6 +253,19 @@ TrocarSenhaDep = Annotated[TrocarSenha, Depends(obter_trocar_senha)]
 UsuarioAtualDep = Annotated[Usuario, Depends(obter_usuario_atual)]
 
 
+def obter_usuario_se_entrou(
+    credenciais: Annotated[HTTPAuthorizationCredentials | None, Depends(esquema_bearer)],
+    identificar: Annotated[IdentificarUsuario, Depends(obter_identificar_usuario)],
+) -> Usuario | None:
+    """Para rota pública: sem token, segue sem usuário; token vencido ainda responde 401."""
+    if credenciais is None:
+        return None
+    return identificar.executar(credenciais.credentials)
+
+
+UsuarioSeEntrouDep = Annotated[Usuario | None, Depends(obter_usuario_se_entrou)]
+
+
 def exigir_gestao(usuario: UsuarioAtualDep) -> Usuario:
     """Painel, importação e pente fino são só da gestão: conta de cidadão recebe 403."""
     if not usuario.e_da_gestao:
@@ -261,6 +274,16 @@ def exigir_gestao(usuario: UsuarioAtualDep) -> Usuario:
 
 
 GestorAtualDep = Annotated[Usuario, Depends(exigir_gestao)]
+
+
+def exigir_cidadao(usuario: UsuarioAtualDep) -> Usuario:
+    """A área do cidadão é só do cidadão: a conta da gestão trabalha no painel."""
+    if usuario.e_da_gestao:
+        raise AcessoNegado
+    return usuario
+
+
+CidadaoAtualDep = Annotated[Usuario, Depends(exigir_cidadao)]
 
 
 def obter_servicos_de_conta(

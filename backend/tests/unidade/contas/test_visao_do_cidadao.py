@@ -1,16 +1,18 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import cast
 from uuid import uuid4
 
 from app.application.casos_de_uso.cidade.meu_bairro import ConsultarMeuBairro
+from app.application.casos_de_uso.cidade.meus_relatos import ListarMeusRelatos
 from app.application.casos_de_uso.cidade.ocorrencias import ListarOcorrenciasDaCidade
-from app.application.portas.contribuicoes import OcorrenciaDaCidade
+from app.application.portas.contribuicoes import OcorrenciaDaCidade, RelatoDoCidadao
 from app.domain.catalogos import BairroDoCatalogo
 from app.domain.cidade import DIAS_DA_VISAO_DO_CIDADAO, SituacaoPublica
 from app.domain.filtros import Filtros
 from app.domain.territorio import VolumeDoBairro
+from app.domain.usuario import Perfil
 from app.domain.visao_geral import PercentisDePrazo
-from tests.fakes import INICIO_DOS_TESTES, RelogioFixo
+from tests.fakes import INICIO_DOS_TESTES, RelogioFixo, criar_usuario
 from tests.fakes_importacao import ContribuicoesEmMemoria
 
 
@@ -105,3 +107,56 @@ def test_bairro_pequeno_nao_tem_taxa() -> None:
     caso = ConsultarMeuBairro(IndicadoresFalsos(), TerritorioFalso())  # type: ignore[arg-type]
 
     assert caso.executar("RECIFE").pedidos_por_mil_habitantes.bairro is None
+
+
+def relato_meu(**mudancas: object) -> RelatoDoCidadao:
+    dados: dict[str, object] = {
+        "id": uuid4(),
+        "recebida_em": datetime(2026, 10, 20, 9, 30),
+        "servico_codigo": "131",
+        "servico": "OPERACAO TAPA-BURACO",
+        "bairro": "Afogados",
+        "logradouro": "RUA DA ESPERANCA",
+        "numero": "128",
+        "detalhe": "Em frente à padaria",
+        "endereco_apagado": False,
+        "somado": False,
+        "relatos": 1,
+        "situacao": "aberta",
+        "tem_dupla_aberta": False,
+    }
+    return RelatoDoCidadao(**(dados | mudancas))  # type: ignore[arg-type]
+
+
+def test_meus_relatos_mostram_o_endereco_inteiro_e_a_situacao() -> None:
+    cidadao = criar_usuario(perfil=Perfil.CIDADAO)
+    em_analise = relato_meu(tem_dupla_aberta=True)
+    no_painel = relato_meu(situacao="na_base", somado=True, relatos=4)
+    contribuicoes = ContribuicoesEmMemoria(do_cidadao={cidadao.id: [em_analise, no_painel]})
+
+    primeiro, segundo = ListarMeusRelatos(contribuicoes).executar(cidadao)
+
+    assert primeiro.endereco == "RUA DA ESPERANCA, 128"
+    assert primeiro.servico == "Buraco na rua"
+    assert primeiro.situacao is SituacaoPublica.EM_ANALISE
+    assert segundo.situacao is SituacaoPublica.NO_PAINEL
+    assert (segundo.somado, segundo.relatos) == (True, 4)
+
+
+def test_relato_com_endereco_apagado_fica_sem_endereco() -> None:
+    cidadao = criar_usuario(perfil=Perfil.CIDADAO)
+    apagado = relato_meu(logradouro=None, numero=None, detalhe=None, endereco_apagado=True)
+    contribuicoes = ContribuicoesEmMemoria(do_cidadao={cidadao.id: [apagado]})
+
+    (relato,) = ListarMeusRelatos(contribuicoes).executar(cidadao)
+
+    assert relato.endereco is None
+    assert relato.endereco_apagado
+
+
+def test_quem_nao_relatou_nao_ve_relato_de_ninguem() -> None:
+    dona = criar_usuario(perfil=Perfil.CIDADAO)
+    outra = criar_usuario(perfil=Perfil.CIDADAO)
+    contribuicoes = ContribuicoesEmMemoria(do_cidadao={dona.id: [relato_meu()]})
+
+    assert ListarMeusRelatos(contribuicoes).executar(outra) == []

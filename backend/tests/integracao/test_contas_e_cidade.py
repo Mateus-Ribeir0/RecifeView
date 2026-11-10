@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import create_engine, text
@@ -164,3 +164,50 @@ def test_visao_da_cidade_so_mostra_rua_da_lista_oficial(fabrica: sessionmaker[Se
         FiltroDaCidade(hoje - timedelta(days=90), None, ("ILUMINACAO PUBLICA",))
     )
     assert por_tema == []
+
+
+def inserir_relato_de(
+    sessao: Session, usuario_id: UUID | None, principal_id: UUID | None = None
+) -> UUID:
+    identificador = uuid4()
+    sessao.execute(
+        text(
+            "INSERT INTO app.contribuicao (id, chave_de_envio, recebida_em, data_relato, "
+            "categoria, servico_codigo, servico, bairro_oficial, logradouro, numero, "
+            "numero_informado, retorno, resultado, principal_id, usuario_id) VALUES (:id, "
+            ":chave, :agora, :hoje, 'PAVIMENTACAO', '131', 'OPERACAO TAPA-BURACO', 'AFOGADOS', "
+            "'RUA DA ESPERANCA', '128', true, 'nao_registrou', :resultado, :principal, :usuario)"
+        ),
+        {
+            "id": identificador,
+            "chave": uuid4().hex,
+            "agora": datetime.now(UTC),
+            "hoje": datetime.now(UTC).date(),
+            "resultado": "somada" if principal_id else "nova",
+            "principal": principal_id,
+            "usuario": usuario_id,
+        },
+    )
+    return identificador
+
+
+def test_meus_relatos_trazem_so_os_da_conta_e_a_situacao_da_ocorrencia(
+    fabrica: sessionmaker[Session], tmp_path: Path
+) -> None:
+    criar_conta(fabrica, tmp_path)
+    with fabrica() as sessao:
+        maria = UsuarioRepositorySql(sessao).buscar_por_email(Email("maria@exemplo.com"))
+    assert maria is not None
+    with fabrica.begin() as sessao:
+        sozinho = inserir_relato_de(sessao, maria.id)
+        de_outra_pessoa = inserir_relato_de(sessao, None)
+        somado = inserir_relato_de(sessao, maria.id, de_outra_pessoa)
+
+    relatos = ContribuicaoRepositorySql(fabrica).relatos_do_cidadao(maria.id)
+
+    por_id = {relato.id: relato for relato in relatos}
+    assert set(por_id) == {sozinho, somado}
+    assert (por_id[somado].somado, por_id[somado].relatos) == (True, 2)
+    assert (por_id[sozinho].somado, por_id[sozinho].relatos) == (False, 1)
+    assert {relato.situacao for relato in relatos} == {"aberta"}
+    assert por_id[sozinho].logradouro == "RUA DA ESPERANCA"

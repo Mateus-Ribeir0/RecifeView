@@ -70,7 +70,7 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 | Relatar um problema (`/contribuir`, pública) | Formulário em três passos, sem identificação | Contribuições |
 | Entrar, ajuda e definir senha (`/entrar`, `/entrar/gestao`, `/entrar/ajuda`, `/definir-senha`) | Entrada do cidadão e da gestão, orientação de acesso, troca da senha | Autenticação |
 | Criar conta e recuperar senha (`/cadastrar`, `/recuperar-senha`) | Cadastro do cidadão, que já abre a sessão, e nova senha com código por e-mail | Contas |
-| Área do cidadão (`/cidade`, `/cidade/meu-bairro`, `/cidade/relatar`, `/cidade/conta`) | Relatos da cidade sem endereço exato, números do bairro comparados com o Recife, formulário e dados da conta | Cidade, Contribuições e Contas |
+| Área do cidadão (`/cidade`, `/cidade/meus-relatos`, `/cidade/meu-bairro`, `/cidade/relatar`, `/cidade/conta`), só para conta de cidadão | Relatos da cidade sem endereço exato, os próprios relatos com o andamento, números do bairro comparados com o Recife, formulário e dados da conta | Cidade, Contribuições e Contas |
 | Início (`/painel`) | KPIs-síntese e volume por fonte | Indicadores |
 | War Room (`/painel/war-room`) | Estado de um dia simulado: entradas, estoque, fila e alertas | War Room |
 | Retorno (`/painel/retorno`) | Abas: funil, canais, destinos e caminhos das indicações; canais e prazo da Ouvidoria | Retorno |
