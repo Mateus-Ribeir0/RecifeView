@@ -63,7 +63,29 @@ Existem dois tipos de conta ([ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niv
 - **Gestão** (`GESTOR` e `ADMINISTRADOR`): criadas pela administração, pela linha de comando abaixo. Veem o painel, o pente fino e a importação.
 - **Cidadão** (`CIDADAO`): criadas pela própria pessoa em `/cadastrar`, com confirmação do e-mail por código. Veem os relatos da cidade (sem número exato nem texto) e os indicadores do bairro. Toda rota da gestão responde 403 para elas.
 
-Em desenvolvimento, os e-mails com os códigos não são enviados: ficam em arquivos `.txt` na pasta de `API_PASTA_DOS_EMAILS` (padrão `../data/emails`, fora do git). Abra o arquivo mais recente para ver o código.
+Sem servidor SMTP configurado, os e-mails com os códigos não são enviados: ficam em arquivos `.txt` na pasta de `API_PASTA_DOS_EMAILS` (padrão `../data/emails`, fora do git). Abra o arquivo mais recente para ver o código. Para o código chegar na caixa de entrada, configure o SMTP (seção abaixo).
+
+### Enviar os e-mails de verdade (SMTP)
+
+A API envia por qualquer servidor SMTP. O provedor definitivo do projeto ainda está em aberto ([ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)), então use uma conta de teste sua. Com Gmail:
+
+1. Ative a verificação em duas etapas na conta Google.
+2. Crie uma senha de app em https://myaccount.google.com/apppasswords. O Google mostra 16 letras.
+3. No `backend/.env`, preencha (a senha sem espaços):
+
+```bash
+API_SMTP_SERVIDOR=smtp.gmail.com
+API_SMTP_PORTA=587
+API_SMTP_SEGURANCA=starttls
+API_SMTP_USUARIO=seu.endereco@gmail.com
+API_SMTP_SENHA=abcdefghijklmnop
+```
+
+4. Reinicie a API. No início do log aparece `E-mails saem pelo servidor SMTP smtp.gmail.com`.
+
+Outros provedores funcionam do mesmo jeito: Outlook (`smtp.office365.com`, 587, `starttls`), Brevo (`smtp-relay.brevo.com`, 587) ou Amazon SES (endpoint SMTP da região, 587). Se o servidor recusar o envio, o cadastro responde 503 com `envio_de_email_indisponivel`, nada é gravado e o log diz o motivo (usuário e senha recusados ou servidor fora do ar), sem o conteúdo da mensagem.
+
+> O `.env` não vai para o git. Nunca coloque a senha do SMTP em outro arquivo, em issue ou em mensagem do grupo.
 
 As contas da gestão nascem com uma senha temporária que precisa ser trocada no primeiro acesso.
 
@@ -91,7 +113,13 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `API_ORIGENS_PERMITIDAS` | Origens que podem chamar a API direto, em JSON | `[]` |
 | `API_PASTA_DAS_IMPORTACOES` | Pasta local dos arquivos enviados. Fica fora do git | `../data/importacoes` |
 | `API_TAMANHO_MAXIMO_DA_IMPORTACAO_MB` | Limite de tamanho de um arquivo enviado | `800` |
-| `API_PASTA_DOS_EMAILS` | Onde os e-mails de conta são gravados em desenvolvimento. O provedor real está em aberto | `../data/emails` |
+| `API_PASTA_DOS_EMAILS` | Onde os e-mails de conta são gravados quando não há SMTP configurado. Fica fora do git | `../data/emails` |
+| `API_SMTP_SERVIDOR` | Servidor SMTP. Vazio: os e-mails ficam na pasta acima | `smtp.gmail.com` |
+| `API_SMTP_PORTA` | Porta do servidor SMTP | `587` |
+| `API_SMTP_SEGURANCA` | `starttls` (porta 587) ou `ssl` (porta 465) | `starttls` |
+| `API_SMTP_USUARIO` | Usuário do SMTP. Vazio: envia sem autenticar | `seu.endereco@gmail.com` |
+| `API_SMTP_SENHA` | Senha do SMTP (no Gmail, a senha de app). Nunca entra no repositório | vem de você, só no `.env` |
+| `API_SMTP_REMETENTE` | Endereço do remetente. Vazio: usa o `API_SMTP_USUARIO` | `avisos@exemplo.com` |
 | `API_SAL_DO_ID_LOCAL` | Sal do pseudônimo de endereço. Vazio: registros novos ficam fora da reincidência e os relatos do formulário não se comparam com a base | vem do grupo, nunca do repositório |
 | `API_URL_DO_BANCO_DE_TESTE` | Banco dos testes de integração. Sem ela, esses testes são pulados | `postgresql+psycopg://...@localhost:5432/recifeview_teste` |
 

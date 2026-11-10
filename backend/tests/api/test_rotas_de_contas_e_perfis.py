@@ -16,6 +16,7 @@ from app.api.dependencias import (
     obter_servicos_de_conta,
 )
 from app.application.casos_de_uso.contas.servicos import ServicosDeConta
+from app.application.portas.contas import EnvioDeEmailFalhou, MensagemDeEmail
 from app.application.sessoes import GestaoDeSessoes
 from app.domain.auditoria import ConsultaAuditada
 from app.domain.email import Email
@@ -212,6 +213,26 @@ def test_cadastro_confirmacao_e_entrada(cliente: TestClient, ambiente: Ambiente)
     assert usuario["perfil"] == "CIDADAO"
     assert usuario["bairro_oficial"] == "AFOGADOS"
     assert "set-cookie" in confirmacao.headers
+
+
+class CaixaForaDoAr(CaixaDeEmailsEmMemoria):
+    def enviar(self, mensagem: MensagemDeEmail) -> None:
+        raise EnvioDeEmailFalhou
+
+
+def test_falha_no_envio_do_codigo_responde_503(cliente: TestClient, ambiente: Ambiente) -> None:
+    ambiente.emails = CaixaForaDoAr()
+    dados = {
+        "nome": "Maria da Silva",
+        "email": "nova@exemplo.com",
+        "senha": SENHA_NOVA,
+        "aceitou_os_termos": True,
+    }
+
+    resposta = cliente.post(f"{BASE}/contas", json=dados)
+
+    assert resposta.status_code == 503
+    assert resposta.json()["erro"]["codigo"] == "envio_de_email_indisponivel"
 
 
 def test_robo_no_campo_escondido_nao_cria_conta(cliente: TestClient, ambiente: Ambiente) -> None:

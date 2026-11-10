@@ -25,5 +25,9 @@ class CodigoDeContaRepository(Protocol):
     ) -> None: ...
 
 
+class EnvioDeEmailFalhou(Exception):
+    """O provedor recusou ou não respondeu. Não é erro de domínio: a transação desfaz o código."""
+
+
 class EnvioDeEmail(Protocol):
     def enviar(self, mensagem: MensagemDeEmail) -> None: ...

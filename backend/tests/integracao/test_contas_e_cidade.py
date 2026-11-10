@@ -1,18 +1,23 @@
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
 from uuid import uuid4
 
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.api.dependencias import abrir_transacao
 from app.application.casos_de_uso.contas.confirmar_email import (
     ConfirmacaoDeEmail,
     ConfirmarEmail,
 )
 from app.application.casos_de_uso.contas.criar_conta import CriarConta, NovaConta
 from app.application.casos_de_uso.contas.servicos import ServicosDeConta
+from app.application.portas.contas import EnvioDeEmailFalhou, MensagemDeEmail
 from app.application.portas.contribuicoes import FiltroDaCidade
 from app.application.sessoes import GestaoDeSessoes
 from app.domain.email import Email
@@ -84,6 +89,31 @@ def test_cadastro_grava_o_email_fora_do_git_e_confirma(
     assert usuario.email_confirmado_em is not None
     assert usuario.bairro_oficial == "AFOGADOS"
     assert codigo not in str(guardado)
+
+
+class EnvioForaDoAr:
+    def enviar(self, mensagem: MensagemDeEmail) -> None:
+        raise EnvioDeEmailFalhou
+
+
+def test_falha_no_envio_desfaz_a_conta_e_o_codigo(
+    fabrica: sessionmaker[Session], tmp_path: Path
+) -> None:
+    nova = NovaConta("Maria da Silva", "maria@exemplo.com", SENHA, "AFOGADOS", True)
+    pedido = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(fabrica_de_sessoes=fabrica)))
+    transacao = cast(Generator[Session], abrir_transacao(pedido))  # type: ignore[arg-type]
+    sem_envio = replace(servicos(next(transacao), tmp_path), emails=EnvioForaDoAr())
+
+    with pytest.raises(EnvioDeEmailFalhou) as falha:
+        CriarConta(sem_envio, frozenset({"AFOGADOS"})).executar(nova)
+    with pytest.raises(EnvioDeEmailFalhou):
+        transacao.throw(falha.value)
+
+    with fabrica() as sessao:
+        usuario = UsuarioRepositorySql(sessao).buscar_por_email(Email("maria@exemplo.com"))
+        codigos = sessao.scalar(text("SELECT count(*) FROM app.codigo_de_conta"))
+    assert usuario is None
+    assert codigos == 0
 
 
 def inserir_relato(sessao: Session, logradouro: str, numero: str) -> None:

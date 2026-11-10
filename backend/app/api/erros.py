@@ -6,6 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.api.schemas.erros import DetalheDoErro, ErroResposta
+from app.application.portas.contas import EnvioDeEmailFalhou
 from app.domain.erros import (
     AcessoNegado,
     AreaDaGestaoNegada,
@@ -180,8 +181,17 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
 }
 
 
+ENVIO_DE_EMAIL_INDISPONIVEL = DetalheDoErro(
+    codigo="envio_de_email_indisponivel",
+    mensagem=(
+        "Não conseguimos enviar o e-mail agora. Nada foi gravado: tente de novo em alguns minutos."
+    ),
+)
+
+
 def registrar_tratadores_de_erro(app: FastAPI) -> None:
     app.add_exception_handler(ErroDeDominio, _tratar_erro_de_dominio)  # type: ignore[arg-type]
+    app.add_exception_handler(EnvioDeEmailFalhou, _tratar_envio_de_email_falhou)
     app.add_exception_handler(RequestValidationError, _tratar_dados_invalidos)  # type: ignore[arg-type]
 
 
@@ -201,6 +211,10 @@ def _detalhes_do_erro(erro: ErroDeDominio) -> dict[str, Any] | None:
     if isinstance(erro, (ContribuicaoInvalida, CadastroInvalido)):
         return {"campo": erro.campo}
     return None
+
+
+def _tratar_envio_de_email_falhou(_: Request, __: Exception) -> JSONResponse:
+    return _responder(status.HTTP_503_SERVICE_UNAVAILABLE, ENVIO_DE_EMAIL_INDISPONIVEL)
 
 
 def _tratar_dados_invalidos(_: Request, erro: RequestValidationError) -> JSONResponse:
