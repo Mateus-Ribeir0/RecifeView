@@ -18,6 +18,14 @@ const ICONES_DOS_TEMAS: Readonly<Record<string, NomeDoIcone>> = {
   'Ruas e calçadas': 'via',
 }
 
+export function IconeDoTema({ tema }: { tema: string }) {
+  return (
+    <span className={estilos.iconeDoTema} aria-hidden="true">
+      <Icone nome={ICONES_DOS_TEMAS[tema] ?? 'relato'} tamanho={22} />
+    </span>
+  )
+}
+
 const ICONES_DAS_SITUACOES: Readonly<Record<SituacaoPublica, NomeDoIcone>> = {
   recebido: 'relato',
   em_analise: 'pessoas',
@@ -46,9 +54,7 @@ interface Propriedades {
 export function CartaoDeOcorrencia({ ocorrencia, hoje }: Propriedades) {
   return (
     <article className={estilos.cartao}>
-      <span className={estilos.iconeDoTema} aria-hidden="true">
-        <Icone nome={ICONES_DOS_TEMAS[ocorrencia.tema] ?? 'relato'} tamanho={22} />
-      </span>
+      <IconeDoTema tema={ocorrencia.tema} />
       <div className={estilos.corpoDoCartao}>
         <div className={estilos.topoDoCartao}>
           <h3>{ocorrencia.servico}</h3>

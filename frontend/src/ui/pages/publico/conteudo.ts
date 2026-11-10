@@ -94,7 +94,7 @@ export const PASSOS_DO_CIDADAO: readonly Passo[] = [
   {
     icone: 'telas',
     titulo: 'Você acompanha',
-    texto: 'Com uma conta, você vê a situação de cada relato e os números do seu bairro.',
+    texto: 'Com uma conta, você acompanha cada relato seu em Meus relatos e vê o seu bairro.',
   },
 ]
 
@@ -111,6 +111,12 @@ export const NIVEIS_DE_ACESSO: readonly LinhaDeAcesso[] = [
     semConta: false,
     cidadao: true,
     gestao: true,
+  },
+  {
+    recurso: 'Os seus relatos e o andamento de cada um, do envio à revisão',
+    semConta: false,
+    cidadao: true,
+    gestao: false,
   },
   {
     recurso: 'Indicadores do seu bairro comparados com o Recife',
@@ -204,7 +210,8 @@ export const FONTES_DE_DADOS: readonly FonteDeDados[] = [
 ]
 
 export const GARANTIAS_DE_PRIVACIDADE: readonly string[] = [
-  'O relato não pede nome, CPF, telefone nem e-mail, recusa o texto que trouxer esses dados e não fica ligado a nenhuma conta.',
+  'O relato não pede nome, CPF, telefone nem e-mail e recusa o texto que trouxer esses dados.',
+  'Com a conta aberta, o relato aparece em Meus relatos só para você. A gestão revisa sem saber quem enviou, e relato feito sem entrar não fica ligado a ninguém.',
   'A conta guarda só nome, e-mail e, se você quiser, o bairro. Excluir a conta apaga esses dados.',
   'Quem tem conta vê a rua e uma faixa de numeração de 100 em 100, nunca o número exato nem o texto escrito.',
   'O relato fica numa área separada. Só entra no painel depois da revisão da gestão.',

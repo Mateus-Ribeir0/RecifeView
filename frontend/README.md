@@ -43,9 +43,10 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 | `/recuperar-senha`       | Nova senha com código por e-mail (só contas de cidadão)                        | Público            |
 | `/entrar/ajuda`          | Senha esquecida, conta bloqueada, pedido de acesso da gestão                   | Público            |
 | `/definir-senha`         | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária | Quem entrou        |
-| `/cidade`                | Relatos da cidade nos últimos 90 dias, com rua, faixa de numeração e situação  | Cidadão e gestão   |
-| `/cidade/meu-bairro`     | Indicadores do bairro escolhido comparados com o Recife                        | Cidadão e gestão   |
-| `/cidade/relatar`        | O formulário público dentro da área do cidadão                                 | Cidadão e gestão   |
+| `/cidade`                | Relatos da cidade nos últimos 90 dias, com rua, faixa de numeração e situação  | Cidadão            |
+| `/cidade/meus-relatos`   | Os relatos que a pessoa enviou com a conta aberta e o andamento de cada um     | Cidadão            |
+| `/cidade/meu-bairro`     | Indicadores do bairro escolhido comparados com o Recife                        | Cidadão            |
+| `/cidade/relatar`        | O formulário público dentro da área do cidadão                                 | Cidadão            |
 | `/cidade/conta`          | Nome, bairro, troca de senha e exclusão da conta                               | Cidadão            |
 | `/painel`                | Início: principais indicadores e volume por fonte                              | Gestor             |
 | `/painel/war-room`       | Estado de um dia: o que está parado e por onde começar                         | Gestor             |
@@ -58,7 +59,7 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 | `/painel/contribuicoes`  | Pente fino dos relatos, ocorrências e geração do pacote                        | Gestor             |
 | `/painel/importacoes`    | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório    | Gestor             |
 
-Os endereços antigos do site (`/o-que-muda`, `/plataforma` e `/dados-e-confianca`) redirecionam para as abas novas. Quem não é da gestão e abre `/painel` vai para `/cidade`. O que cada nível de acesso vê está na [ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md).
+Os endereços antigos do site (`/o-que-muda`, `/plataforma` e `/dados-e-confianca`) redirecionam para as abas novas. Cada perfil vê só a sua área: quem não é da gestão e abre `/painel` vai para `/cidade`, e a gestão que abre `/cidade` vai para `/painel`. O que cada nível de acesso vê está na [ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md).
 
 A correspondência entre telas e rotas da API está em [docs/arquitetura.md](../docs/arquitetura.md#telas-e-rotas-da-api).
 

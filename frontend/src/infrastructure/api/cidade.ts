@@ -1,5 +1,5 @@
 import type { ServicoDaCidade } from '../../application/cidade/servico'
-import type { IndicadoresDoBairro, OcorrenciaDaCidade } from '../../domain/cidade'
+import type { IndicadoresDoBairro, MeuRelato, OcorrenciaDaCidade } from '../../domain/cidade'
 import type { ClienteHttp } from './cliente'
 import { converterChaves } from './conversao'
 
@@ -20,5 +20,6 @@ export function criarServicoDaCidade(cliente: ClienteHttp): ServicoDaCidade {
     },
     meuBairro: (bairro) =>
       ler<IndicadoresDoBairro>(`${BASE}/bairros/${encodeURIComponent(bairro)}`),
+    meusRelatos: () => ler<MeuRelato[]>(`${BASE}/meus-relatos`),
   }
 }

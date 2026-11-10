@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   descreverLocal,
+  etapasDoRelato,
   haQuantoTempo,
   resumirOcorrencias,
   type OcorrenciaDaCidade,
@@ -51,9 +52,27 @@ describe('perfis', () => {
     expect(inicioDoPerfil('GESTOR')).toBe('/painel')
   })
 
-  it('cidadão não abre o painel, gestão abre tudo', () => {
+  it('cada perfil abre só a própria área', () => {
     expect(podeAbrir('CIDADAO', '/painel/importacoes')).toBe(false)
     expect(podeAbrir('CIDADAO', '/cidade/meu-bairro')).toBe(true)
-    expect(podeAbrir('GESTOR', '/cidade')).toBe(true)
+    expect(podeAbrir('GESTOR', '/cidade')).toBe(false)
+    expect(podeAbrir('GESTOR', '/painel/prazos')).toBe(true)
+    expect(podeAbrir('ADMINISTRADOR', '/cidade/meus-relatos')).toBe(false)
+  })
+})
+
+describe('acompanhamento dos meus relatos', () => {
+  it('marca as etapas feitas, a atual e as que faltam', () => {
+    expect(etapasDoRelato('em_analise')).toEqual([
+      { situacao: 'recebido', estado: 'feita' },
+      { situacao: 'em_analise', estado: 'atual' },
+      { situacao: 'no_painel', estado: 'pendente' },
+    ])
+  })
+
+  it('termina em pedido oficial quando o relato já estava coberto', () => {
+    const etapas = etapasDoRelato('coberto_por_pedido_oficial')
+    expect(etapas.at(-1)).toEqual({ situacao: 'coberto_por_pedido_oficial', estado: 'atual' })
+    expect(etapas.slice(0, 2).every((etapa) => etapa.estado === 'feita')).toBe(true)
   })
 })

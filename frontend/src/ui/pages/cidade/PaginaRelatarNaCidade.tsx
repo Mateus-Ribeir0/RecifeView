@@ -14,10 +14,10 @@ export function PaginaRelatarNaCidade() {
       <div className={estilos.formularioRelatar}>
         <FormularioDeRelato />
         <aside className={estilos.observacao}>
-          <h2>O seu relato continua anônimo</h2>
+          <h2>Só você sabe que o relato é seu</h2>
           <p>
-            Ele não fica ligado à sua conta: nem a gestão sabe quem enviou. Depois de enviado, ele
-            aparece em Relatos da cidade, sem o número exato e sem o que você escreveu.
+            Ele fica em Meus relatos, para você acompanhar a revisão. A gestão revisa sem saber quem
+            enviou, e em Relatos da cidade ele aparece sem o número exato e sem o que você escreveu.
           </p>
           <p>
             Em risco imediato, ligue para a Defesa Civil do Recife: <strong>0800 081 3400</strong>.

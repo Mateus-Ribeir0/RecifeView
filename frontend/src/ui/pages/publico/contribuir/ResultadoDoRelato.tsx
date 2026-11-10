@@ -1,4 +1,6 @@
+import { useSessao } from '../../../../application/autenticacao/useSessao'
 import type { ResultadoDoEnvio } from '../../../../domain/contribuicoes'
+import { eDaGestao } from '../../../../domain/usuario'
 import { Botao } from '../../../components/Botao'
 import { Icone, type NomeDoIcone } from '../../../components/Icone'
 import { LinkDeBotao } from '../../../components/LinkDeBotao'
@@ -36,8 +38,14 @@ interface Propriedades {
   aoRecomecar: () => void
 }
 
+function useAcompanhaNaConta(): boolean {
+  const { estado } = useSessao()
+  return estado.situacao === 'autenticada' && !eDaGestao(estado.usuario.perfil)
+}
+
 export function ResultadoDoRelato({ resultado, aoRecomecar }: Propriedades) {
   const { icone, titulo, texto } = MENSAGENS[resultado]
+  const acompanhaNaConta = useAcompanhaNaConta()
 
   return (
     <section className={estilos.cartao} role="status">
@@ -47,13 +55,23 @@ export function ResultadoDoRelato({ resultado, aoRecomecar }: Propriedades) {
       <h2 className={estilos.titulo}>{titulo}</h2>
       <p className={estilos.texto}>{texto}</p>
       <p className={estilos.lembrete}>
-        Este relato não gera protocolo. Para acompanhar um pedido de serviço, use a Central 156.
+        {acompanhaNaConta
+          ? 'Ele já está em Meus relatos, onde você acompanha a revisão da gestão.'
+          : 'Este relato não gera protocolo. Para acompanhar, entre com a sua conta antes de relatar.'}{' '}
+        Para pedir o serviço, use a Central 156.
       </p>
       <div className={estilos.acoes}>
-        <Botao type="button" onClick={aoRecomecar}>
+        {acompanhaNaConta ? (
+          <LinkDeBotao para="/cidade/meus-relatos">Acompanhar em Meus relatos</LinkDeBotao>
+        ) : null}
+        <Botao
+          type="button"
+          variante={acompanhaNaConta ? 'secundario' : 'primario'}
+          onClick={aoRecomecar}
+        >
           Enviar outro relato
         </Botao>
-        <LinkDeBotao para="/dados-e-confianca" variante="secundario">
+        <LinkDeBotao para="/como-funciona" variante="secundario">
           Como a duplicidade é evitada
         </LinkDeBotao>
       </div>

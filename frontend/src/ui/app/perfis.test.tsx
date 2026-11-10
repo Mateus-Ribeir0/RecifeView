@@ -8,6 +8,7 @@ import type { ServicoDeAutenticacao } from '../../application/autenticacao/servi
 import { CIDADA, criarServicoFalso, GESTORA } from '../../testes/servicoFalso'
 import { PaginaEntrar } from '../pages/entrar/PaginaEntrar'
 import { RotaProtegida } from './RotaProtegida'
+import { SoParaCidadaos } from './SoParaCidadaos'
 import { SoParaGestao } from './SoParaGestao'
 import { SoParaVisitantes } from './SoParaVisitantes'
 
@@ -24,7 +25,11 @@ function montar(servico: ServicoDeAutenticacao, rotaInicial: string) {
       {
         element: <RotaProtegida />,
         children: [
-          { path: '/cidade', element: <h1>Área do cidadão</h1> },
+          {
+            path: '/cidade',
+            element: <SoParaCidadaos />,
+            children: [{ index: true, element: <h1>Área do cidadão</h1> }],
+          },
           {
             path: '/painel',
             element: <SoParaGestao />,
@@ -53,6 +58,12 @@ describe('áreas por perfil', () => {
     montar(criarServicoFalso({ restaurarSessao: vi.fn().mockResolvedValue(CIDADA) }), '/painel')
 
     expect(await screen.findByRole('heading', { name: 'Área do cidadão' })).toBeInTheDocument()
+  })
+
+  it('gestão que tenta abrir a área do cidadão vai para o painel', async () => {
+    montar(criarServicoFalso({ restaurarSessao: vi.fn().mockResolvedValue(GESTORA) }), '/cidade')
+
+    expect(await screen.findByRole('heading', { name: 'Painel da gestão' })).toBeInTheDocument()
   })
 
   it('gestão abre o painel', async () => {

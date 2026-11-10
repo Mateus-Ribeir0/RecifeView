@@ -15,6 +15,7 @@ import { PaginaInicial } from '../pages/publico/inicio/PaginaInicial'
 import { PaginaRecuperarSenha } from '../pages/recuperar-senha/PaginaRecuperarSenha'
 import { RotaProtegida } from './RotaProtegida'
 import { servicoDaCidade, servicoDeAutenticacao, servicoDeContribuicoes } from './servicos'
+import { SoParaCidadaos } from './SoParaCidadaos'
 import { SoParaGestao } from './SoParaGestao'
 import { SoParaVisitantes } from './SoParaVisitantes'
 
@@ -78,37 +79,50 @@ const roteador = createBrowserRouter([
           { path: 'definir-senha', element: <PaginaDefinirSenha /> },
           {
             path: 'cidade',
-            element: (
-              <ContextoDaCidade value={servicoDaCidade}>
-                <LayoutDaCidade />
-              </ContextoDaCidade>
-            ),
+            element: <SoParaCidadaos />,
             children: [
               {
-                index: true,
-                lazy: async () => ({
-                  Component: (await import('../pages/cidade/PaginaRelatosDaCidade'))
-                    .PaginaRelatosDaCidade,
-                }),
-              },
-              {
-                path: 'meu-bairro',
-                lazy: async () => ({
-                  Component: (await import('../pages/cidade/PaginaMeuBairro')).PaginaMeuBairro,
-                }),
-              },
-              {
-                path: 'relatar',
-                lazy: async () => ({
-                  Component: (await import('../pages/cidade/PaginaRelatarNaCidade'))
-                    .PaginaRelatarNaCidade,
-                }),
-              },
-              {
-                path: 'conta',
-                lazy: async () => ({
-                  Component: (await import('../pages/cidade/PaginaMinhaConta')).PaginaMinhaConta,
-                }),
+                element: (
+                  <ContextoDaCidade value={servicoDaCidade}>
+                    <LayoutDaCidade />
+                  </ContextoDaCidade>
+                ),
+                children: [
+                  {
+                    index: true,
+                    lazy: async () => ({
+                      Component: (await import('../pages/cidade/PaginaRelatosDaCidade'))
+                        .PaginaRelatosDaCidade,
+                    }),
+                  },
+                  {
+                    path: 'meus-relatos',
+                    lazy: async () => ({
+                      Component: (await import('../pages/cidade/PaginaMeusRelatos'))
+                        .PaginaMeusRelatos,
+                    }),
+                  },
+                  {
+                    path: 'meu-bairro',
+                    lazy: async () => ({
+                      Component: (await import('../pages/cidade/PaginaMeuBairro')).PaginaMeuBairro,
+                    }),
+                  },
+                  {
+                    path: 'relatar',
+                    lazy: async () => ({
+                      Component: (await import('../pages/cidade/PaginaRelatarNaCidade'))
+                        .PaginaRelatarNaCidade,
+                    }),
+                  },
+                  {
+                    path: 'conta',
+                    lazy: async () => ({
+                      Component: (await import('../pages/cidade/PaginaMinhaConta'))
+                        .PaginaMinhaConta,
+                    }),
+                  },
+                ],
               },
             ],
           },

@@ -12,7 +12,7 @@ const SEM_CONTA = [
 
 const COM_CONTA = [
   'Ver os relatos da cidade e da sua rua',
-  'Acompanhar a situação de cada relato',
+  'Acompanhar os seus relatos, do envio à revisão',
   'Comparar o seu bairro com o Recife',
 ] as const
 
