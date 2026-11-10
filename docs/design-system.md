@@ -204,9 +204,10 @@ O mockup 04 da pasta `MockupsDashboard` serve de referência de estrutura. Os n�
 
 Quem tem conta de cidadão vê os relatos da cidade e os números do próprio bairro, sem nada que identifique quem relatou (o que cada nível vê está na [ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)).
 
-- **Navegação:** abas no cabeçalho azul (Relatos da cidade, Meu bairro, Relatar um problema), sem barra lateral e sem linha de filtros. A escolha do bairro e do tema fica no topo da lista.
+- **Navegação:** abas no cabeçalho azul (Relatos da cidade, Meus relatos, Meu bairro, Relatar um problema), sem barra lateral e sem linha de filtros. A escolha do bairro e do tema fica no topo da lista.
 - **Cartão de ocorrência:** categoria, rua (só quando é uma via reconhecida da base oficial), faixa de numeração ("entre 100 e 199"), bairro, há quanto tempo, quantas pessoas relataram e o selo de situação. O texto que a pessoa escreveu nunca aparece.
 - **Selo de situação:** texto sempre escrito, com a cor como reforço. Recebido em `cinza-fundo`; Em análise em `alerta-fundo` com `alerta-texto`; No painel da gestão em `azul-claro` com `azul-escuro`; Coberto por pedido oficial em `sucesso-fundo` com `sucesso`. A explicação de cada situação fica na própria tela.
+- **Andamento em Meus relatos:** três etapas lado a lado (Recebido, Em análise pela gestão e No painel da gestão, ou Já tem pedido oficial no lugar da última), cada uma com borda superior de 3px e um círculo: etapa feita em `azul-principal` com marca de confirmado, etapa atual em `azul-principal` com o miolo branco e etapa que falta em `cinza` (`borda-de-campo`). O nome da etapa vem sempre escrito, e abaixo vai a explicação da situação atual. No desktop, uma coluna em `azul-claro` explica as quatro situações.
 - **Escolha do bairro no mapa:** o mapa marca só se o bairro tem relato ou não (sem escala graduada) e o bairro escolhido fica em `selecao`.
 - **Celular primeiro:** ao contrário do painel, esta área é desenhada para 390px e alargada até 1280px.
 

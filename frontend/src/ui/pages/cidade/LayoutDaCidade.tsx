@@ -9,6 +9,7 @@ import estilos from './LayoutDaCidade.module.css'
 
 const ABAS = [
   { caminho: '/cidade', rotulo: 'Relatos da cidade' },
+  { caminho: '/cidade/meus-relatos', rotulo: 'Meus relatos' },
   { caminho: '/cidade/meu-bairro', rotulo: 'Meu bairro' },
   { caminho: '/cidade/relatar', rotulo: 'Relatar um problema' },
 ] as const

@@ -3,18 +3,26 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 
+import { ProvedorDeSessao } from '../../../../application/autenticacao/ProvedorDeSessao'
+import type { ServicoDeAutenticacao } from '../../../../application/autenticacao/servico'
 import { ContextoDasContribuicoes } from '../../../../application/contribuicoes/contexto'
 import type { ServicoDeContribuicoes } from '../../../../application/contribuicoes/servico'
 import { ErroDoRecifeView } from '../../../../domain/erros'
 import { criarContribuicoesFalsas } from '../../../../testes/contribuicaoFalsa'
+import { CIDADA, criarServicoFalso } from '../../../../testes/servicoFalso'
 import { FormularioDeRelato } from './FormularioDeRelato'
 
-function montar(servico: ServicoDeContribuicoes) {
+function montar(
+  servico: ServicoDeContribuicoes,
+  sessao: ServicoDeAutenticacao = criarServicoFalso(),
+) {
   render(
     <MemoryRouter>
-      <ContextoDasContribuicoes value={servico}>
-        <FormularioDeRelato />
-      </ContextoDasContribuicoes>
+      <ProvedorDeSessao servico={sessao}>
+        <ContextoDasContribuicoes value={servico}>
+          <FormularioDeRelato />
+        </ContextoDasContribuicoes>
+      </ProvedorDeSessao>
     </MemoryRouter>,
   )
   return userEvent.setup()
@@ -37,6 +45,18 @@ describe('formulário de relato', () => {
     await usuario.click(await screen.findByRole('button', { name: 'Continuar' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Escolha o que está acontecendo.')
+  })
+
+  it('com a conta de cidadão aberta, leva para Meus relatos', async () => {
+    const sessao = criarServicoFalso({ restaurarSessao: vi.fn().mockResolvedValue(CIDADA) })
+    const usuario = montar(criarContribuicoesFalsas(), sessao)
+
+    await preencherAteOEnvio(usuario)
+    await usuario.click(screen.getByRole('checkbox'))
+    await usuario.click(screen.getByRole('button', { name: 'Enviar relato' }))
+
+    const link = await screen.findByRole('link', { name: 'Acompanhar em Meus relatos' })
+    expect(link).toHaveAttribute('href', '/cidade/meus-relatos')
   })
 
   it('envia com uma chave e mostra que o relato foi recebido', async () => {

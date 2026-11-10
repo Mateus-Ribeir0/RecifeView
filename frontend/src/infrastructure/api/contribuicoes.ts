@@ -32,6 +32,7 @@ export function criarServicoDeContribuicoes(cliente: ClienteHttp): ServicoDeCont
     async enviar(relato) {
       const resposta = await cliente.enviar<{ resultado: ResultadoDoEnvio }>(BASE, {
         metodo: 'POST',
+        autenticada: true,
         corpo: {
           chave_de_envio: relato.chaveDeEnvio,
           servico_codigo: relato.servicoCodigo,

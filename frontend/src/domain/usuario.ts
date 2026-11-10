@@ -28,7 +28,8 @@ export function inicioDoPerfil(perfil: Perfil): string {
 }
 
 export function podeAbrir(perfil: Perfil, caminho: string): boolean {
-  return eDaGestao(perfil) || !caminho.startsWith(ROTA_INICIAL_DA_GESTAO)
+  const areaDeOutroPerfil = eDaGestao(perfil) ? ROTA_INICIAL_DA_CIDADE : ROTA_INICIAL_DA_GESTAO
+  return !caminho.startsWith(areaDeOutroPerfil)
 }
 
 const PALAVRAS_IGNORADAS_NAS_INICIAIS = new Set(['da', 'de', 'do', 'das', 'dos', 'e'])

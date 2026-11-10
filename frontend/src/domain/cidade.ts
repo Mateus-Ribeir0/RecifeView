@@ -17,6 +17,27 @@ export interface OcorrenciaDaCidade {
   situacao: SituacaoPublica
 }
 
+export interface MeuRelato {
+  id: string
+  recebidoEm: string
+  servico: string
+  tema: string
+  bairro: string
+  endereco: string | null
+  detalhe: string | null
+  enderecoApagado: boolean
+  somado: boolean
+  relatos: number
+  situacao: SituacaoPublica
+}
+
+export type EstadoDaEtapa = 'feita' | 'atual' | 'pendente'
+
+export interface EtapaDoRelato {
+  situacao: SituacaoPublica
+  estado: EstadoDaEtapa
+}
+
 export interface FiltroDaCidade {
   bairro: string
   tema: string
@@ -63,6 +84,31 @@ export const EXPLICACOES_DAS_SITUACOES: Readonly<Record<SituacaoPublica, string>
   em_analise: 'A gestão está conferindo se é o mesmo problema de outro relato ou pedido.',
   no_painel: 'Revisado e contado nos indicadores que a gestão acompanha.',
   coberto_por_pedido_oficial: 'Já existe um pedido na Central 156 para o mesmo lugar e serviço.',
+}
+
+const ETAPAS_ANTES_DO_FIM: readonly SituacaoPublica[] = ['recebido', 'em_analise']
+
+function fimDoCaminho(situacao: SituacaoPublica): SituacaoPublica {
+  return situacao === 'coberto_por_pedido_oficial' ? situacao : 'no_painel'
+}
+
+function estadoDaEtapa(indice: number, atual: number): EstadoDaEtapa {
+  if (indice < atual) return 'feita'
+  return indice === atual ? 'atual' : 'pendente'
+}
+
+export function etapasDoRelato(situacao: SituacaoPublica): EtapaDoRelato[] {
+  const etapas = [...ETAPAS_ANTES_DO_FIM, fimDoCaminho(situacao)]
+  const atual = etapas.indexOf(situacao)
+  return etapas.map((etapa, indice) => ({ situacao: etapa, estado: estadoDaEtapa(indice, atual) }))
+}
+
+export function contarPorSituacao(
+  lista: readonly MeuRelato[],
+): Readonly<Record<SituacaoPublica, number>> {
+  const contagem = { recebido: 0, em_analise: 0, no_painel: 0, coberto_por_pedido_oficial: 0 }
+  for (const relato of lista) contagem[relato.situacao] += 1
+  return contagem
 }
 
 export function resumirOcorrencias(lista: readonly OcorrenciaDaCidade[]): ResumoDaCidade {
