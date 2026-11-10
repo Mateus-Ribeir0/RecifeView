@@ -1,4 +1,5 @@
 import { criarServicoDeAutenticacao } from '../../infrastructure/api/autenticacao'
+import { criarServicoDaCidade } from '../../infrastructure/api/cidade'
 import { ClienteHttp } from '../../infrastructure/api/cliente'
 import { criarServicoDeContribuicoes } from '../../infrastructure/api/contribuicoes'
 import { criarServicoDeImportacoes } from '../../infrastructure/api/importacoes'
@@ -12,3 +13,4 @@ export const servicoDeAutenticacao = criarServicoDeAutenticacao(cliente)
 export const servicoDoPainel = criarServicoDoPainel(cliente)
 export const servicoDeImportacoes = criarServicoDeImportacoes(cliente)
 export const servicoDeContribuicoes = criarServicoDeContribuicoes(cliente)
+export const servicoDaCidade = criarServicoDaCidade(cliente)

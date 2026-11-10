@@ -56,6 +56,13 @@ export function MenuDoUsuario({ usuario, aoSair }: Propriedades) {
         <div id={idDoMenu} className={estilos.menu}>
           <p className={estilos.email}>{usuario.email}</p>
           <ul>
+            {usuario.perfil === 'CIDADAO' && (
+              <li>
+                <Link to="/cidade/conta" className={estilos.item}>
+                  Minha conta
+                </Link>
+              </li>
+            )}
             <li>
               <Link to="/definir-senha" className={estilos.item}>
                 Trocar senha

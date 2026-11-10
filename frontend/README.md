@@ -31,26 +31,36 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 
 ## Telas
 
-| Caminho                  | Tela                                                                              | Acesso             |
-| ------------------------ | --------------------------------------------------------------------------------- | ------------------ |
-| `/`                      | Início: abertura, números, o que muda, caminho da demanda e mapa                  | Público            |
-| `/o-que-muda`            | Os problemas de antes, o que muda e a evidência de cada um                        | Público            |
-| `/plataforma`            | As telas do painel, com capturas reais                                            | Público            |
-| `/dados-e-confianca`     | Pente fino, fontes, privacidade e leitura honesta dos números                     | Público            |
-| `/contribuir`            | Formulário público em três passos                                                 | Público            |
-| `/entrar`                | Entrada com e-mail e senha                                                        | Só quem não entrou |
-| `/entrar/ajuda`          | Senha esquecida, conta bloqueada, pedido de acesso                                | Público            |
-| `/definir-senha`         | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária    | Gestor             |
-| `/painel`                | Início: principais indicadores e volume por fonte                                 | Gestor             |
-| `/painel/war-room`       | Estado de um dia: o que está parado e por onde começar                            | Gestor             |
-| `/painel/retorno`        | Abas da Câmara e da Ouvidoria: para onde vai cada pedido e quanto volta           | Gestor             |
-| `/painel/reincidencia`   | Local repetido, intervalos e pontos crônicos                                      | Gestor             |
-| `/painel/prazos`         | Percentis, faixas, categorias e estoque aberto                                    | Gestor             |
-| `/painel/territorio`     | Mapa, tabela e tendência por bairro                                               | Gestor             |
-| `/painel/prioridade`     | Abas: índice AHP com mapa e ranking, ocorrências, método e sensibilidade          | Gestor             |
-| `/painel/sobre-os-dados` | Cobertura, glossário e correções aplicadas                                        | Gestor             |
-| `/painel/contribuicoes`  | Pente fino dos relatos, ocorrências e geração do pacote                           | Gestor             |
-| `/painel/importacoes`    | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório       | Gestor             |
+| Caminho                  | Tela                                                                           | Acesso             |
+| ------------------------ | ------------------------------------------------------------------------------ | ------------------ |
+| `/`                      | Início: abertura, números, o que muda, caminho da demanda e mapa               | Público            |
+| `/o-que-muda`            | Os problemas de antes, o que muda e a evidência de cada um                     | Público            |
+| `/plataforma`            | As telas do painel, com capturas reais                                         | Público            |
+| `/dados-e-confianca`     | Pente fino, fontes, privacidade e leitura honesta dos números                  | Público            |
+| `/contribuir`            | Formulário público em três passos                                              | Público            |
+| `/entrar`                | Entrada do cidadão (cabeçalho azul e foto do Recife)                           | Só quem não entrou |
+| `/entrar/gestao`         | Entrada da gestão (cabeçalho azul-marinho); recusa conta de cidadão            | Só quem não entrou |
+| `/cadastrar`             | Criação da conta de cidadão em dois passos: dados e código enviado por e-mail  | Só quem não entrou |
+| `/confirmar-email`       | Confirmação com código e senha, para quem fechou a página no meio do cadastro  | Só quem não entrou |
+| `/recuperar-senha`       | Nova senha com código por e-mail (só contas de cidadão)                        | Público            |
+| `/entrar/ajuda`          | Senha esquecida, conta bloqueada, pedido de acesso da gestão                   | Público            |
+| `/definir-senha`         | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária | Quem entrou        |
+| `/cidade`                | Relatos da cidade nos últimos 90 dias, com rua, faixa de numeração e situação  | Cidadão e gestão   |
+| `/cidade/meu-bairro`     | Indicadores do bairro escolhido comparados com o Recife                        | Cidadão e gestão   |
+| `/cidade/relatar`        | O formulário público dentro da área do cidadão                                 | Cidadão e gestão   |
+| `/cidade/conta`          | Nome, bairro, troca de senha e exclusão da conta                               | Cidadão            |
+| `/painel`                | Início: principais indicadores e volume por fonte                              | Gestor             |
+| `/painel/war-room`       | Estado de um dia: o que está parado e por onde começar                         | Gestor             |
+| `/painel/retorno`        | Abas da Câmara e da Ouvidoria: para onde vai cada pedido e quanto volta        | Gestor             |
+| `/painel/reincidencia`   | Local repetido, intervalos e pontos crônicos                                   | Gestor             |
+| `/painel/prazos`         | Percentis, faixas, categorias e estoque aberto                                 | Gestor             |
+| `/painel/territorio`     | Mapa, tabela e tendência por bairro                                            | Gestor             |
+| `/painel/prioridade`     | Abas: índice AHP com mapa e ranking, ocorrências, método e sensibilidade       | Gestor             |
+| `/painel/sobre-os-dados` | Cobertura, glossário e correções aplicadas                                     | Gestor             |
+| `/painel/contribuicoes`  | Pente fino dos relatos, ocorrências e geração do pacote                        | Gestor             |
+| `/painel/importacoes`    | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório    | Gestor             |
+
+Quem não é da gestão e abre `/painel` vai para `/cidade`. O que cada nível de acesso vê está na [ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md).
 
 A correspondência entre telas e rotas da API está em [docs/arquitetura.md](../docs/arquitetura.md#telas-e-rotas-da-api).
 
@@ -85,15 +95,15 @@ Camadas `domain`, `application`, `infrastructure` e `ui`, conforme [docs/clean-a
 
 ```
 src/
-  domain/           usuario, senha, erros, acesso, territorio, formatacao, painel, filtros, importacoes, contribuicoes
-  application/      autenticacao/, filtros/, consultas/ (cache e hooks do painel), importacoes/, contribuicoes/
+  domain/           usuario, senha, conta, cidade, erros, acesso, territorio, formatacao, painel, filtros, importacoes, contribuicoes
+  application/      autenticacao/, cidade/, filtros/, consultas/ (cache e hooks do painel), importacoes/, contribuicoes/
   infrastructure/   api/ (cliente HTTP, conversão e serviços que implementam as portas)
   ui/
     app/            rotas, guardas de rota e montagem (único lugar que conhece a infraestrutura)
-    pages/          publico/ (as abas do site), entrar/, ajuda-de-acesso/, definir-senha/, painel/, importacoes/, contribuicoes/, nao-encontrada/
+    pages/          publico/ (as abas do site), entrar/, cadastrar/, confirmar-email/, recuperar-senha/, ajuda-de-acesso/, definir-senha/, cidade/, painel/, importacoes/, contribuicoes/, nao-encontrada/
     components/     logo, botões, campos, avisos, KPIs, cartões, abas, ícones, tabela, estados da consulta
     charts/         gráficos: os do Recharts (únicos que o importam) e funil, sparkline e composição em HTML e SVG
-    map/            mapa SVG dos bairros, minimapa das RPAs, mapa coroplético (Leaflet) e a malha
+    map/            mapa SVG dos bairros, mapa de escolha do bairro, minimapa das RPAs, mapa coroplético (Leaflet) e a malha
     conteudo/       textos compartilhados entre páginas
     assets/         marca, foto do Recife e capturas reais do painel
     theme/          tokens do design system e estilos base

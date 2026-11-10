@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 import { ContextoDaSessao, type EstadoDaSessao } from './contexto'
-import type { Credenciais, ServicoDeAutenticacao, TrocaDeSenha } from './servico'
+import type {
+  ConfirmacaoDeEmail,
+  Credenciais,
+  DadosDaConta,
+  NovaConta,
+  NovaSenhaComCodigo,
+  ServicoDeAutenticacao,
+  TrocaDeSenha,
+} from './servico'
 
 interface Propriedades {
   servico: ServicoDeAutenticacao
@@ -59,9 +67,47 @@ export function ProvedorDeSessao({ servico, children }: Propriedades) {
     [servico],
   )
 
+  const confirmarEmail = useCallback(
+    async (confirmacao: ConfirmacaoDeEmail) => {
+      const usuario = await servico.confirmarEmail(confirmacao)
+      definirEstado({ situacao: 'autenticada', usuario })
+      return usuario
+    },
+    [servico],
+  )
+
+  const atualizarConta = useCallback(
+    async (dados: DadosDaConta) => {
+      const usuario = await servico.atualizarConta(dados)
+      definirEstado({ situacao: 'autenticada', usuario })
+      return usuario
+    },
+    [servico],
+  )
+
+  const excluirConta = useCallback(
+    async (senha: string) => {
+      await servico.excluirConta(senha)
+      definirEstado({ situacao: 'anonima', motivo: 'conta-excluida' })
+    },
+    [servico],
+  )
+
   const sessao = useMemo(
-    () => ({ estado, entrar, sair, trocarSenha }),
-    [estado, entrar, sair, trocarSenha],
+    () => ({
+      estado,
+      entrar,
+      sair,
+      trocarSenha,
+      confirmarEmail,
+      atualizarConta,
+      excluirConta,
+      criarConta: (conta: NovaConta) => servico.criarConta(conta),
+      reenviarCodigo: (email: string) => servico.reenviarCodigo(email),
+      pedirNovaSenha: (email: string) => servico.pedirNovaSenha(email),
+      criarNovaSenha: (pedido: NovaSenhaComCodigo) => servico.criarNovaSenha(pedido),
+    }),
+    [servico, estado, entrar, sair, trocarSenha, confirmarEmail, atualizarConta, excluirConta],
   )
 
   return <ContextoDaSessao value={sessao}>{children}</ContextoDaSessao>

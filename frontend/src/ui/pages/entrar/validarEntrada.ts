@@ -7,7 +7,7 @@ export interface ErrosDaEntrada {
 
 function validarEmail(email: string): string | undefined {
   if (!email.trim()) return 'Informe o seu e-mail.'
-  if (!pareceEmail(email)) return 'Informe um e-mail válido, como nome@recife.pe.gov.br.'
+  if (!pareceEmail(email)) return 'Informe um e-mail válido, como nome@exemplo.com.'
   return undefined
 }
 

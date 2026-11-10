@@ -36,6 +36,9 @@
 
   --cor-selecao: #ff832b;
 
+  --cor-cabecalho-da-cidade: var(--cor-azul-principal);
+  --cor-cabecalho-da-gestao: var(--cor-azul-marinho);
+
   --altura-do-topo-do-painel: 56px;
   --largura-da-lateral: 248px;
   --largura-da-lateral-recolhida: 68px;

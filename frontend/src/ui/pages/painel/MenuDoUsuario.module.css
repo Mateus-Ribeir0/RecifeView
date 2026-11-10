@@ -31,7 +31,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--cor-azul-principal);
+  background: var(--cor-branco);
+  color: var(--cor-azul-escuro);
   font-size: 13px;
   font-weight: 700;
 }
