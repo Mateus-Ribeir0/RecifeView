@@ -5,13 +5,43 @@
 }
 
 .painel {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--espaco-6);
   padding: var(--espaco-5) var(--margem-lateral);
   overflow: hidden;
-  background: var(--cor-azul-principal);
+  background: var(--cor-cabecalho-da-cidade);
   color: var(--cor-branco);
+}
+
+[data-tom='gestao'] .painel {
+  background: var(--cor-cabecalho-da-gestao);
+}
+
+.foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 72% 60%;
+}
+
+.marca,
+.apresentacao,
+.mapa {
+  position: relative;
+}
+
+.selo {
+  justify-self: start;
+  padding: var(--espaco-1) var(--espaco-3);
+  border: 1px solid var(--cor-branco);
+  border-radius: var(--raio-de-campo);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
 }
 
 .marca {
@@ -19,7 +49,10 @@
   align-self: flex-start;
 }
 
-.apresentacao,
+.apresentacao {
+  display: none;
+}
+
 .mapa {
   display: none;
 }

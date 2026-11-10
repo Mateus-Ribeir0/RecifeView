@@ -9,6 +9,11 @@ interface UsuarioJson {
   email: string
   perfil: Perfil
   deve_trocar_senha: boolean
+  bairro_oficial: string | null
+}
+
+interface PedidoRecebidoJson {
+  mensagem: string
 }
 
 interface AcessoJson {
@@ -22,6 +27,13 @@ const CAMINHOS = {
   renovar: '/autenticacao/renovar',
   sair: '/autenticacao/sair',
   trocarSenha: '/autenticacao/trocar-senha',
+  contas: '/contas',
+  confirmar: '/contas/confirmar',
+  reenviar: '/contas/reenviar-codigo',
+  recuperar: '/contas/recuperar-senha',
+  novaSenha: '/contas/nova-senha',
+  minhaConta: '/contas/eu',
+  excluir: '/contas/eu/excluir',
 } as const
 
 function paraUsuario(json: UsuarioJson): Usuario {
@@ -31,6 +43,7 @@ function paraUsuario(json: UsuarioJson): Usuario {
     email: json.email,
     perfil: json.perfil,
     deveTrocarSenha: json.deve_trocar_senha,
+    bairroOficial: json.bairro_oficial ?? null,
   }
 }
 
@@ -55,8 +68,8 @@ export function criarServicoDeAutenticacao(cliente: ClienteHttp): ServicoDeAuten
   cliente.definirRenovador(async () => (await renovar()) !== null)
 
   return {
-    async entrar({ email, senha }) {
-      const corpo = { email, senha }
+    async entrar({ email, senha, area = 'cidade' }) {
+      const corpo = { email, senha, area }
       return guardarAcesso(
         await cliente.enviar<AcessoJson>(CAMINHOS.entrar, { metodo: 'POST', corpo }),
       )
@@ -80,5 +93,67 @@ export function criarServicoDeAutenticacao(cliente: ClienteHttp): ServicoDeAuten
       )
     },
     observarPerdaDeSessao: (aoPerder) => cliente.observarPerdaDeSessao(aoPerder),
+    async criarConta(conta) {
+      const corpo = {
+        nome: conta.nome,
+        email: conta.email,
+        senha: conta.senha,
+        bairro_oficial: conta.bairroOficial,
+        aceitou_os_termos: conta.aceitouOsTermos,
+        site: conta.site,
+      }
+      const resposta = await cliente.enviar<PedidoRecebidoJson>(CAMINHOS.contas, {
+        metodo: 'POST',
+        corpo,
+      })
+      return resposta.mensagem
+    },
+    async confirmarEmail({ email, codigo, senha }) {
+      return guardarAcesso(
+        await cliente.enviar<AcessoJson>(CAMINHOS.confirmar, {
+          metodo: 'POST',
+          corpo: { email, codigo, senha },
+        }),
+      )
+    },
+    async reenviarCodigo(email) {
+      const resposta = await cliente.enviar<PedidoRecebidoJson>(CAMINHOS.reenviar, {
+        metodo: 'POST',
+        corpo: { email },
+      })
+      return resposta.mensagem
+    },
+    async pedirNovaSenha(email) {
+      const resposta = await cliente.enviar<PedidoRecebidoJson>(CAMINHOS.recuperar, {
+        metodo: 'POST',
+        corpo: { email },
+      })
+      return resposta.mensagem
+    },
+    async criarNovaSenha({ email, codigo, novaSenha }) {
+      await cliente.enviar<unknown>(CAMINHOS.novaSenha, {
+        metodo: 'POST',
+        corpo: { email, codigo, nova_senha: novaSenha },
+      })
+    },
+    async atualizarConta({ nome, bairroOficial }) {
+      const usuario = await cliente.enviar<UsuarioJson>(CAMINHOS.minhaConta, {
+        metodo: 'PUT',
+        corpo: { nome, bairro_oficial: bairroOficial },
+        autenticada: true,
+      })
+      return paraUsuario(usuario)
+    },
+    async excluirConta(senha) {
+      try {
+        await cliente.enviar<unknown>(CAMINHOS.excluir, {
+          metodo: 'POST',
+          corpo: { senha },
+          autenticada: true,
+        })
+      } finally {
+        cliente.definirTokenDeAcesso(null)
+      }
+    },
   }
 }

@@ -8,6 +8,11 @@ import estilos from './PaginaAjudaDeAcesso.module.css'
 
 const DUVIDAS = [
   {
+    pergunta: 'Esta página é da gestão',
+    resposta:
+      'Quem é cidadão cria a própria conta e recupera a senha sozinho, pela área do cidadão. As dúvidas abaixo são das contas da gestão.',
+  },
+  {
     pergunta: 'Esqueci a senha',
     resposta:
       'Peça à administração do RecifeView uma senha temporária. No primeiro acesso com ela, você define uma senha nova.',
@@ -31,7 +36,7 @@ export function PaginaAjudaDeAcesso() {
   useTituloDaPagina('Não consegue entrar?')
 
   return (
-    <LayoutDeAcesso>
+    <LayoutDeAcesso tom="gestao">
       <h1 className={acesso.titulo}>Não consegue entrar?</h1>
       <p className={acesso.subtitulo}>
         As contas do RecifeView são criadas pela administração da plataforma, para gestores
@@ -46,7 +51,8 @@ export function PaginaAjudaDeAcesso() {
         ))}
       </dl>
       <div className={acesso.links}>
-        <Link to="/entrar">Voltar para a tela de entrada</Link>
+        <Link to="/entrar/gestao">Voltar para a entrada da gestão</Link>
+        <Link to="/entrar">Sou cidadão: ir para a área do cidadão</Link>
       </div>
     </LayoutDeAcesso>
   )

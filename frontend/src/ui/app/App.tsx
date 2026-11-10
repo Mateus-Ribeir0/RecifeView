@@ -2,15 +2,21 @@ import { createBrowserRouter, Outlet, ScrollRestoration } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 
 import { ProvedorDeSessao } from '../../application/autenticacao/ProvedorDeSessao'
+import { ContextoDaCidade } from '../../application/cidade/contexto'
 import { ContextoDasContribuicoes } from '../../application/contribuicoes/contexto'
 import { PaginaAjudaDeAcesso } from '../pages/ajuda-de-acesso/PaginaAjudaDeAcesso'
+import { PaginaCadastrar } from '../pages/cadastrar/PaginaCadastrar'
+import { LayoutDaCidade } from '../pages/cidade/LayoutDaCidade'
+import { PaginaConfirmarEmail } from '../pages/confirmar-email/PaginaConfirmarEmail'
 import { PaginaDefinirSenha } from '../pages/definir-senha/PaginaDefinirSenha'
 import { PaginaEntrar } from '../pages/entrar/PaginaEntrar'
 import { PaginaNaoEncontrada } from '../pages/nao-encontrada/PaginaNaoEncontrada'
 import { LayoutPublico } from '../pages/publico/LayoutPublico'
 import { PaginaInicial } from '../pages/publico/inicio/PaginaInicial'
+import { PaginaRecuperarSenha } from '../pages/recuperar-senha/PaginaRecuperarSenha'
 import { RotaProtegida } from './RotaProtegida'
-import { servicoDeAutenticacao, servicoDeContribuicoes } from './servicos'
+import { servicoDaCidade, servicoDeAutenticacao, servicoDeContribuicoes } from './servicos'
+import { SoParaGestao } from './SoParaGestao'
 import { SoParaVisitantes } from './SoParaVisitantes'
 
 function Raiz() {
@@ -60,97 +66,150 @@ const roteador = createBrowserRouter([
           },
         ],
       },
-      { element: <SoParaVisitantes />, children: [{ path: 'entrar', element: <PaginaEntrar /> }] },
+      {
+        element: <SoParaVisitantes />,
+        children: [
+          { path: 'entrar', element: <PaginaEntrar area="cidade" /> },
+          { path: 'entrar/gestao', element: <PaginaEntrar area="gestao" /> },
+          { path: 'cadastrar', element: <PaginaCadastrar /> },
+          { path: 'confirmar-email', element: <PaginaConfirmarEmail /> },
+        ],
+      },
       { path: 'entrar/ajuda', element: <PaginaAjudaDeAcesso /> },
+      { path: 'recuperar-senha', element: <PaginaRecuperarSenha /> },
       {
         element: <RotaProtegida />,
         children: [
           { path: 'definir-senha', element: <PaginaDefinirSenha /> },
           {
-            path: 'painel',
-            lazy: async () => ({
-              Component: (await import('./MontagemDoPainel')).MontagemDoPainel,
-            }),
+            path: 'cidade',
+            element: (
+              <ContextoDaCidade value={servicoDaCidade}>
+                <LayoutDaCidade />
+              </ContextoDaCidade>
+            ),
             children: [
               {
                 index: true,
                 lazy: async () => ({
-                  Component: (await import('../pages/painel/inicio/PaginaInicioDoPainel'))
-                    .PaginaInicioDoPainel,
+                  Component: (await import('../pages/cidade/PaginaRelatosDaCidade'))
+                    .PaginaRelatosDaCidade,
                 }),
               },
               {
-                path: 'war-room',
+                path: 'meu-bairro',
                 lazy: async () => ({
-                  Component: (await import('../pages/painel/war-room/PaginaWarRoom')).PaginaWarRoom,
+                  Component: (await import('../pages/cidade/PaginaMeuBairro')).PaginaMeuBairro,
                 }),
               },
               {
-                path: 'retorno',
+                path: 'relatar',
                 lazy: async () => ({
-                  Component: (await import('../pages/painel/retorno/PaginaRetorno')).PaginaRetorno,
+                  Component: (await import('../pages/cidade/PaginaRelatarNaCidade'))
+                    .PaginaRelatarNaCidade,
                 }),
               },
               {
-                path: 'reincidencia',
+                path: 'conta',
                 lazy: async () => ({
-                  Component: (await import('../pages/painel/reincidencia/PaginaReincidencia'))
-                    .PaginaReincidencia,
+                  Component: (await import('../pages/cidade/PaginaMinhaConta')).PaginaMinhaConta,
                 }),
               },
+            ],
+          },
+          {
+            path: 'painel',
+            element: <SoParaGestao />,
+            children: [
               {
-                path: 'prazos',
                 lazy: async () => ({
-                  Component: (await import('../pages/painel/prazos/PaginaPrazos')).PaginaPrazos,
+                  Component: (await import('./MontagemDoPainel')).MontagemDoPainel,
                 }),
-              },
-              {
-                path: 'territorio',
-                lazy: async () => ({
-                  Component: (await import('../pages/painel/territorio/PaginaTerritorio'))
-                    .PaginaTerritorio,
-                }),
-              },
-              {
-                path: 'prioridade',
-                lazy: async () => ({
-                  Component: (await import('../pages/painel/prioridade/PaginaPrioridade'))
-                    .PaginaPrioridade,
-                }),
-              },
-              {
-                path: 'sobre-os-dados',
-                lazy: async () => ({
-                  Component: (await import('../pages/painel/sobre/PaginaSobreOsDados'))
-                    .PaginaSobreOsDados,
-                }),
-              },
-              {
-                path: 'contribuicoes',
-                lazy: async () => ({
-                  Component: (await import('../pages/contribuicoes/PaginaContribuicoes'))
-                    .PaginaContribuicoes,
-                }),
-              },
-              {
-                path: 'importacoes',
-                lazy: async () => ({
-                  Component: (await import('../pages/importacoes/PaginaHistorico')).PaginaHistorico,
-                }),
-              },
-              {
-                path: 'importacoes/nova',
-                lazy: async () => ({
-                  Component: (await import('../pages/importacoes/PaginaNovaImportacao'))
-                    .PaginaNovaImportacao,
-                }),
-              },
-              {
-                path: 'importacoes/:id',
-                lazy: async () => ({
-                  Component: (await import('../pages/importacoes/PaginaImportacao'))
-                    .PaginaImportacao,
-                }),
+                children: [
+                  {
+                    index: true,
+                    lazy: async () => ({
+                      Component: (await import('../pages/painel/inicio/PaginaInicioDoPainel'))
+                        .PaginaInicioDoPainel,
+                    }),
+                  },
+                  {
+                    path: 'war-room',
+                    lazy: async () => ({
+                      Component: (await import('../pages/painel/war-room/PaginaWarRoom'))
+                        .PaginaWarRoom,
+                    }),
+                  },
+                  {
+                    path: 'retorno',
+                    lazy: async () => ({
+                      Component: (await import('../pages/painel/retorno/PaginaRetorno'))
+                        .PaginaRetorno,
+                    }),
+                  },
+                  {
+                    path: 'reincidencia',
+                    lazy: async () => ({
+                      Component: (await import('../pages/painel/reincidencia/PaginaReincidencia'))
+                        .PaginaReincidencia,
+                    }),
+                  },
+                  {
+                    path: 'prazos',
+                    lazy: async () => ({
+                      Component: (await import('../pages/painel/prazos/PaginaPrazos')).PaginaPrazos,
+                    }),
+                  },
+                  {
+                    path: 'territorio',
+                    lazy: async () => ({
+                      Component: (await import('../pages/painel/territorio/PaginaTerritorio'))
+                        .PaginaTerritorio,
+                    }),
+                  },
+                  {
+                    path: 'prioridade',
+                    lazy: async () => ({
+                      Component: (await import('../pages/painel/prioridade/PaginaPrioridade'))
+                        .PaginaPrioridade,
+                    }),
+                  },
+                  {
+                    path: 'sobre-os-dados',
+                    lazy: async () => ({
+                      Component: (await import('../pages/painel/sobre/PaginaSobreOsDados'))
+                        .PaginaSobreOsDados,
+                    }),
+                  },
+                  {
+                    path: 'contribuicoes',
+                    lazy: async () => ({
+                      Component: (await import('../pages/contribuicoes/PaginaContribuicoes'))
+                        .PaginaContribuicoes,
+                    }),
+                  },
+                  {
+                    path: 'importacoes',
+                    lazy: async () => ({
+                      Component: (await import('../pages/importacoes/PaginaHistorico'))
+                        .PaginaHistorico,
+                    }),
+                  },
+                  {
+                    path: 'importacoes/nova',
+                    lazy: async () => ({
+                      Component: (await import('../pages/importacoes/PaginaNovaImportacao'))
+                        .PaginaNovaImportacao,
+                    }),
+                  },
+                  {
+                    path: 'importacoes/:id',
+                    lazy: async () => ({
+                      Component: (await import('../pages/importacoes/PaginaImportacao'))
+                        .PaginaImportacao,
+                    }),
+                  },
+                ],
               },
             ],
           },

@@ -1,0 +1,36 @@
+.mapa {
+  width: 100%;
+  height: auto;
+}
+
+.bairro {
+  fill: var(--cor-azul-claro);
+  fill-rule: evenodd;
+  stroke: var(--cor-mapa-3);
+  stroke-width: 0.75;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  transition: fill 160ms ease;
+}
+
+.bairro:hover {
+  fill: var(--cor-mapa-2);
+}
+
+.bairro[data-com-relato] {
+  fill: var(--cor-mapa-3);
+  stroke: var(--cor-branco);
+}
+
+.bairro[data-escolhido] {
+  fill: var(--cor-selecao);
+  stroke: var(--cor-preto);
+  stroke-width: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bairro {
+    transition: none;
+  }
+}

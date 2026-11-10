@@ -113,13 +113,14 @@ Isso vale para a interface, a documentação e os commits. O detalhe está em [d
 - Não use emoji, travessão, gradientes roxos, glassmorphism, ícone decorativo em todo título, frase de efeito ("Insights poderosos"), boas-vindas genéricas nem dado de exemplo apresentado como se fosse real.
 - O texto deve ser direto e específico do Recife e dos dados. Cada gráfico informa fonte, período e o que mostra.
 
-## Estado atual (06/11/2026)
+## Estado atual (10/11/2026)
 
 - Repositório público no GitHub: https://github.com/Mateus-Ribeir0/RecifeView, branch principal `main`.
 - Prontos: site público com cinco abas (início, o que muda, a plataforma, dados e confiança, relatar um problema), entrada, ajuda de acesso, troca de senha (obrigatória no primeiro acesso), sessão com renovação e saída. Backend com autenticação, auditoria de acessos e de consultas e linha de comando para contas e importação.
 - Prontas também: as oito telas do painel (paridade com o protótipo em Streamlit), a importação de arquivos, com histórico e desfazer, e o formulário público, com pente fino entre canais e pacote que entra pela importação.
+- Contas de cidadão (10/11/2026, ADR [0010](docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta): cadastro com código por e-mail, recuperação de senha e exclusão da conta. Três níveis de acesso: público, cidadão (relatos da cidade sem endereço exato e números do bairro) e gestão (painel, pente fino e importação). Toda rota da gestão exige perfil da gestão, e o cidadão entra por `/entrar` e a gestão por `/entrar/gestao`. O provedor de e-mail está em aberto: por ora as mensagens viram arquivos em `data/emails`.
 - O site público se apresenta como produto e não cita a parte acadêmica, a pedido feito em 06/11/2026. Isso vale para as páginas públicas, não para a documentação do repositório.
-- Ainda não existe o Processor: os dados entram pela importação. Autenticação, modelo analítico, importação, navegação lateral e formulário público estão como proposta nas ADRs [0005](docs/adr/0005-autenticacao-com-jwt-proprio.md), [0006](docs/adr/0006-modelo-analitico-no-postgresql.md), [0007](docs/adr/0007-importacao-de-arquivos-pelo-painel.md), [0008](docs/adr/0008-navegacao-lateral-com-filtros.md) e [0009](docs/adr/0009-formulario-publico-e-pente-fino.md).
+- Ainda não existe o Processor: os dados entram pela importação. Autenticação, modelo analítico, importação, navegação lateral, formulário público e contas de cidadão estão como proposta nas ADRs [0005](docs/adr/0005-autenticacao-com-jwt-proprio.md), [0006](docs/adr/0006-modelo-analitico-no-postgresql.md), [0007](docs/adr/0007-importacao-de-arquivos-pelo-painel.md), [0008](docs/adr/0008-navegacao-lateral-com-filtros.md), [0009](docs/adr/0009-formulario-publico-e-pente-fino.md) e [0010](docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md).
 - Para ter dados no painel, faça a carga inicial descrita no [README do backend](backend/README.md#carregar-os-dados). Para apresentar, use a conta de demonstração do [README](README.md#conta-de-demonstração).
 - Confirme a próxima entrega no Classroom.
 - Antes de dar código como pronto, rode as verificações dos dois lados: `uv run ruff check . && uv run mypy app tests && uv run lint-imports && uv run pytest` no backend, e `npm run lint && npm run typecheck && npm test` no frontend.

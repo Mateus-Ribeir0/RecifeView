@@ -25,7 +25,7 @@ Como o RecifeView se parece e como ele fala. A identidade oficial vem do Drive (
 
 | Token | Hex | Origem | Uso |
 |---|---|---|---|
-| `azul-marinho` | `#062A5F` | Palavra "Recife" do logo | Cabeçalho, extremo escuro da escala do mapa |
+| `azul-marinho` | `#062A5F` | Palavra "Recife" do logo | Cabeçalho da gestão, extremo escuro da escala do mapa |
 | `azul-escuro` | `#0043CE` | Tom mais escuro do azul principal | Hover e foco de botão, link visitado |
 
 ### Neutros (derivados)
@@ -88,6 +88,17 @@ Escala sequencial de 5 classes, do claro ao escuro, toda dentro da família de a
 - Bairro sem dado: `cinza-contexto` (`#C6C6C6`) com hachura diagonal, e o item "sem dado" na legenda. Nunca use a classe mais clara para "sem dado".
 - Se precisar de 7 classes, intercale `#78A9FF` (entre 2 e 3) e `#0043CE` (entre 4 e 5).
 - Escala divergente (acima ou abaixo do esperado, por exemplo um resíduo): azul de um lado, `#8A3800` do outro, branco no centro. Combine com o grupo antes de usar.
+
+### Cabeçalho por área de acesso
+
+O cabeçalho diz em que área a pessoa está, antes de qualquer texto. Os dois tokens ficam em `tokens.css` e apontam para cores que já existem:
+
+| Token | Aponta para | Onde |
+|---|---|---|
+| `cabecalho-da-cidade` | `azul-principal` (`#0F62FE`) | Entrada do cidadão (`/entrar`, `/cadastrar`, `/confirmar-email`, `/recuperar-senha`) e área do cidadão (`/cidade`) |
+| `cabecalho-da-gestao` | `azul-marinho` (`#062A5F`) | Entrada da gestão (`/entrar/gestao`, `/entrar/ajuda`) e painel |
+
+Cor nunca é o único sinal: as duas áreas mostram um selo com borda branca ao lado do logo ("Área do cidadão" ou "Área da gestão"), e a entrada da gestão tem título e texto próprios. Em tela estreita (abaixo de 720px no painel e de 900px na área do cidadão) o selo sai, e o tom do cabeçalho segue marcando a área. As telas de entrada também mudam o fundo do painel lateral: foto do Recife na do cidadão e malha dos bairros sobre azul-marinho na da gestão.
 
 ### Seleção (derivada)
 
@@ -189,6 +200,16 @@ O mockup 04 da pasta `MockupsDashboard` serve de referência de estrutura. Os n�
 - **Estados:** toda área de dado tem os estados carregando (esqueleto com a forma do gráfico), vazio ("Nenhuma demanda para estes filtros") e erro (o que aconteceu e como tentar de novo).
 - **Aviso de dado parcial:** faixa com `alerta-fundo` e `alerta-texto`, curta e específica: "Coordenadas disponíveis para 26% dos pedidos de 2024. O mapa usa bairro."
 
+## Área do cidadão
+
+Quem tem conta de cidadão vê os relatos da cidade e os números do próprio bairro, sem nada que identifique quem relatou (o que cada nível vê está na [ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)).
+
+- **Navegação:** abas no cabeçalho azul (Relatos da cidade, Meu bairro, Relatar um problema), sem barra lateral e sem linha de filtros. A escolha do bairro e do tema fica no topo da lista.
+- **Cartão de ocorrência:** categoria, rua (só quando é uma via reconhecida da base oficial), faixa de numeração ("entre 100 e 199"), bairro, há quanto tempo, quantas pessoas relataram e o selo de situação. O texto que a pessoa escreveu nunca aparece.
+- **Selo de situação:** texto sempre escrito, com a cor como reforço. Recebido em `cinza-fundo`; Em análise em `alerta-fundo` com `alerta-texto`; No painel da gestão em `azul-claro` com `azul-escuro`; Coberto por pedido oficial em `sucesso-fundo` com `sucesso`. A explicação de cada situação fica na própria tela.
+- **Escolha do bairro no mapa:** o mapa marca só se o bairro tem relato ou não (sem escala graduada) e o bairro escolhido fica em `selecao`.
+- **Celular primeiro:** ao contrário do painel, esta área é desenhada para 390px e alargada até 1280px.
+
 ## Gráficos (Recharts)
 
 Regras gerais:
@@ -228,7 +249,7 @@ Não use: pizza com mais de 3 fatias, rosca, gráfico 3D, gauge, eixo duplo e gr
 - Ao lado do mapa vai sempre uma tabela ordenada com os mesmos valores. Ela é a alternativa acessível e o jeito mais rápido de ler os extremos.
 - Os dois mapas de prioridade (serviço urbano e emergência) ficam lado a lado, com a mesma escala de cores e legendas independentes.
 
-### Mapa sem dado (página inicial e telas de acesso)
+### Mapa sem dado (página inicial, telas de acesso e área do cidadão)
 
 Fora das telas de dados, o mapa dos bairros é só referência geográfica, desenhado em SVG (`ui/map/MapaDosBairros.tsx`), sem Leaflet e sem mapa de fundo:
 

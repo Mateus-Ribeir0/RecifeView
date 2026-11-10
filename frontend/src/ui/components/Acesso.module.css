@@ -52,3 +52,65 @@
 .botaoDeLink:hover {
   color: var(--cor-azul-escuro);
 }
+
+.chamadaDeCadastro {
+  font-weight: 600;
+}
+
+.passos {
+  display: flex;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-4);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.passos li {
+  flex: 1;
+  padding-top: var(--espaco-2);
+  border-top: 3px solid var(--cor-borda);
+}
+
+.passos li[aria-current='step'],
+.passos li[data-feito] {
+  border-top-color: var(--cor-azul-principal);
+  color: var(--cor-preto);
+}
+
+.campoDeEscolha {
+  display: grid;
+  gap: var(--espaco-2);
+}
+
+.aceite {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: var(--espaco-3);
+  font-size: var(--texto-apoio);
+  cursor: pointer;
+}
+
+.aceite input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--cor-azul-principal);
+}
+
+.sugestao {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.armadilha {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+}
+
+.emailDestacado {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}

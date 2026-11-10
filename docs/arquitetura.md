@@ -5,7 +5,7 @@ Baseada no rascunho C4 v0.1 de 15/10/2026, feito a partir do esboço do Prof. Ma
 ## C1 · Contexto
 
 - **Gestor público:** acessa o painel pelo navegador, com login.
-- **Cidadão:** usa a página pública, envia relato anônimo e, com conta própria, acompanha os relatos da cidade e o seu bairro ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta). Antes, só ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md), proposta).
+- **Cidadão:** usa a página pública e envia relato anônimo pelo formulário ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md), proposta). Com conta própria, acompanha também os relatos da cidade e os números do seu bairro ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta).
 - **RecifeView:** o sistema.
 - **Fontes externas:** Portal de Dados Abertos do Recife, Câmara Municipal (SAGL), IBGE/SIDRA, catálogo de serviços do Conecta Recife, cópia do Internet Archive do dataset da SEDEC e, no futuro, o SGDE/Emprel (depende do pedido LAI). APAC/INMET (chuva) aparece no diagrama, mas o clima é estudo futuro.
 
@@ -14,6 +14,7 @@ Baseada no rascunho C4 v0.1 de 15/10/2026, feito a partir do esboço do Prof. Ma
 ```mermaid
 flowchart TB
     gestor([Gestor público])
+    cidadao([Cidadão])
 
     subgraph rv [RecifeView]
         spa["Aplicação Web (SPA)<br/><small>React · Recharts · Leaflet</small>"]
@@ -28,6 +29,7 @@ flowchart TB
     fontes["Fontes externas<br/><small>Dados Abertos · Câmara · IBGE · Conecta</small>"]
 
     gestor -->|HTTPS| spa
+    cidadao -->|HTTPS| spa
     spa -->|JSON/HTTPS| api
     api -->|valida identidade| idp
     api -->|lê indicadores, grava auditoria e importações| db
@@ -66,7 +68,9 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 |---|---|---|
 | Página pública (`/`, `/o-que-muda`, `/plataforma`, `/dados-e-confianca`) | O que a plataforma é, o que muda em relação a antes, as telas, as fontes, o pente fino e a privacidade | Nenhum (conteúdo estático e a malha dos bairros) |
 | Relatar um problema (`/contribuir`, pública) | Formulário em três passos, sem identificação | Contribuições |
-| Entrar, ajuda e definir senha | Autenticação do gestor, orientação de acesso, troca da senha temporária | Autenticação |
+| Entrar, ajuda e definir senha (`/entrar`, `/entrar/gestao`, `/entrar/ajuda`, `/definir-senha`) | Entrada do cidadão e da gestão, orientação de acesso, troca da senha | Autenticação |
+| Criar conta, confirmar e-mail e recuperar senha (`/cadastrar`, `/confirmar-email`, `/recuperar-senha`) | Cadastro do cidadão com código por e-mail e nova senha com código | Contas |
+| Área do cidadão (`/cidade`, `/cidade/meu-bairro`, `/cidade/relatar`, `/cidade/conta`) | Relatos da cidade sem endereço exato, números do bairro comparados com o Recife, formulário e dados da conta | Cidade, Contribuições e Contas |
 | Início (`/painel`) | KPIs-síntese e volume por fonte | Indicadores |
 | War Room (`/painel/war-room`) | Estado de um dia simulado: entradas, estoque, fila e alertas | War Room |
 | Retorno (`/painel/retorno`) | Abas: funil, canais, destinos e caminhos das indicações; canais e prazo da Ouvidoria | Retorno |

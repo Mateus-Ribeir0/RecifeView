@@ -7,6 +7,12 @@ export type CodigoDeErro =
   | 'senha_fraca'
   | 'dados_invalidos'
   | 'contribuicao_invalida'
+  | 'email_nao_confirmado'
+  | 'area_da_gestao_negada'
+  | 'acesso_negado'
+  | 'codigo_invalido'
+  | 'cadastro_invalido'
+  | 'tentativas_demais'
   | 'servico_indisponivel'
   | 'erro_inesperado'
 

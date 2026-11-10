@@ -51,6 +51,7 @@ export function LayoutDoPainel() {
         <Link to={ROTA_INICIAL_DO_PAINEL} className={estilos.marca} aria-label="Início do painel">
           <Logo variante="branco" altura={26} />
         </Link>
+        <span className={estilos.selo}>Área da gestão</span>
         <MenuDoUsuario usuario={estado.usuario} aoSair={sair} />
       </header>
       <div className={estilos.corpo}>

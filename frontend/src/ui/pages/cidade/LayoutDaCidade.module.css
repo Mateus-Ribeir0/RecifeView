@@ -1,0 +1,141 @@
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--cor-cabecalho-da-cidade);
+  color: var(--cor-branco);
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2) var(--espaco-4);
+  min-height: var(--altura-do-topo-do-painel);
+}
+
+.marca {
+  display: inline-flex;
+}
+
+.selo {
+  display: none;
+  padding: 2px var(--espaco-2);
+  border: 1px solid var(--cor-branco);
+  border-radius: var(--raio-de-campo);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+}
+
+.navegacao {
+  order: 3;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.navegacao ul {
+  display: flex;
+  gap: var(--espaco-4);
+}
+
+.navegacao a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--cor-branco);
+  font-size: var(--texto-apoio);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navegacao a::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: var(--cor-branco);
+  content: '';
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms var(--curva-de-entrada);
+}
+
+.navegacao a:hover::after,
+.navegacao a[aria-current='page']::after {
+  transform: scaleX(1);
+}
+
+.navegacao a[aria-current='page'] {
+  font-weight: 700;
+}
+
+.navegacao a:focus-visible,
+.atalhoDaGestao:focus-visible {
+  outline-color: var(--cor-branco);
+}
+
+.atalhoDaGestao {
+  margin-left: auto;
+  color: var(--cor-branco);
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.atalhoDaGestao:hover {
+  color: var(--cor-branco);
+}
+
+.atalhoDaGestao + div,
+.barra > div:last-child {
+  margin-left: auto;
+}
+
+.atalhoDaGestao + div {
+  margin-left: 0;
+}
+
+.principal {
+  min-height: calc(100vh - 160px);
+  padding-block: var(--espaco-6) var(--espaco-8);
+  animation: entrar 320ms var(--curva-de-entrada);
+}
+
+.principal:focus {
+  outline: none;
+}
+
+.rodape {
+  padding-block: var(--espaco-5);
+  border-top: 1px solid var(--cor-borda);
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+@media (min-width: 900px) {
+  .selo {
+    display: inline-block;
+  }
+
+  .navegacao {
+    order: 0;
+    width: auto;
+    margin-left: var(--espaco-4);
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navegacao a::after {
+    transition: none;
+  }
+
+  .principal {
+    animation: none;
+  }
+}
