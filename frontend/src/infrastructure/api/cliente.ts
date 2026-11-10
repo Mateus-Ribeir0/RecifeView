@@ -24,6 +24,7 @@ const CODIGOS_CONHECIDOS: ReadonlySet<string> = new Set<CodigoDeErro>([
   'codigo_invalido',
   'cadastro_invalido',
   'tentativas_demais',
+  'envio_de_email_indisponivel',
 ])
 
 export interface Requisicao {
