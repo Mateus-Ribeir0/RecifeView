@@ -9,6 +9,8 @@ from app.application.casos_de_uso.importacoes.servicos import ServicosDeImportac
 from app.application.portas.contribuicoes import (
     BairroDoFormulario,
     DecisaoRegistrada,
+    FiltroDaCidade,
+    OcorrenciaDaCidade,
     OcorrenciaDoPacote,
     PaginaDeOcorrencias,
     ParNovo,
@@ -194,6 +196,12 @@ class ContribuicoesEmMemoria:
     no_pacote: list[UUID] = field(default_factory=list)
     na_base: list[RegistroNoMesmoLocal] = field(default_factory=list)
     limites_de_expurgo: list[datetime] = field(default_factory=list)
+    da_cidade: list[OcorrenciaDaCidade] = field(default_factory=list)
+    filtros_da_cidade: list[FiltroDaCidade] = field(default_factory=list)
+
+    def ocorrencias_da_cidade(self, filtro: FiltroDaCidade) -> list[OcorrenciaDaCidade]:
+        self.filtros_da_cidade.append(filtro)
+        return self.da_cidade
 
     def buscar_por_chave_de_envio(self, chave: str) -> Contribuicao | None:
         return next((item for item in self.itens if item.chave_de_envio == chave), None)

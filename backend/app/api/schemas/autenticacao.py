@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.application.sessoes import AcessoConcedido
+from app.domain.acesso import AreaDeAcesso
 from app.domain.email import TAMANHO_MAXIMO_DO_EMAIL
 from app.domain.senha import TAMANHO_MAXIMO_DA_SENHA
 from app.domain.usuario import Perfil, Usuario
@@ -13,6 +14,7 @@ from app.domain.usuario import Perfil, Usuario
 class CredenciaisDeEntrada(BaseModel):
     email: str = Field(min_length=1, max_length=TAMANHO_MAXIMO_DO_EMAIL)
     senha: str = Field(min_length=1, max_length=TAMANHO_MAXIMO_DA_SENHA)
+    area: AreaDeAcesso = AreaDeAcesso.CIDADE
 
 
 class TrocaDeSenha(BaseModel):
@@ -26,6 +28,7 @@ class UsuarioResposta(BaseModel):
     email: str
     perfil: Perfil
     deve_trocar_senha: bool
+    bairro_oficial: str | None
 
     @classmethod
     def de_usuario(cls, usuario: Usuario) -> Self:
@@ -35,6 +38,7 @@ class UsuarioResposta(BaseModel):
             email=str(usuario.email),
             perfil=usuario.perfil,
             deve_trocar_senha=usuario.deve_trocar_senha,
+            bairro_oficial=usuario.bairro_oficial,
         )
 
 

@@ -9,13 +9,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.dependencias import Seguranca
 from app.api.erros import registrar_tratadores_de_erro
-from app.api.routers import autenticacao, contribuicoes, importacoes, painel, saude
+from app.api.routers import autenticacao, cidade, contas, contribuicoes, importacoes, painel, saude
 from app.application.casos_de_uso.contribuicoes.expurgar_enderecos import ExpurgarEnderecos
 from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
 from app.application.casos_de_uso.importacoes.retomar_importacoes import RetomarImportacoes
 from app.infrastructure.auth.senhas import HashDeSenhaArgon2
 from app.infrastructure.auth.tokens import EmissorDeTokenJwt
+from app.infrastructure.contribuicoes.limite_em_memoria import LimiteEmMemoria
 from app.infrastructure.db.conexao import criar_fabrica_de_sessoes
+from app.infrastructure.email.caixa_de_saida_local import CaixaDeSaidaLocal
 from app.infrastructure.importacao.fila_em_processo import FilaEmProcesso
 from app.infrastructure.importacao.montagem import (
     montar_servicos_de_contribuicoes,
@@ -26,6 +28,7 @@ from app.infrastructure.settings import Configuracao, carregar_configuracao
 
 PREFIXO_DA_API = "/api/v1"
 SEGUNDOS_ENTRE_EXPURGOS = 6 * 60 * 60
+OPERACOES_DE_CONTA_POR_JANELA = 10
 
 registro_de_log = logging.getLogger(__name__)
 
@@ -63,6 +66,8 @@ def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
     app.state.configuracao = configuracao
     app.state.fabrica_de_sessoes = criar_fabrica_de_sessoes(configuracao.url_do_banco)
     app.state.seguranca = _montar_seguranca(configuracao)
+    app.state.caixa_de_emails = CaixaDeSaidaLocal(configuracao.pasta_dos_emails)
+    app.state.limite_de_contas = LimiteEmMemoria(RelogioDoSistema(), OPERACOES_DE_CONTA_POR_JANELA)
     app.state.servicos_de_importacao = montar_servicos_de_importacao(
         configuracao, app.state.fabrica_de_sessoes, FilaEmProcesso()
     )
@@ -73,6 +78,8 @@ def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
     registrar_tratadores_de_erro(app)
     app.include_router(saude.roteador, prefix=PREFIXO_DA_API)
     app.include_router(autenticacao.roteador, prefix=PREFIXO_DA_API)
+    app.include_router(contas.roteador, prefix=PREFIXO_DA_API)
+    app.include_router(cidade.roteador, prefix=PREFIXO_DA_API)
     app.include_router(importacoes.roteador, prefix=PREFIXO_DA_API)
     app.include_router(contribuicoes.roteador, prefix=PREFIXO_DA_API)
     for roteador in painel.ROTEADORES:

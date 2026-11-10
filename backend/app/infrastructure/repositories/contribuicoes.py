@@ -12,7 +12,9 @@ from sqlalchemy.sql.expression import bindparam
 from app.application.portas.contribuicoes import (
     BairroDoFormulario,
     DecisaoRegistrada,
+    FiltroDaCidade,
     LadoDoPar,
+    OcorrenciaDaCidade,
     OcorrenciaDoPacote,
     OcorrenciaDoPainel,
     PaginaDeOcorrencias,
@@ -168,6 +170,32 @@ SELECT fonte, id_local, categoria, servico_codigo, bairro_oficial, data_abertura
 FROM ouro.fato_demanda
 WHERE id_local = ANY(:locais) AND fonte <> :formulario AND data_abertura IS NOT NULL
 """
+OCORRENCIAS_DA_CIDADE = f"""
+{COM_SITUACAO}
+SELECT
+    s.id, s.data_relato, s.servico_codigo, s.servico, s.bairro_oficial, b.nome, b.rpa,
+    l.logradouro, s.numero,
+    1 + (SELECT count(*) FROM app.contribuicao f WHERE f.principal_id = s.id),
+    (s.retorno = 'registrou_sem_retorno')::int + (
+        SELECT count(*) FROM app.contribuicao f
+        WHERE f.principal_id = s.id AND f.retorno = 'registrou_sem_retorno'
+    ),
+    s.situacao,
+    EXISTS (
+        SELECT 1 FROM app.par_de_contribuicoes p
+        WHERE p.decisao IS NULL AND s.id IN (p.primeira_id, p.segunda_id)
+    )
+FROM situacoes s
+JOIN ouro.dim_bairro b USING (bairro_oficial)
+LEFT JOIN ouro.dim_logradouro l
+    ON l.bairro_oficial = s.bairro_oficial AND l.logradouro = s.logradouro
+WHERE s.principal_id IS NULL AND s.data_relato >= :desde
+    AND (CAST(:bairro AS text) IS NULL OR s.bairro_oficial = :bairro)
+    AND (cardinality(CAST(:categorias AS text[])) = 0 OR s.categoria = ANY(:categorias))
+ORDER BY s.data_relato DESC, s.recebida_em DESC
+LIMIT :limite
+"""
+LIMITE_DA_VISAO_DA_CIDADE = 300
 EXPURGAR = """
 UPDATE app.contribuicao
 SET logradouro = NULL, numero = NULL, detalhe = NULL, expurgada_em = :agora
@@ -359,6 +387,17 @@ class ContribuicaoRepositorySql:
         with self._fabrica.begin() as sessao:
             resultado = sessao.execute(text(EXPURGAR), {"limite": recebidas_ate, "agora": agora})
         return int(resultado.rowcount)  # type: ignore[attr-defined]
+
+    def ocorrencias_da_cidade(self, filtro: FiltroDaCidade) -> list[OcorrenciaDaCidade]:
+        parametros = {
+            "desde": filtro.desde,
+            "bairro": filtro.bairro,
+            "categorias": list(filtro.categorias),
+            "limite": LIMITE_DA_VISAO_DA_CIDADE,
+        }
+        with self._fabrica() as sessao:
+            linhas = sessao.execute(text(OCORRENCIAS_DA_CIDADE), parametros)
+            return [OcorrenciaDaCidade(*linha) for linha in linhas]
 
     def relatos_guardados(self) -> list[RelatoGuardado]:
         with self._fabrica() as sessao:

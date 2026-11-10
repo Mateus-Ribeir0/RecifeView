@@ -8,9 +8,16 @@ from app.application.portas.relogio import Relogio
 from app.application.portas.seguranca import HashDeSenha
 from app.application.portas.usuarios import UsuarioRepository
 from app.application.sessoes import GestaoDeSessoes, SessaoAberta
-from app.domain.acesso import EventoDeAcesso, TipoDeEventoDeAcesso
+from app.domain.acesso import AreaDeAcesso, EventoDeAcesso, TipoDeEventoDeAcesso
 from app.domain.email import Email
-from app.domain.erros import ContaBloqueada, ContaInativa, CredenciaisInvalidas, EmailInvalido
+from app.domain.erros import (
+    AreaDaGestaoNegada,
+    ContaBloqueada,
+    ContaInativa,
+    CredenciaisInvalidas,
+    EmailInvalido,
+    EmailNaoConfirmado,
+)
 from app.domain.usuario import Usuario
 
 
@@ -22,7 +29,9 @@ class Entrar:
     acessos: RegistroDeAcessos
     relogio: Relogio
 
-    def executar(self, email: str, senha: str) -> SessaoAberta:
+    def executar(
+        self, email: str, senha: str, area: AreaDeAcesso = AreaDeAcesso.CIDADE
+    ) -> SessaoAberta:
         agora = self.relogio.agora()
         usuario = self._buscar_usuario(email)
         if usuario is None:
@@ -35,6 +44,10 @@ class Entrar:
             self._recusar(usuario, agora)
         if not usuario.ativo:
             raise ContaInativa
+        if area is AreaDeAcesso.GESTAO and not usuario.e_da_gestao:
+            raise AreaDaGestaoNegada
+        if usuario.precisa_confirmar_email:
+            raise EmailNaoConfirmado
         return self._aceitar(usuario, agora)
 
     def _buscar_usuario(self, email: str) -> Usuario | None:

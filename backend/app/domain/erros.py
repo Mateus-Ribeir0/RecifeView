@@ -87,6 +87,33 @@ class DiaForaDaJanela(ErroDeDominio):
     pass
 
 
+class CadastroInvalido(ErroDeDominio):
+    def __init__(self, campo: str, motivo: str) -> None:
+        super().__init__(motivo)
+        self.campo = campo
+        self.motivo = motivo
+
+
+class EmailNaoConfirmado(ErroDeDominio):
+    pass
+
+
+class AcessoNegado(ErroDeDominio):
+    pass
+
+
+class AreaDaGestaoNegada(ErroDeDominio):
+    pass
+
+
+class CodigoInvalido(ErroDeDominio):
+    pass
+
+
+class TentativasDemais(ErroDeDominio):
+    pass
+
+
 class ContribuicaoInvalida(ErroDeDominio):
     def __init__(self, campo: str, motivo: str) -> None:
         super().__init__(motivo)

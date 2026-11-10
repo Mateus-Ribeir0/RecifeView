@@ -75,6 +75,8 @@ Regras para o código:
 | `id_local` não é exibido junto com coordenada | A combinação ajuda a reidentificar o endereço |
 | O sal só existe no gerenciador de segredos ou no `.env` local | Com o sal, o hash pode ser revertido por força bruta sobre a lista de endereços |
 | Classificação por texto (bônus) roda no backend ou no Processor; só o rótulo previsto sai | Pela mesma razão do texto SEDEC |
+| Conta de cidadão vê de um relato só a rua da lista oficial e a faixa de numeração de 100 em 100; nunca o número, o texto nem quem relatou | O endereço pode ser o de quem relatou ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)) |
+| Contas de cidadão guardam nome, e-mail e, se a pessoa quiser, o bairro. Nada de CPF ou telefone. Excluir a conta apaga esses dados | Minimização da LGPD |
 | Endereço e detalhe do formulário ficam só em `app.contribuicao`, nunca em `ouro.*`, no pacote, em log ou em rota pública, e são apagados em 90 dias | O texto é livre e o endereço pode ser o de quem relatou |
 
 Algumas bases publicadas trazem dado pessoal exposto por defeito da própria fonte. Os detalhes ficam no Drive do grupo, fora deste repositório público, até a Prefeitura ser avisada. Esses registros nunca devem ser reproduzidos. Se o Processor encontrar algo parecido, ele descarta a linha e registra só a contagem.

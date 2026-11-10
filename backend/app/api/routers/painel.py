@@ -7,6 +7,7 @@ from app.api.dependencias import (
     FiltrosDep,
     PainelDep,
     auditar_consulta,
+    exigir_gestao,
 )
 from app.api.schemas.comum import MetaResposta, Resposta
 from app.api.schemas.erros import ErroResposta
@@ -57,7 +58,7 @@ from app.application.casos_de_uso.painel.war_room import (
 from app.domain.ahp import CRITERIOS, JULGAMENTOS_PADRAO, RC_ACEITAVEL, pares
 from app.domain.erros import DecisaoInvalida
 
-DEPENDENCIAS = [Depends(auditar_consulta)]
+DEPENDENCIAS = [Depends(exigir_gestao), Depends(auditar_consulta)]
 ERRO_DE_FILTRO: dict[int | str, dict[str, Any]] = {
     422: {"model": ErroResposta, "description": "Filtros inválidos"},
 }

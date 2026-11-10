@@ -11,8 +11,9 @@ JANELA_DOS_ENVIOS = timedelta(minutes=10)
 class LimiteEmMemoria:
     """Conta os envios recentes por origem, sem gravar nada: a contagem some ao reiniciar."""
 
-    def __init__(self, relogio: Relogio) -> None:
+    def __init__(self, relogio: Relogio, envios_por_janela: int = ENVIOS_POR_JANELA) -> None:
         self._relogio = relogio
+        self._envios_por_janela = envios_por_janela
         self._envios: dict[str, deque[datetime]] = defaultdict(deque)
         self._trava = threading.Lock()
 
@@ -21,7 +22,7 @@ class LimiteEmMemoria:
         with self._trava:
             self._esquecer_antigos(agora)
             envios = self._envios[origem]
-            if len(envios) >= ENVIOS_POR_JANELA:
+            if len(envios) >= self._envios_por_janela:
                 return False
             envios.append(agora)
             return True

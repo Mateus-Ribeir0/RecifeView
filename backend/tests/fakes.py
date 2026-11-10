@@ -1,8 +1,11 @@
+import re
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
+from app.application.portas.contas import MensagemDeEmail
 from app.domain.acesso import EventoDeAcesso, TipoDeEventoDeAcesso
+from app.domain.conta import CodigoDeConta, FinalidadeDoCodigo
 from app.domain.email import Email
 from app.domain.sessao import Sessao
 from app.domain.usuario import Perfil, Usuario
@@ -96,3 +99,43 @@ def criar_usuario(**alteracoes: object) -> Usuario:
         deve_trocar_senha=False,
     )
     return replace(usuario, **alteracoes)  # type: ignore[arg-type]
+
+
+class CodigosEmMemoria:
+    def __init__(self) -> None:
+        self.codigos: dict[UUID, CodigoDeConta] = {}
+
+    def adicionar(self, codigo: CodigoDeConta) -> None:
+        self.codigos[codigo.id] = codigo
+
+    def ultimo(self, usuario_id: UUID, finalidade: FinalidadeDoCodigo) -> CodigoDeConta | None:
+        do_usuario = [
+            codigo
+            for codigo in self.codigos.values()
+            if codigo.usuario_id == usuario_id and codigo.finalidade is finalidade
+        ]
+        return max(do_usuario, key=lambda codigo: codigo.criado_em, default=None)
+
+    def atualizar(self, codigo: CodigoDeConta) -> None:
+        self.codigos[codigo.id] = codigo
+
+    def invalidar_abertos(
+        self, usuario_id: UUID, finalidade: FinalidadeDoCodigo, agora: datetime
+    ) -> None:
+        for codigo in list(self.codigos.values()):
+            aberto = codigo.usado_em is None and codigo.finalidade is finalidade
+            if codigo.usuario_id == usuario_id and aberto:
+                self.codigos[codigo.id] = codigo.usado(agora)
+
+
+class CaixaDeEmailsEmMemoria:
+    def __init__(self) -> None:
+        self.mensagens: list[MensagemDeEmail] = []
+
+    def enviar(self, mensagem: MensagemDeEmail) -> None:
+        self.mensagens.append(mensagem)
+
+    def ultimo_codigo(self) -> str:
+        achado = re.search(r"\b(\d{3}) (\d{3})\b", self.mensagens[-1].corpo)
+        assert achado is not None
+        return achado.group(1) + achado.group(2)

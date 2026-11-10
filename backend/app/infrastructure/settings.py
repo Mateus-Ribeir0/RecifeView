@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 TAMANHO_MINIMO_DO_SEGREDO_JWT = 32
 PASTA_PADRAO_DAS_IMPORTACOES = Path("../data/importacoes")
+PASTA_PADRAO_DOS_EMAILS = Path("../data/emails")
 BYTES_POR_MEGABYTE = 1024 * 1024
 
 
@@ -23,6 +24,7 @@ class Configuracao(ConfiguracaoDoBanco):
     pasta_das_importacoes: Path = PASTA_PADRAO_DAS_IMPORTACOES
     tamanho_maximo_da_importacao_mb: int = Field(default=800, gt=0)
     sal_do_id_local: SecretStr | None = None
+    pasta_dos_emails: Path = PASTA_PADRAO_DOS_EMAILS
 
     @field_validator("segredo_jwt")
     @classmethod

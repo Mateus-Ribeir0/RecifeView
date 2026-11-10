@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Request, status
 
 from app.api.dependencias import (
+    GestorAtualDep,
     ServicosDeContribuicoesDep,
-    UsuarioAtualDep,
     auditar_consulta,
 )
 from app.api.schemas.contribuicoes import (
@@ -82,7 +82,7 @@ def receber(
     dependencies=[Depends(auditar_consulta)],
 )
 def resumir(
-    _: UsuarioAtualDep, servicos: ServicosDeContribuicoesDep
+    _: GestorAtualDep, servicos: ServicosDeContribuicoesDep
 ) -> ResumoDasContribuicoesResposta:
     return ResumoDasContribuicoesResposta.model_validate(servicos.contribuicoes.resumir())
 
@@ -93,7 +93,7 @@ def resumir(
     dependencies=[Depends(auditar_consulta)],
 )
 def listar_ocorrencias(
-    _: UsuarioAtualDep,
+    _: GestorAtualDep,
     servicos: ServicosDeContribuicoesDep,
     limite: Limite = 50,
     deslocamento: Deslocamento = 0,
@@ -107,7 +107,7 @@ def listar_ocorrencias(
     summary="Relatos parecidos que esperam decisão",
     dependencies=[Depends(auditar_consulta)],
 )
-def listar_pares(_: UsuarioAtualDep, servicos: ServicosDeContribuicoesDep) -> list[ParResposta]:
+def listar_pares(_: GestorAtualDep, servicos: ServicosDeContribuicoesDep) -> list[ParResposta]:
     pares = servicos.contribuicoes.listar_pares_abertos(PARES_POR_PAGINA)
     return [ParResposta.model_validate(par) for par in pares]
 
@@ -121,7 +121,7 @@ def listar_pares(_: UsuarioAtualDep, servicos: ServicosDeContribuicoesDep) -> li
 def decidir_par(
     par_id: int,
     dados: DecisaoDoParEntrada,
-    usuario: UsuarioAtualDep,
+    usuario: GestorAtualDep,
     servicos: ServicosDeContribuicoesDep,
 ) -> None:
     DecidirPar(servicos).executar(par_id, dados.decisao, usuario.id)
@@ -134,7 +134,7 @@ def decidir_par(
     responses={409: {"model": ErroResposta, "description": "Pendência ou pacote vazio"}},
 )
 def gerar_pacote(
-    usuario: UsuarioAtualDep, servicos: ServicosDeContribuicoesDep
+    usuario: GestorAtualDep, servicos: ServicosDeContribuicoesDep
 ) -> ImportacaoResumoResposta:
     importacao = GerarPacote(servicos).executar(usuario.id)
     return ImportacaoResumoResposta.de_importacao(importacao)

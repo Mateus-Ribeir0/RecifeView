@@ -7,9 +7,13 @@ from fastapi.responses import JSONResponse
 
 from app.api.schemas.erros import DetalheDoErro, ErroResposta
 from app.domain.erros import (
+    AcessoNegado,
+    AreaDaGestaoNegada,
     ArquivoGrandeDemais,
     ArquivoIlegivel,
     ArquivoVazio,
+    CadastroInvalido,
+    CodigoInvalido,
     ContaBloqueada,
     ContaInativa,
     ContribuicaoInvalida,
@@ -18,6 +22,7 @@ from app.domain.erros import (
     DiaForaDaJanela,
     EmailInvalido,
     EmailJaCadastrado,
+    EmailNaoConfirmado,
     EnviosDemais,
     ErroDeDominio,
     ImportacaoEmEstadoInvalido,
@@ -30,6 +35,7 @@ from app.domain.erros import (
     SenhaAtualIncorreta,
     SenhaFraca,
     SessaoInvalida,
+    TentativasDemais,
     UsuarioNaoEncontrado,
     ValorDeFiltroInvalido,
 )
@@ -122,6 +128,34 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
         "dia_fora_da_janela",
         "Não há dados para o dia escolhido.",
     ),
+    AcessoNegado: RespostaDeErro(
+        status.HTTP_403_FORBIDDEN,
+        "acesso_negado",
+        "Esta área é só da gestão. A sua conta tem acesso à área do cidadão.",
+    ),
+    AreaDaGestaoNegada: RespostaDeErro(
+        status.HTTP_403_FORBIDDEN,
+        "area_da_gestao_negada",
+        "Esta conta não tem acesso à área da gestão. Entre pela área do cidadão.",
+    ),
+    EmailNaoConfirmado: RespostaDeErro(
+        status.HTTP_403_FORBIDDEN,
+        "email_nao_confirmado",
+        "Falta confirmar o seu e-mail. Use o código que enviamos ou peça um novo.",
+    ),
+    CodigoInvalido: RespostaDeErro(
+        status.HTTP_400_BAD_REQUEST,
+        "codigo_invalido",
+        "Código, e-mail ou senha não conferem, ou o código venceu. Confira ou peça um novo.",
+    ),
+    CadastroInvalido: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, "cadastro_invalido", "Confira os campos."
+    ),
+    TentativasDemais: RespostaDeErro(
+        status.HTTP_429_TOO_MANY_REQUESTS,
+        "tentativas_demais",
+        "Muitas tentativas em pouco tempo. Espere alguns minutos e tente de novo.",
+    ),
     ContribuicaoInvalida: RespostaDeErro(
         status.HTTP_422_UNPROCESSABLE_CONTENT, "contribuicao_invalida", "Confira os campos."
     ),
@@ -153,7 +187,7 @@ def registrar_tratadores_de_erro(app: FastAPI) -> None:
 
 def _tratar_erro_de_dominio(_: Request, erro: ErroDeDominio) -> JSONResponse:
     resposta = RESPOSTAS_POR_ERRO.get(type(erro), ERRO_GENERICO)
-    com_motivo = (SenhaFraca, DecisaoInvalida, ContribuicaoInvalida)
+    com_motivo = (SenhaFraca, DecisaoInvalida, ContribuicaoInvalida, CadastroInvalido)
     mensagem = erro.motivo if isinstance(erro, com_motivo) else resposta.mensagem
     detalhes = _detalhes_do_erro(erro)
     return _responder(
@@ -164,7 +198,7 @@ def _tratar_erro_de_dominio(_: Request, erro: ErroDeDominio) -> JSONResponse:
 def _detalhes_do_erro(erro: ErroDeDominio) -> dict[str, Any] | None:
     if isinstance(erro, ContaBloqueada):
         return {"desbloqueio_em": erro.desbloqueio_em.isoformat()}
-    if isinstance(erro, ContribuicaoInvalida):
+    if isinstance(erro, (ContribuicaoInvalida, CadastroInvalido)):
         return {"campo": erro.campo}
     return None
 

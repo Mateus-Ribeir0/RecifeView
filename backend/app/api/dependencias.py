@@ -7,6 +7,7 @@ from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.application.casos_de_uso.contas.servicos import ServicosDeConta
 from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
 from app.application.casos_de_uso.entrar import Entrar
 from app.application.casos_de_uso.identificar_usuario import IdentificarUsuario
@@ -15,6 +16,8 @@ from app.application.casos_de_uso.renovar_acesso import RenovarAcesso
 from app.application.casos_de_uso.sair import Sair
 from app.application.casos_de_uso.trocar_senha import TrocarSenha
 from app.application.portas.acessos import RegistroDeAcessos
+from app.application.portas.contas import EnvioDeEmail
+from app.application.portas.contribuicoes import LimiteDeEnvios
 from app.application.portas.painel import (
     CatalogoRepository,
     PrazoRepository,
@@ -34,7 +37,7 @@ from app.application.portas.sessoes import SessaoRepository
 from app.application.portas.usuarios import UsuarioRepository
 from app.application.sessoes import GestaoDeSessoes
 from app.domain.auditoria import ConsultaAuditada
-from app.domain.erros import ErroDeDominio, SessaoInvalida
+from app.domain.erros import AcessoNegado, ErroDeDominio, SessaoInvalida, TentativasDemais
 from app.domain.filtros import ANO_FINAL_PADRAO, ANO_INICIAL_PADRAO, Filtros
 from app.domain.usuario import Usuario
 from app.infrastructure.repositories.acessos import RegistroDeAcessosSql
@@ -42,6 +45,7 @@ from app.infrastructure.repositories.catalogos import (
     CatalogoRepositorySql,
     ReferenciaRepositorySql,
 )
+from app.infrastructure.repositories.codigos_de_conta import CodigoDeContaRepositorySql
 from app.infrastructure.repositories.consultas import RegistroDeConsultasSql
 from app.infrastructure.repositories.prazos import PrazoRepositorySql
 from app.infrastructure.repositories.prioridade import PrioridadeRepositorySql
@@ -56,6 +60,7 @@ from app.infrastructure.repositories.war_room import WarRoomRepositorySql
 from app.infrastructure.settings import Configuracao
 
 PADRAO_DO_PERIODO = r"^\d{4}-\d{2}$"
+ORIGEM_DESCONHECIDA = "desconhecida"
 TAMANHO_DO_ANO = 4
 
 
@@ -246,6 +251,52 @@ RenovarAcessoDep = Annotated[RenovarAcesso, Depends(obter_renovar_acesso)]
 SairDep = Annotated[Sair, Depends(obter_sair)]
 TrocarSenhaDep = Annotated[TrocarSenha, Depends(obter_trocar_senha)]
 UsuarioAtualDep = Annotated[Usuario, Depends(obter_usuario_atual)]
+
+
+def exigir_gestao(usuario: UsuarioAtualDep) -> Usuario:
+    """Painel, importação e pente fino são só da gestão: conta de cidadão recebe 403."""
+    if not usuario.e_da_gestao:
+        raise AcessoNegado
+    return usuario
+
+
+GestorAtualDep = Annotated[Usuario, Depends(exigir_gestao)]
+
+
+def obter_servicos_de_conta(
+    request: Request,
+    sessao: Annotated[Session, Depends(abrir_transacao)],
+    repositorios: RepositoriosDep,
+    gestao_de_sessoes: GestaoDeSessoesDep,
+) -> ServicosDeConta:
+    seguranca: Seguranca = request.app.state.seguranca
+    emails: EnvioDeEmail = request.app.state.caixa_de_emails
+    return ServicosDeConta(
+        usuarios=repositorios.usuarios,
+        codigos=CodigoDeContaRepositorySql(sessao),
+        senhas=seguranca.senhas,
+        emails=emails,
+        acessos=repositorios.acessos,
+        sessoes=gestao_de_sessoes,
+        relogio=seguranca.relogio,
+    )
+
+
+def obter_bairros_oficiais(request: Request) -> frozenset[str]:
+    servicos: ServicosDeContribuicoes = request.app.state.servicos_de_contribuicoes
+    return frozenset(bairro.chave for bairro in servicos.referencia.bairros())
+
+
+def limitar_operacoes_de_conta(request: Request) -> None:
+    """Cadastro, código e recuperação gastam e-mail: cada origem tem um limite curto."""
+    limite: LimiteDeEnvios = request.app.state.limite_de_contas
+    origem = request.client.host if request.client else ORIGEM_DESCONHECIDA
+    if not limite.permitir(origem):
+        raise TentativasDemais
+
+
+ServicosDeContaDep = Annotated[ServicosDeConta, Depends(obter_servicos_de_conta)]
+BairrosOficiaisDep = Annotated[frozenset[str], Depends(obter_bairros_oficiais)]
 FiltrosDep = Annotated[Filtros, Depends(obter_filtros)]
 PainelDep = Annotated[RepositoriosDoPainel, Depends(obter_repositorios_do_painel)]
 
