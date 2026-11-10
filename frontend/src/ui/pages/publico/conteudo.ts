@@ -13,27 +13,23 @@ export interface FonteDeDados {
   cor: string
 }
 
-export interface ProblemaResolvido {
-  chave: string
+export interface Razao {
   icone: NomeDoIcone
-  titulo: string
   antes: string
   agora: string
-  tela: string
-  caminho: string
 }
 
-export interface ResultadoPedido {
-  pedido: string
-  resposta: string
-}
-
-export interface TelaDaPlataforma {
-  chave: string
-  nome: string
+export interface Passo {
   icone: NomeDoIcone
-  pergunta: string
-  permite: readonly string[]
+  titulo: string
+  texto: string
+}
+
+export interface LinhaDeAcesso {
+  recurso: string
+  semConta: boolean
+  cidadao: boolean
+  gestao: boolean
 }
 
 export interface CamadaDoPenteFino {
@@ -52,204 +48,87 @@ export const NUMEROS_DA_BASE: readonly NumeroDaBase[] = [
 export const NOTA_DA_BASE =
   'Fonte: Portal de Dados Abertos do Recife, SAGL da Câmara Municipal e Censo 2022 do IBGE. Base de 07/10/2026.'
 
-export const PROBLEMAS: readonly ProblemaResolvido[] = [
+export const RAZOES_PARA_RELATAR: readonly Razao[] = [
   {
-    chave: 'fragmentacao',
-    icone: 'base',
-    titulo: 'Cada porta guardava a sua base',
-    antes:
-      'Central 156, Ouvidoria, Defesa Civil, SEDEC e Câmara Municipal registram em sistemas separados, sem um identificador em comum. Ver o todo significava juntar planilhas na mão.',
-    agora:
-      'As cinco fontes estão numa base única e se cruzam por bairro, serviço e período. Um filtro aplicado vale para todas as telas.',
-    tela: 'Início',
-    caminho: '/plataforma',
-  },
-  {
-    chave: 'repeticao',
-    icone: 'repetir',
-    titulo: 'A repetição parecia só mais um pedido',
-    antes:
-      'Vista sozinha, uma solicitação repetida não chamava atenção. O problema voltava ao mesmo endereço e ninguém enxergava o padrão.',
-    agora:
-      'A Reincidência separa o pedido duplicado, de até 7 dias, do problema que volta, de 30 dias ou mais, e aponta os pontos crônicos de cada bairro.',
-    tela: 'Reincidência',
-    caminho: '/plataforma',
-  },
-  {
-    chave: 'retorno',
-    icone: 'retorno',
-    titulo: 'O retorno se perdia no caminho',
-    antes:
-      'A indicação chegava à Prefeitura, mas a resposta raramente voltava ao registro. Não dava para ver em que etapa ela parava.',
-    agora:
-      'O funil do Retorno mostra o que foi apresentado, enviado e respondido, com o canal e o órgão de cada etapa.',
-    tela: 'Retorno',
-    caminho: '/plataforma',
-  },
-  {
-    chave: 'prazos',
     icone: 'relogio',
-    titulo: 'A mediana escondia a demora',
-    antes:
-      'A mediana do 156 ficou entre 2 e 5 dias, o que passava a impressão de um serviço estável. Os pedidos mais demorados não apareciam.',
+    antes: 'Você relatava um problema e não sabia mais o que tinha acontecido com ele.',
     agora:
-      'Os Prazos mostram mediana e percentil 90 por ano e categoria, além do estoque que já passou do prazo típico.',
-    tela: 'Prazos',
-    caminho: '/plataforma',
+      'Cada relato mostra em que pé está: recebido, em análise, no painel da gestão ou já com pedido oficial.',
   },
   {
-    chave: 'destino',
-    icone: 'filtro',
-    titulo: 'Ninguém via para onde cada tema ia',
-    antes:
-      'Risco, escadarias, praças e pavimentação se espalham por vários órgãos. Não havia uma visão de quem recebe o quê.',
+    icone: 'somar',
+    antes: 'O mesmo buraco virava dez pedidos soltos, e nenhum parecia mais urgente.',
     agora:
-      'O mapa de calor e o fluxo de categoria para órgão mostram onde o encaminhamento muda de mão.',
-    tela: 'Retorno',
-    caminho: '/plataforma',
+      'Relatos iguais viram uma ocorrência só. Cada pessoa a mais que relata reforça o mesmo problema.',
   },
   {
-    chave: 'prioridade',
-    icone: 'bandeira',
-    titulo: 'Priorizar dependia de quem olhava',
-    antes:
-      'Sem critério escrito, a fila seguia a ordem de chegada ou a pressão do momento, e mais pedidos num bairro nem sempre queria dizer mais problema.',
-    agora:
-      'A Prioridade usa quatro critérios escritos (risco, vulnerabilidade, atraso e reincidência), com pesos que a gestão ajusta, e a War Room mostra por onde começar.',
-    tela: 'Prioridade e War Room',
-    caminho: '/plataforma',
-  },
-  {
-    chave: 'importacao',
-    icone: 'importar',
-    titulo: 'Arquivo novo dava trabalho e podia duplicar',
-    antes:
-      'Cada arquivo dependia de quem sabia rodar os scripts, e nada impedia a mesma demanda de entrar duas vezes por canais diferentes.',
-    agora:
-      'A Importação pergunta o que não bateu, passa o pente fino entre os canais, guarda o histórico e permite desfazer. Nada entra com pendência aberta.',
-    tela: 'Importações',
-    caminho: '/dados-e-confianca',
-  },
-]
-
-export const RESUMO_DO_QUE_MUDA: readonly string[] = [
-  'repeticao',
-  'retorno',
-  'prazos',
-  'importacao',
-]
-
-export const RESULTADOS_PEDIDOS: readonly ResultadoPedido[] = [
-  {
-    pedido: 'Classificação mais precisa e consistente',
-    resposta:
-      'Um vocabulário só de serviço, categoria e bairro oficial para todas as fontes, com as grafias e os órgãos harmonizados na entrada.',
-  },
-  {
-    pedido: 'Priorização por criticidade, impacto e recorrência',
-    resposta:
-      'Índice por bairro com critérios explícitos, fila de ocorrências com nota e reincidência calculada por local e serviço.',
-  },
-  {
-    pedido: 'Menos tempo até o encaminhamento adequado',
-    resposta:
-      'Funil, fluxo entre órgãos e estoque fora do prazo mostram em que etapa a demanda para, para a gestão agir ali.',
-  },
-  {
-    pedido: 'Uso estratégico para achar gargalos urbanos',
-    resposta:
-      'Taxas por mil habitantes, pontos crônicos e dois mapas (serviço urbano e emergência), porque os dois apontam para bairros diferentes.',
-  },
-]
-
-export const TELAS_DA_PLATAFORMA: readonly TelaDaPlataforma[] = [
-  {
-    chave: 'inicio',
-    nome: 'Início',
-    icone: 'inicio',
-    pergunta: 'Como está a demanda do Recife, em uma tela?',
-    permite: [
-      'Ver os principais indicadores e o volume que chega por cada porta',
-      'Filtrar por período, RPA, bairro e categoria, com efeito em todas as telas',
-      'Abrir o mapa de concentração por mil habitantes',
-    ],
-  },
-  {
-    chave: 'war-room',
-    nome: 'War Room',
-    icone: 'pulso',
-    pergunta: 'O que está parado hoje e por onde começar?',
-    permite: [
-      'Acompanhar o estoque aberto, o que passou do prazo típico e as indicações sem resposta',
-      'Ver a fila do dia ordenada por nota, com bairro, serviço e tempo em aberto',
-      'Simular um mês para ensaiar a rotina da sala de situação',
-    ],
-  },
-  {
-    chave: 'retorno',
-    nome: 'Retorno',
-    icone: 'retorno',
-    pergunta: 'Para onde vai cada pedido e quanto volta?',
-    permite: [
-      'Seguir o funil da Câmara: apresentada, enviada e com resposta',
-      'Comparar canais de envio e ver o que muda na resposta',
-      'Ler o fluxo de categoria para órgão e os canais da Ouvidoria',
-    ],
-  },
-  {
-    chave: 'reincidencia',
-    nome: 'Reincidência',
-    icone: 'repetir',
-    pergunta: 'O problema foi resolvido ou voltou?',
-    permite: [
-      'Medir o percentual de pedidos em local e serviço já pedidos antes',
-      'Separar duplicidade (até 7 dias) de reincidência (30 dias ou mais)',
-      'Listar os pontos crônicos, sem expor o endereço',
-    ],
-  },
-  {
-    chave: 'prazos',
-    nome: 'Prazos',
-    icone: 'relogio',
-    pergunta: 'Quem demora está demorando mais?',
-    permite: [
-      'Comparar mediana e percentil 90 por ano e por categoria',
-      'Encontrar o estoque aberto além do prazo típico de cada serviço',
-      'Tirar da conta os pedidos fechados no mesmo dia',
-    ],
-  },
-  {
-    chave: 'territorio',
-    nome: 'Território',
     icone: 'local',
-    pergunta: 'Onde o serviço urbano e a emergência pesam mais?',
-    permite: [
-      'Comparar dois mapas com taxa por mil habitantes',
-      'Clicar num bairro e ver o detalhe nas duas leituras',
-      'Conferir tudo na tabela ordenada ao lado do mapa',
-    ],
+    antes: 'Ninguém fora da Prefeitura via o que se repetia no bairro.',
+    agora:
+      'Você vê os relatos da sua rua e do seu bairro, e como o bairro se compara com o Recife.',
   },
   {
-    chave: 'prioridade',
-    nome: 'Prioridade',
-    icone: 'bandeira',
-    pergunta: 'Com critérios escritos, onde agir primeiro?',
-    permite: [
-      'Ajustar os pesos dos quatro critérios e ver o ranking mudar',
-      'Conferir a consistência dos julgamentos e a sensibilidade do índice',
-      'Abrir a fila de ocorrências classificadas',
-    ],
+    icone: 'escudo',
+    antes: 'Relatar parecia expor o próprio endereço.',
+    agora:
+      'Ninguém vê o número exato, o que você escreveu nem quem enviou. O relato não pede seus dados.',
   },
+]
+
+export const PASSOS_DO_CIDADAO: readonly Passo[] = [
   {
-    chave: 'contribuicoes',
-    nome: 'Contribuições',
     icone: 'relato',
-    pergunta: 'O que chegou pelo formulário e já pode entrar na base?',
-    permite: [
-      'Revisar lado a lado os relatos parecidos e decidir se são a mesma ocorrência',
-      'Ver quantas pessoas relataram cada problema e quantas ficaram sem retorno',
-      'Gerar o pacote que segue para a importação, com histórico e desfazer',
-    ],
+    titulo: 'Você relata',
+    texto: 'Escolhe o problema e a rua. Leva um minuto e não precisa de conta.',
+  },
+  {
+    icone: 'somar',
+    titulo: 'A plataforma confere',
+    texto: 'Se outra pessoa já relatou o mesmo problema, os relatos viram uma ocorrência só.',
+  },
+  {
+    icone: 'pessoas',
+    titulo: 'A gestão revisa',
+    texto: 'Uma pessoa da gestão confere os casos parecidos antes de o relato entrar nos números.',
+  },
+  {
+    icone: 'telas',
+    titulo: 'Você acompanha',
+    texto: 'Com uma conta, você vê a situação de cada relato e os números do seu bairro.',
+  },
+]
+
+export const NIVEIS_DE_ACESSO: readonly LinhaDeAcesso[] = [
+  {
+    recurso: 'Números da cidade, a partir dos dados abertos',
+    semConta: true,
+    cidadao: true,
+    gestao: true,
+  },
+  { recurso: 'Relatar um problema', semConta: true, cidadao: true, gestao: true },
+  {
+    recurso: 'Relatos da cidade: rua, faixa de numeração, situação e quantas pessoas relataram',
+    semConta: false,
+    cidadao: true,
+    gestao: true,
+  },
+  {
+    recurso: 'Indicadores do seu bairro comparados com o Recife',
+    semConta: false,
+    cidadao: true,
+    gestao: true,
+  },
+  {
+    recurso: 'Número exato e texto escrito do relato, para conferir duplicidade',
+    semConta: false,
+    cidadao: false,
+    gestao: true,
+  },
+  {
+    recurso: 'Painel da gestão, prioridade, importação de arquivos e pente fino',
+    semConta: false,
+    cidadao: false,
+    gestao: true,
   },
 ]
 
@@ -325,7 +204,9 @@ export const FONTES_DE_DADOS: readonly FonteDeDados[] = [
 ]
 
 export const GARANTIAS_DE_PRIVACIDADE: readonly string[] = [
-  'O formulário não pede nome, CPF, telefone nem e-mail, e recusa o texto que trouxer esses dados.',
+  'O relato não pede nome, CPF, telefone nem e-mail, recusa o texto que trouxer esses dados e não fica ligado a nenhuma conta.',
+  'A conta guarda só nome, e-mail e, se você quiser, o bairro. Excluir a conta apaga esses dados.',
+  'Quem tem conta vê a rua e uma faixa de numeração de 100 em 100, nunca o número exato nem o texto escrito.',
   'O relato fica numa área separada. Só entra no painel depois da revisão da gestão.',
   'A base analítica nunca recebe endereço nem texto livre: só um código que não pode ser revertido sem um segredo guardado fora do sistema.',
   'Endereço e detalhe do relato são apagados em 90 dias.',
@@ -337,5 +218,5 @@ export const LEITURAS_HONESTAS: readonly string[] = [
   'Sem resposta registrada não quer dizer que o pedido não foi atendido.',
   'Mais pedidos num bairro não quer dizer mais problema: por isso o painel usa taxa por mil habitantes.',
   'A Defesa Civil registra ações, não pedidos, e a situação da SEDEC é um retrato de 03/2024.',
-  'Os pesos do índice de prioridade são uma proposta inicial e podem ser mudados na tela.',
+  'Um relato no formulário não é um pedido oficial: para ter protocolo, use a Central 156.',
 ]

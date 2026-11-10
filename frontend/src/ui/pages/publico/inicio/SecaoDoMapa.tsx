@@ -16,9 +16,9 @@ export function SecaoDoMapa() {
             Feito para o Recife, bairro por bairro
           </h2>
           <p className={secao.abertura}>
-            Todos os indicadores usam os 94 bairros oficiais e as 6 RPAs. Quando o assunto é
-            comparar lugares, o painel usa taxa por mil habitantes, porque mais pedidos num bairro
-            não quer dizer mais problema.
+            Os relatos e os números usam os 94 bairros oficiais e as 6 RPAs. Com uma conta, você vê
+            o seu bairro comparado com o Recife, sempre em taxa por mil moradores, porque mais
+            pedidos num bairro não quer dizer mais problema.
           </p>
         </Aparecer>
         <Aparecer atraso={120} className={estilos.mapa}>

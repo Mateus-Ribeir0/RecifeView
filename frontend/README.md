@@ -33,11 +33,10 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 
 | Caminho                  | Tela                                                                           | Acesso             |
 | ------------------------ | ------------------------------------------------------------------------------ | ------------------ |
-| `/`                      | Início: abertura, números, o que muda, caminho da demanda e mapa               | Público            |
-| `/o-que-muda`            | Os problemas de antes, o que muda e a evidência de cada um                     | Público            |
-| `/plataforma`            | As telas do painel, com capturas reais                                         | Público            |
-| `/dados-e-confianca`     | Pente fino, fontes, privacidade e leitura honesta dos números                  | Público            |
-| `/contribuir`            | Formulário público em três passos                                              | Público            |
+| `/`                      | Início: abertura para quem mora no Recife, números, o que muda, passos e mapa  | Público            |
+| `/como-funciona`         | Caminho do relato, os três níveis de acesso, pente fino e privacidade          | Público            |
+| `/a-cidade-em-numeros`   | Os achados da base aberta, cada um com fonte e período                         | Público            |
+| `/contribuir`            | Formulário público em três passos (relatar sem conta)                          | Público            |
 | `/entrar`                | Entrada do cidadão (cabeçalho azul e foto do Recife)                           | Só quem não entrou |
 | `/entrar/gestao`         | Entrada da gestão (cabeçalho azul-marinho); recusa conta de cidadão            | Só quem não entrou |
 | `/cadastrar`             | Criação da conta de cidadão em dois passos: dados e código enviado por e-mail  | Só quem não entrou |
@@ -60,7 +59,7 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 | `/painel/contribuicoes`  | Pente fino dos relatos, ocorrências e geração do pacote                        | Gestor             |
 | `/painel/importacoes`    | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório    | Gestor             |
 
-Quem não é da gestão e abre `/painel` vai para `/cidade`. O que cada nível de acesso vê está na [ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md).
+Os endereços antigos do site (`/o-que-muda`, `/plataforma` e `/dados-e-confianca`) redirecionam para as abas novas. Quem não é da gestão e abre `/painel` vai para `/cidade`. O que cada nível de acesso vê está na [ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md).
 
 A correspondência entre telas e rotas da API está em [docs/arquitetura.md](../docs/arquitetura.md#telas-e-rotas-da-api).
 
@@ -105,7 +104,7 @@ src/
     charts/         gráficos: os do Recharts (únicos que o importam) e funil, sparkline e composição em HTML e SVG
     map/            mapa SVG dos bairros, mapa de escolha do bairro, minimapa das RPAs, mapa coroplético (Leaflet) e a malha
     conteudo/       textos compartilhados entre páginas
-    assets/         marca, foto do Recife e capturas reais do painel
+    assets/         marca, foto do Recife e a captura da área do cidadão (com ruas fictícias)
     theme/          tokens do design system e estilos base
   main.tsx          ponto de entrada
 ```

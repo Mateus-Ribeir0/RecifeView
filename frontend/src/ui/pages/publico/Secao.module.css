@@ -8,6 +8,10 @@
   }
 }
 
+.semTopo {
+  padding-top: 0;
+}
+
 .fundoClaro {
   background: var(--cor-azul-claro);
 }

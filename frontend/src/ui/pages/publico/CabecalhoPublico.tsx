@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router'
 
+import { useSessao } from '../../../application/autenticacao/useSessao'
+import { inicioDoPerfil } from '../../../domain/usuario'
 import { Icone } from '../../components/Icone'
 import { LinkDeBotao } from '../../components/LinkDeBotao'
 import { Logo } from '../../components/Logo'
@@ -8,18 +10,30 @@ import estilos from './CabecalhoPublico.module.css'
 
 const ABAS = [
   { caminho: '/', rotulo: 'Início' },
-  { caminho: '/o-que-muda', rotulo: 'O que muda' },
-  { caminho: '/plataforma', rotulo: 'A plataforma' },
-  { caminho: '/dados-e-confianca', rotulo: 'Dados e confiança' },
+  { caminho: '/como-funciona', rotulo: 'Como funciona' },
+  { caminho: '/a-cidade-em-numeros', rotulo: 'A cidade em números' },
+  { caminho: '/contribuir', rotulo: 'Relatar um problema' },
 ] as const
 
-const ACOES_NO_MENU = [
-  { caminho: '/contribuir', rotulo: 'Relatar um problema' },
-  { caminho: '/entrar', rotulo: 'Entrar' },
-] as const
+interface Acao {
+  caminho: string
+  rotulo: string
+}
+
+function useAcoes(): readonly Acao[] {
+  const { estado } = useSessao()
+  if (estado.situacao === 'autenticada') {
+    return [{ caminho: inicioDoPerfil(estado.usuario.perfil), rotulo: 'Minha área' }]
+  }
+  return [
+    { caminho: '/entrar', rotulo: 'Entrar' },
+    { caminho: '/cadastrar', rotulo: 'Criar conta' },
+  ]
+}
 
 export function CabecalhoPublico() {
   const [aberto, definirAberto] = useState(false)
+  const acoes = useAcoes()
   const fechar = () => definirAberto(false)
 
   return (
@@ -41,7 +55,7 @@ export function CabecalhoPublico() {
                 </NavLink>
               </li>
             ))}
-            {ACOES_NO_MENU.map(({ caminho, rotulo }) => (
+            {acoes.map(({ caminho, rotulo }) => (
               <li key={caminho} className={estilos.soNoMenu}>
                 <NavLink to={caminho} onClick={fechar}>
                   {rotulo}
@@ -51,12 +65,16 @@ export function CabecalhoPublico() {
           </ul>
         </nav>
         <div className={estilos.acoes}>
-          <LinkDeBotao para="/contribuir" compacto>
-            Relatar um problema
-          </LinkDeBotao>
-          <LinkDeBotao para="/entrar" variante="secundario" compacto>
-            Entrar
-          </LinkDeBotao>
+          {acoes.map(({ caminho, rotulo }, indice) => (
+            <LinkDeBotao
+              key={caminho}
+              para={caminho}
+              variante={indice === acoes.length - 1 ? 'primario' : 'secundario'}
+              compacto
+            >
+              {rotulo}
+            </LinkDeBotao>
+          ))}
         </div>
         <button
           type="button"

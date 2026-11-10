@@ -96,7 +96,7 @@ O cabeçalho diz em que área a pessoa está, antes de qualquer texto. Os dois t
 | Token | Aponta para | Onde |
 |---|---|---|
 | `cabecalho-da-cidade` | `azul-principal` (`#0F62FE`) | Entrada do cidadão (`/entrar`, `/cadastrar`, `/confirmar-email`, `/recuperar-senha`) e área do cidadão (`/cidade`) |
-| `cabecalho-da-gestao` | `azul-marinho` (`#062A5F`) | Entrada da gestão (`/entrar/gestao`, `/entrar/ajuda`) e painel |
+| `cabecalho-da-gestao` | `azul-marinho` (`#062A5F`) | Entrada da gestão (`/entrar/gestao`, `/entrar/ajuda`), painel e a faixa "Trabalha na gestão pública?" no fim da página inicial |
 
 Cor nunca é o único sinal: as duas áreas mostram um selo com borda branca ao lado do logo ("Área do cidadão" ou "Área da gestão"), e a entrada da gestão tem título e texto próprios. Em tela estreita (abaixo de 720px no painel e de 900px na área do cidadão) o selo sai, e o tom do cabeçalho segue marcando a área. As telas de entrada também mudam o fundo do painel lateral: foto do Recife na do cidadão e malha dos bairros sobre azul-marinho na da gestão.
 

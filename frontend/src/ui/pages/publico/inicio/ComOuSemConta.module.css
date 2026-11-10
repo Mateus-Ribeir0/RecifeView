@@ -1,0 +1,52 @@
+.planos {
+  display: grid;
+  gap: var(--espaco-4);
+  margin-top: var(--espaco-7);
+}
+
+@media (min-width: 800px) {
+  .planos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.plano {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--espaco-4);
+  padding: var(--espaco-6);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+}
+
+.plano h3 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.plano ul {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.plano li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--espaco-2);
+}
+
+.plano svg {
+  margin-top: 2px;
+  color: var(--cor-azul-principal);
+}
+
+.planoEmDestaque {
+  border-color: var(--cor-azul-principal);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+}
+
+.planoEmDestaque svg {
+  color: var(--cor-branco);
+}

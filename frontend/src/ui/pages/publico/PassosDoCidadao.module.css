@@ -1,0 +1,65 @@
+.passos {
+  position: relative;
+  display: grid;
+  gap: var(--espaco-4);
+  margin-top: var(--espaco-6);
+  counter-reset: passo;
+}
+
+@media (min-width: 900px) {
+  .passos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .passos::before {
+    position: absolute;
+    top: 38px;
+    right: 12%;
+    left: 12%;
+    height: 2px;
+    background: var(--cor-mapa-2);
+    content: '';
+  }
+}
+
+.passo {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: var(--espaco-2);
+  height: 100%;
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+}
+
+.numero {
+  position: absolute;
+  top: var(--espaco-4);
+  right: var(--espaco-4);
+  font-size: var(--texto-legenda);
+  font-weight: 700;
+  color: var(--cor-texto-terciario);
+}
+
+.icone {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+  place-items: center;
+}
+
+.passo h3 {
+  margin-top: var(--espaco-2);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.passo p {
+  font-size: var(--texto-apoio);
+  color: var(--cor-texto-secundario);
+}

@@ -4,11 +4,12 @@ import { Logo } from '../../components/Logo'
 import estilos from './RodapePublico.module.css'
 
 const LINKS = [
-  { caminho: '/o-que-muda', rotulo: 'O que muda' },
-  { caminho: '/plataforma', rotulo: 'A plataforma' },
-  { caminho: '/dados-e-confianca', rotulo: 'Dados e confiança' },
+  { caminho: '/como-funciona', rotulo: 'Como funciona' },
+  { caminho: '/a-cidade-em-numeros', rotulo: 'A cidade em números' },
   { caminho: '/contribuir', rotulo: 'Relatar um problema' },
-  { caminho: '/entrar', rotulo: 'Entrar no painel' },
+  { caminho: '/cadastrar', rotulo: 'Criar conta' },
+  { caminho: '/entrar', rotulo: 'Entrar' },
+  { caminho: '/entrar/gestao', rotulo: 'Acesso da gestão' },
 ] as const
 
 export function RodapePublico() {
@@ -18,8 +19,8 @@ export function RodapePublico() {
         <div className={estilos.marca}>
           <Logo variante="branco" altura={28} />
           <p>
-            Plataforma de análise das demandas urbanas do Recife, feita para quem decide na gestão
-            pública.
+            Relatos e números das demandas urbanas do Recife, para quem mora na cidade e para quem
+            decide na gestão pública.
           </p>
         </div>
         <nav aria-label="Páginas do site, no rodapé">

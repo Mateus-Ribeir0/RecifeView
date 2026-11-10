@@ -1,0 +1,113 @@
+.achados {
+  display: grid;
+  gap: var(--espaco-8);
+  padding-block: var(--espaco-8);
+}
+
+.achado {
+  display: grid;
+  gap: var(--espaco-5);
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .achado {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--espaco-7);
+  }
+
+  .achado:nth-child(even) .textoDoAchado {
+    order: 2;
+  }
+}
+
+.textoDoAchado {
+  display: grid;
+  justify-items: start;
+  gap: var(--espaco-3);
+}
+
+.icone {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-azul-claro);
+  color: var(--cor-azul-escuro);
+  place-items: center;
+}
+
+.textoDoAchado h2 {
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 700;
+}
+
+.textoDoAchado p {
+  max-width: 52ch;
+  color: var(--cor-texto-secundario);
+}
+
+.rolagem {
+  overflow-x: auto;
+  margin-top: var(--espaco-5);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+}
+
+.tabela {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: var(--texto-apoio);
+}
+
+.tabela th,
+.tabela td {
+  padding: var(--espaco-3) var(--espaco-4);
+  border-bottom: 1px solid var(--cor-borda);
+  text-align: left;
+}
+
+.tabela thead th {
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+}
+
+.tabela tbody th {
+  font-weight: 600;
+}
+
+.tabela tfoot th,
+.tabela tfoot td {
+  border-bottom: 0;
+  font-weight: 700;
+}
+
+.tabela .numerica {
+  text-align: right;
+}
+
+.marca {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: var(--espaco-2);
+  border-radius: 2px;
+}
+
+.chamada {
+  padding-block: var(--espaco-7);
+  background: var(--cor-azul-principal);
+  color: var(--cor-branco);
+}
+
+.chamadaInterna {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  align-items: center;
+  justify-content: space-between;
+  font-size: 24px;
+  font-weight: 700;
+}

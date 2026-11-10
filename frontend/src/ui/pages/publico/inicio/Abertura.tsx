@@ -1,4 +1,4 @@
-import capturaDoInicio from '../../../assets/capturas/inicio.webp'
+import capturaDaCidade from '../../../assets/capturas/cidade.webp'
 import fotoDoRecife from '../../../assets/imagens/recife-skyline.jpg'
 import { LinkDeBotao } from '../../../components/LinkDeBotao'
 import estilos from './Abertura.module.css'
@@ -9,20 +9,21 @@ export function Abertura() {
       <div className={estilos.faixa}>
         <img src={fotoDoRecife} alt="" className={estilos.foto} />
         <div className={`conteudo ${estilos.texto}`}>
-          <p className={estilos.chamada}>Plataforma de análise das demandas urbanas do Recife</p>
+          <p className={estilos.chamada}>Para quem mora no Recife</p>
           <h1 id="titulo-abertura" className={estilos.titulo}>
-            Onde as demandas do Recife se repetem, demoram ou ficam sem resposta
+            Relate um problema na sua rua e acompanhe o que já foi relatado no seu bairro
           </h1>
           <p className={estilos.descricao}>
-            A Central 156, a Ouvidoria, a Defesa Civil, a SEDEC e a Câmara Municipal numa leitura
-            só, por bairro, serviço e período, para a gestão decidir com o quadro inteiro na frente.
+            Buraco, lâmpada apagada, entulho, galeria entupida. O relato leva um minuto e não pede
+            seus dados. Com uma conta, você vê o que outras pessoas relataram e em que pé está cada
+            caso.
           </p>
           <div className={estilos.acoes}>
-            <LinkDeBotao para="/entrar" variante="claro">
-              Entrar no painel
+            <LinkDeBotao para="/cadastrar" variante="claro">
+              Criar conta
             </LinkDeBotao>
-            <LinkDeBotao para="/o-que-muda" variante="contorno">
-              Ver o que muda
+            <LinkDeBotao para="/contribuir" variante="contorno">
+              Relatar sem conta
             </LinkDeBotao>
           </div>
         </div>
@@ -30,13 +31,15 @@ export function Abertura() {
       <div className={`conteudo ${estilos.vitrine}`}>
         <figure className={estilos.moldura}>
           <img
-            src={capturaDoInicio}
+            src={capturaDaCidade}
             width={1440}
             height={900}
-            alt="Tela inicial do painel do RecifeView, com indicadores, volume por fonte e mapa dos bairros"
+            alt="Área do cidadão no RecifeView: mapa dos bairros com relato e a lista de relatos com a situação de cada um"
           />
         </figure>
-        <p className={estilos.legenda}>Tela real do painel, com a base de 07/10/2026.</p>
+        <p className={estilos.legenda}>
+          Área do cidadão com relatos de demonstração (dado fictício).
+        </p>
       </div>
     </section>
   )
