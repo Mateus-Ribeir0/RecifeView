@@ -81,6 +81,18 @@ describe('ClienteHttp', () => {
     await expect(comErro.enviar('/saude')).rejects.toMatchObject({ codigo: 'servico_indisponivel' })
   })
 
+  it('mantém a mensagem do servidor quando o e-mail não pôde ser enviado', async () => {
+    const corpo = {
+      erro: { codigo: 'envio_de_email_indisponivel', mensagem: 'Não conseguimos enviar o e-mail.' },
+    }
+    const cliente = new ClienteHttp('/api/v1', vi.fn().mockResolvedValue(resposta(503, corpo)))
+
+    await expect(cliente.enviar('/contas', { metodo: 'POST' })).rejects.toMatchObject({
+      codigo: 'envio_de_email_indisponivel',
+      message: 'Não conseguimos enviar o e-mail.',
+    })
+  })
+
   it('devolve vazio numa resposta 204', async () => {
     const cliente = new ClienteHttp('/api/v1', vi.fn().mockResolvedValue(resposta(204)))
     await expect(cliente.enviar('/autenticacao/sair', { metodo: 'POST' })).resolves.toBeUndefined()

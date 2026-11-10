@@ -13,6 +13,7 @@ export type CodigoDeErro =
   | 'codigo_invalido'
   | 'cadastro_invalido'
   | 'tentativas_demais'
+  | 'envio_de_email_indisponivel'
   | 'servico_indisponivel'
   | 'erro_inesperado'
 
