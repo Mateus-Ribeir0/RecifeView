@@ -43,7 +43,7 @@ def novo_codigo(digitos: str = "123456") -> CodigoDeConta:
     return CodigoDeConta(
         id=identificador,
         usuario_id=uuid4(),
-        finalidade=FinalidadeDoCodigo.CONFIRMAR_EMAIL,
+        finalidade=FinalidadeDoCodigo.REDEFINIR_SENHA,
         hash_do_codigo=calcular_hash_do_codigo(identificador, digitos),
         criado_em=INICIO_DOS_TESTES,
         expira_em=INICIO_DOS_TESTES + VALIDADE_DO_CODIGO,
@@ -81,13 +81,6 @@ def test_reenvio_so_depois_de_um_minuto() -> None:
     codigo = novo_codigo()
     assert codigo.foi_emitido_ha_pouco(INICIO_DOS_TESTES + timedelta(seconds=30))
     assert not codigo.foi_emitido_ha_pouco(INICIO_DOS_TESTES + timedelta(seconds=61))
-
-
-def test_so_cidadao_sem_confirmacao_precisa_confirmar_o_email() -> None:
-    assert not criar_usuario(perfil=Perfil.GESTOR).precisa_confirmar_email
-    cidadao = criar_usuario(perfil=Perfil.CIDADAO)
-    assert cidadao.precisa_confirmar_email
-    assert not cidadao.com_email_confirmado(INICIO_DOS_TESTES).precisa_confirmar_email
 
 
 def test_conta_excluida_nao_guarda_nada_que_identifique() -> None:

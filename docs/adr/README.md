@@ -40,7 +40,7 @@ Levantadas ao montar o C4 v0.1 (15/10/2026) e ao definir a stack. Cada uma vira 
 |---|---|---|
 | Onde guardar a camada bruta | Amazon S3 ou schema `raw` no PostgreSQL | A N2 exige separar bruto e tratado. O S3 é barato para arquivo grande; no schema `raw` fica tudo num lugar só |
 | Onde roda o Processor | AWS Lambda ou ECS/Fargate | O Lambda tem limite de 15 minutos, e a carga histórica tem cerca de 2,6 milhões de linhas. Dá para combinar: Fargate na carga completa e Lambda no incremental |
-| Provedor de e-mail | Gmail ou outra conta de teste, Amazon SES, Brevo, servidor da Prefeitura | As contas de cidadão dependem dele para o código de confirmação. A API já envia por qualquer SMTP (`API_SMTP_*`); falta escolher o provedor e o remetente oficiais ([ADR 0010](0010-contas-de-cidadao-e-niveis-de-acesso.md)) |
+| Provedor de e-mail | Gmail ou outra conta de teste, Amazon SES, Brevo, servidor da Prefeitura | A recuperação de senha das contas de cidadão depende dele. A API já envia por qualquer SMTP (`API_SMTP_*`); falta escolher o provedor e o remetente oficiais ([ADR 0010](0010-contas-de-cidadao-e-niveis-de-acesso.md)) |
 | Autenticação | JWT próprio ou serviço gerenciado (ex.: Amazon Cognito) | Já existe uma implementação local com JWT próprio atrás de portas, descrita na [ADR 0005](0005-autenticacao-com-jwt-proprio.md) (proposta). Falta o grupo aceitar ou trocar pelo serviço gerenciado |
 | Seta sem destino abaixo da API no esboço | Cache, fila, módulo de ML ou outro serviço | Perguntar ao Prof. Marcelo |
 | Ferramentas ainda propostas | TanStack Query, react-leaflet, GitHub Actions, pre-commit com commitlint | Confirmar quando forem necessárias (ver [stack.md](../stack.md)) |

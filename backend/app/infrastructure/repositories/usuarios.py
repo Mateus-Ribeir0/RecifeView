@@ -45,7 +45,6 @@ def _preencher(modelo: UsuarioModelo, usuario: Usuario) -> None:
     modelo.deve_trocar_senha = usuario.deve_trocar_senha
     modelo.tentativas_falhas = usuario.tentativas_falhas
     modelo.bloqueado_ate = usuario.bloqueado_ate
-    modelo.email_confirmado_em = usuario.email_confirmado_em
     modelo.bairro_oficial = usuario.bairro_oficial
 
 
@@ -60,6 +59,5 @@ def _para_dominio(modelo: UsuarioModelo) -> Usuario:
         deve_trocar_senha=modelo.deve_trocar_senha,
         tentativas_falhas=modelo.tentativas_falhas,
         bloqueado_ate=modelo.bloqueado_ate,
-        email_confirmado_em=modelo.email_confirmado_em,
         bairro_oficial=modelo.bairro_oficial,
     )

@@ -69,7 +69,7 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 | Página pública (`/`, `/como-funciona`, `/a-cidade-em-numeros`) | O que a plataforma é para quem mora no Recife, o caminho do relato, os níveis de acesso, o pente fino, a privacidade e os achados da base aberta | Nenhum (conteúdo estático e a malha dos bairros) |
 | Relatar um problema (`/contribuir`, pública) | Formulário em três passos, sem identificação | Contribuições |
 | Entrar, ajuda e definir senha (`/entrar`, `/entrar/gestao`, `/entrar/ajuda`, `/definir-senha`) | Entrada do cidadão e da gestão, orientação de acesso, troca da senha | Autenticação |
-| Criar conta, confirmar e-mail e recuperar senha (`/cadastrar`, `/confirmar-email`, `/recuperar-senha`) | Cadastro do cidadão com código por e-mail e nova senha com código | Contas |
+| Criar conta e recuperar senha (`/cadastrar`, `/recuperar-senha`) | Cadastro do cidadão, que já abre a sessão, e nova senha com código por e-mail | Contas |
 | Área do cidadão (`/cidade`, `/cidade/meu-bairro`, `/cidade/relatar`, `/cidade/conta`) | Relatos da cidade sem endereço exato, números do bairro comparados com o Recife, formulário e dados da conta | Cidade, Contribuições e Contas |
 | Início (`/painel`) | KPIs-síntese e volume por fonte | Indicadores |
 | War Room (`/painel/war-room`) | Estado de um dia simulado: entradas, estoque, fila e alertas | War Room |
@@ -122,7 +122,7 @@ O Processor é a versão de produção do pipeline que já existe no Drive (`Dad
 ## Segurança
 
 - O app real exige login. Só contas da gestão veem o painel, o pente fino e a importação: a dependência `exigir_gestao` devolve 403 para conta de cidadão, e um teste cobra isso em cada rota da gestão.
-- Contas de cidadão confirmam o e-mail com código de 6 dígitos (hash, 15 minutos, 5 tentativas), têm limite de operações por origem e nunca recebem número exato nem texto de relato ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)).
+- Contas de cidadão entram logo depois do cadastro, recuperam a senha com código de 6 dígitos por e-mail (hash, 15 minutos, 5 tentativas), têm limite de operações por origem e nunca recebem número exato nem texto de relato ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)).
 - Senhas com hash Argon2; bloqueio de 15 minutos depois de 5 tentativas erradas seguidas; senha temporária trocada no primeiro acesso.
 - Token de acesso de 15 minutos só na memória do navegador; sessão de 12 horas num cookie `httpOnly` e `SameSite=Strict`, revogável no servidor. Detalhes e alternativas na [ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md) (proposta).
 - O texto da SEDEC não tem rota, não entra em resposta e não vai para log.

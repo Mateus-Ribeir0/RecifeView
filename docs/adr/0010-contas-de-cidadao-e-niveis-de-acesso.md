@@ -35,15 +35,14 @@ Perfil `CIDADAO` na tabela `app.usuario`, com guarda por perfil. Três níveis d
 **Cadastro e proteções:**
 
 - Pede nome, e-mail, senha e, se a pessoa quiser, o bairro. Não pede CPF nem telefone, porque nada no produto precisa deles.
-- O e-mail é confirmado por um código de 6 dígitos, que vale 15 minutos, aceita 5 tentativas e é guardado só como hash. Um código novo invalida o anterior, e só sai um por minuto.
-- A confirmação exige o código e a senha juntos. Sem isso, alguém cadastraria o e-mail de outra pessoa com uma senha conhecida e entraria quando ela confirmasse.
-- O cadastro e a recuperação respondem sempre a mesma coisa e calculam o hash da senha nos dois caminhos, para não revelar se o e-mail tem conta. Se tiver, o dono recebe um aviso.
+- Sem confirmação por e-mail (mudança de 10/11/2026, a pedido do grupo, para simplificar): a conta nasce pronta e o cadastro já abre a sessão. Se o e-mail já tem conta, o cadastro diz isso no campo de e-mail. O custo: o cadastro revela quais e-mails têm conta, e alguém pode cadastrar o e-mail de outra pessoa. O dono recupera o acesso por "Esqueci minha senha", e a conta de cidadão só dá acesso a dados já anonimizados.
+- A recuperação de senha responde sempre a mesma coisa, para não revelar se o e-mail tem conta. O código vale 15 minutos, aceita 5 tentativas e é guardado só como hash. Um código novo invalida o anterior, e só sai um por minuto.
 - Limite de 10 operações de conta a cada 10 minutos por origem, campo-armadilha para robôs, aceite obrigatório e o bloqueio de 15 minutos depois de 5 senhas erradas, que já existia.
 - Nova senha por código, só para contas de cidadão. A da gestão continua com a administração.
 - Excluir a conta pede a senha, apaga nome, e-mail e bairro, derruba as sessões e mantém só a linha que a auditoria referencia.
 - Pela porta da gestão (`area=gestao`), conta de cidadão recebe 403.
 
-**E-mail:** o provedor de envio está em aberto. A porta `EnvioDeEmail` tem duas implementações: a local, que grava cada mensagem em `API_PASTA_DOS_EMAILS`, fora do git, e uma por SMTP genérico (`API_SMTP_*`), que serve para qualquer provedor (Gmail para teste, Amazon SES, Brevo, o servidor da Prefeitura). Sem `API_SMTP_SERVIDOR`, vale a local. Se o servidor recusar o envio, a operação é desfeita e a API responde 503. O que falta decidir é qual provedor e qual remetente o RecifeView usa de verdade.
+**E-mail:** só a recuperação de senha usa e-mail. O provedor de envio está em aberto. A porta `EnvioDeEmail` tem duas implementações: a local, que grava cada mensagem em `API_PASTA_DOS_EMAILS`, fora do git, e uma por SMTP genérico (`API_SMTP_*`), que serve para qualquer provedor (Gmail para teste, Amazon SES, Brevo, o servidor da Prefeitura). Sem `API_SMTP_SERVIDOR`, vale a local. Se o servidor recusar o envio, a operação é desfeita e a API responde 503. O que falta decidir é qual provedor e qual remetente o RecifeView usa de verdade.
 
 **Visual:** a área do cidadão usa o cabeçalho em `azul-principal`, e a da gestão continua em `azul-marinho`. Os dois logins têm painéis de cores diferentes.
 
@@ -52,4 +51,5 @@ Perfil `CIDADAO` na tabela `app.usuario`, com guarda por perfil. Três níveis d
 - Toda rota nova da gestão precisa de `GestorAtualDep` ou de `exigir_gestao` no roteador. O teste `test_cidadao_recebe_403_em_toda_rota_da_gestao` lista as rotas e precisa crescer junto.
 - Com contas abertas, o sistema passa a guardar dado pessoal de cidadãos (nome e e-mail). O grupo precisa revisar a base legal, o texto de privacidade e o prazo de guarda antes de publicar.
 - O limite por origem vive na memória de um processo, como o do formulário (ADR 0009).
-- O provedor de e-mail precisa ser escolhido antes de qualquer publicação.
+- O provedor de e-mail precisa ser escolhido antes de qualquer publicação, ou "Esqueci minha senha" não funciona fora da máquina de desenvolvimento.
+- Se o grupo quiser a confirmação do e-mail de volta, ela depende do mesmo provedor.

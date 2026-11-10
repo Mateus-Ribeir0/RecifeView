@@ -16,7 +16,6 @@ from app.domain.erros import (
     ContaInativa,
     CredenciaisInvalidas,
     EmailInvalido,
-    EmailNaoConfirmado,
 )
 from app.domain.usuario import Usuario
 
@@ -46,8 +45,6 @@ class Entrar:
             raise ContaInativa
         if area is AreaDeAcesso.GESTAO and not usuario.e_da_gestao:
             raise AreaDaGestaoNegada
-        if usuario.precisa_confirmar_email:
-            raise EmailNaoConfirmado
         return self._aceitar(usuario, agora)
 
     def _buscar_usuario(self, email: str) -> Usuario | None:

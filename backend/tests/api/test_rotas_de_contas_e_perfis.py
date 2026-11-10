@@ -1,6 +1,7 @@
 from collections.abc import Iterator
 from datetime import timedelta
 
+import httpx2
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -66,7 +67,6 @@ class Ambiente:
         self.cidadao = criar_usuario(
             email=Email(EMAIL_DO_CIDADAO),
             perfil=Perfil.CIDADAO,
-            email_confirmado_em=self.relogio.agora(),
         )
         self.gestora = criar_usuario(email=Email(EMAIL_DA_GESTORA))
         self.usuarios = UsuariosEmMemoria(self.cidadao, self.gestora)
@@ -170,7 +170,7 @@ def test_cidadao_nao_entra_pela_porta_da_gestao(cliente: TestClient, ambiente: A
     assert resposta.json()["erro"]["codigo"] == "area_da_gestao_negada"
 
 
-def cadastrar(cliente: TestClient, **mudancas: object) -> dict[str, object]:
+def cadastrar(cliente: TestClient, **mudancas: object) -> httpx2.Response:
     dados = {
         "nome": "Maria da Silva",
         "email": "nova@exemplo.com",
@@ -179,40 +179,35 @@ def cadastrar(cliente: TestClient, **mudancas: object) -> dict[str, object]:
         "aceitou_os_termos": True,
         **mudancas,
     }
-    resposta = cliente.post(f"{BASE}/contas", json=dados)
-    assert resposta.status_code == 202, resposta.text
-    corpo: dict[str, object] = resposta.json()
-    return corpo
+    return cliente.post(f"{BASE}/contas", json=dados)
 
 
-def test_cadastro_responde_igual_para_email_novo_e_usado(cliente: TestClient) -> None:
-    novo = cadastrar(cliente)
-    usado = cadastrar(cliente, email=EMAIL_DA_GESTORA)
+def test_cadastro_ja_entra_na_conta(cliente: TestClient) -> None:
+    resposta = cadastrar(cliente)
 
-    assert novo == usado
-
-
-def test_cadastro_confirmacao_e_entrada(cliente: TestClient, ambiente: Ambiente) -> None:
-    cadastrar(cliente)
-    pendente = cliente.post(
-        f"{BASE}/autenticacao/entrar", json={"email": "nova@exemplo.com", "senha": SENHA_NOVA}
-    )
-    assert pendente.json()["erro"]["codigo"] == "email_nao_confirmado"
-
-    confirmacao = cliente.post(
-        f"{BASE}/contas/confirmar",
-        json={
-            "email": "nova@exemplo.com",
-            "codigo": ambiente.emails.ultimo_codigo(),
-            "senha": SENHA_NOVA,
-        },
-    )
-
-    assert confirmacao.status_code == 200
-    usuario = confirmacao.json()["usuario"]
+    assert resposta.status_code == 201, resposta.text
+    usuario = resposta.json()["usuario"]
     assert usuario["perfil"] == "CIDADAO"
     assert usuario["bairro_oficial"] == "AFOGADOS"
-    assert "set-cookie" in confirmacao.headers
+    assert "set-cookie" in resposta.headers
+    entrada = cliente.post(
+        f"{BASE}/autenticacao/entrar", json={"email": "nova@exemplo.com", "senha": SENHA_NOVA}
+    )
+    assert entrada.status_code == 200
+
+
+def test_email_que_ja_tem_conta_volta_no_campo_email(cliente: TestClient) -> None:
+    resposta = cadastrar(cliente, email=EMAIL_DA_GESTORA)
+
+    assert resposta.status_code == 422
+    assert resposta.json()["erro"]["detalhes"] == {"campo": "email"}
+
+
+def test_robo_no_campo_escondido_nao_cria_conta(cliente: TestClient, ambiente: Ambiente) -> None:
+    resposta = cadastrar(cliente, site="http://spam.exemplo")
+
+    assert resposta.status_code == 422
+    assert ambiente.usuarios.buscar_por_email(Email("nova@exemplo.com")) is None
 
 
 class CaixaForaDoAr(CaixaDeEmailsEmMemoria):
@@ -222,24 +217,11 @@ class CaixaForaDoAr(CaixaDeEmailsEmMemoria):
 
 def test_falha_no_envio_do_codigo_responde_503(cliente: TestClient, ambiente: Ambiente) -> None:
     ambiente.emails = CaixaForaDoAr()
-    dados = {
-        "nome": "Maria da Silva",
-        "email": "nova@exemplo.com",
-        "senha": SENHA_NOVA,
-        "aceitou_os_termos": True,
-    }
 
-    resposta = cliente.post(f"{BASE}/contas", json=dados)
+    resposta = cliente.post(f"{BASE}/contas/recuperar-senha", json={"email": EMAIL_DO_CIDADAO})
 
     assert resposta.status_code == 503
     assert resposta.json()["erro"]["codigo"] == "envio_de_email_indisponivel"
-
-
-def test_robo_no_campo_escondido_nao_cria_conta(cliente: TestClient, ambiente: Ambiente) -> None:
-    cadastrar(cliente, site="http://spam.exemplo")
-
-    assert ambiente.usuarios.buscar_por_email(Email("nova@exemplo.com")) is None
-    assert ambiente.emails.mensagens == []
 
 
 def test_campo_invalido_volta_com_o_nome_do_campo(cliente: TestClient) -> None:
@@ -259,15 +241,15 @@ def test_campo_invalido_volta_com_o_nome_do_campo(cliente: TestClient) -> None:
 
 def test_codigo_fora_do_formato_e_recusado_antes_de_conferir(cliente: TestClient) -> None:
     resposta = cliente.post(
-        f"{BASE}/contas/confirmar",
-        json={"email": "nova@exemplo.com", "codigo": "12ab56", "senha": SENHA_NOVA},
+        f"{BASE}/contas/nova-senha",
+        json={"email": "nova@exemplo.com", "codigo": "12ab56", "nova_senha": SENHA_NOVA},
     )
     assert resposta.status_code == 422
 
 
 def test_limite_de_operacoes_de_conta(cliente: TestClient) -> None:
     respostas = [
-        cliente.post(f"{BASE}/contas/reenviar-codigo", json={"email": "x@exemplo.com"})
+        cliente.post(f"{BASE}/contas/recuperar-senha", json={"email": "x@exemplo.com"})
         for _ in range(11)
     ]
 

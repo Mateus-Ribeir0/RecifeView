@@ -3,10 +3,6 @@ from datetime import timedelta
 import pytest
 
 from app.application.casos_de_uso.contas import codigos
-from app.application.casos_de_uso.contas.confirmar_email import (
-    ConfirmacaoDeEmail,
-    ConfirmarEmail,
-)
 from app.application.casos_de_uso.contas.criar_conta import CriarConta, NovaConta
 from app.application.casos_de_uso.contas.minha_conta import (
     AtualizarMinhaConta,
@@ -17,7 +13,6 @@ from app.application.casos_de_uso.contas.recuperar_senha import (
     NovaSenhaComCodigo,
     PedirNovaSenha,
 )
-from app.application.casos_de_uso.contas.reenviar_codigo import ReenviarCodigoDeConfirmacao
 from app.application.casos_de_uso.contas.servicos import ServicosDeConta
 from app.application.casos_de_uso.entrar import Entrar
 from app.application.sessoes import GestaoDeSessoes
@@ -29,7 +24,6 @@ from app.domain.erros import (
     AreaDaGestaoNegada,
     CadastroInvalido,
     CodigoInvalido,
-    EmailNaoConfirmado,
     SenhaAtualIncorreta,
     SenhaFraca,
 )
@@ -50,6 +44,7 @@ from tests.fakes import (
 
 EMAIL = "morador@exemplo.com"
 SENHA = "uma senha bem comprida"
+NOVA_SENHA = "outra senha bem comprida"
 BAIRROS = frozenset({"AFOGADOS", "IPUTINGA"})
 
 
@@ -83,9 +78,13 @@ class Ambiente:
         }
         CriarConta(self.servicos, BAIRROS).executar(NovaConta(**dados))  # type: ignore[arg-type]
 
-    def confirmar(self, codigo: str | None = None, senha: str = SENHA) -> None:
+    def pedir_nova_senha(self) -> None:
+        PedirNovaSenha(self.servicos).executar(EMAIL)
+
+    def criar_nova_senha(self, codigo: str | None = None) -> None:
         digitado = codigo or self.emails.ultimo_codigo()
-        ConfirmarEmail(self.servicos).executar(ConfirmacaoDeEmail(EMAIL, digitado, senha))
+        nova = NovaSenhaComCodigo(EMAIL, digitado, NOVA_SENHA)
+        CriarNovaSenha(self.servicos).executar(nova)
 
     def conta_ou_nada(self) -> Usuario | None:
         return self.usuarios.buscar_por_email(Email(EMAIL))
@@ -96,50 +95,28 @@ class Ambiente:
         return conta
 
 
-def test_cadastro_cria_conta_pendente_e_envia_codigo() -> None:
+def test_cadastro_cria_a_conta_e_ja_abre_a_sessao() -> None:
     ambiente = Ambiente()
 
     ambiente.cadastrar()
 
     conta = ambiente.conta()
     assert conta.perfil is Perfil.CIDADAO
-    assert conta.precisa_confirmar_email
     assert conta.bairro_oficial == "AFOGADOS"
-    assert len(ambiente.emails.mensagens) == 1
-    assert SENHA not in ambiente.emails.mensagens[0].corpo
+    assert ambiente.emails.mensagens == []
     assert TipoDeEventoDeAcesso.CONTA_CRIADA in ambiente.acessos.tipos()
-
-
-def test_email_que_ja_tem_conta_recebe_aviso_e_nada_muda() -> None:
-    gestora = criar_usuario(email=Email(EMAIL))
-    ambiente = Ambiente(gestora)
-
-    ambiente.cadastrar()
-
-    assert ambiente.conta() == gestora
-    assert ambiente.emails.mensagens[-1].assunto == "Tentativa de cadastro com o seu e-mail"
-
-
-def test_confirmar_com_codigo_e_senha_abre_a_sessao() -> None:
-    ambiente = Ambiente()
-    ambiente.cadastrar()
-
-    ambiente.confirmar()
-
-    assert not ambiente.conta().precisa_confirmar_email
     assert len(ambiente.sessoes_guardadas.ativas()) == 1
 
 
-def test_quem_cadastrou_email_alheio_nao_entra_quando_o_dono_confirma() -> None:
-    ambiente = Ambiente()
-    ambiente.cadastrar(senha="senha do invasor 123")
-    ambiente.relogio.avancar(timedelta(minutes=2))
-    ambiente.cadastrar(senha=SENHA)
+def test_email_que_ja_tem_conta_e_recusado_e_nada_muda() -> None:
+    gestora = criar_usuario(email=Email(EMAIL))
+    ambiente = Ambiente(gestora)
 
-    with pytest.raises(CodigoInvalido):
-        ambiente.confirmar(senha="senha do invasor 123")
-    ambiente.confirmar(senha=SENHA)
-    assert not ambiente.conta().precisa_confirmar_email
+    with pytest.raises(CadastroInvalido) as erro:
+        ambiente.cadastrar()
+
+    assert erro.value.campo == "email"
+    assert ambiente.conta() == gestora
 
 
 @pytest.fixture
@@ -152,43 +129,46 @@ def codigos_previsiveis(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_codigo_errado_conta_tentativa() -> None:
     ambiente = Ambiente()
     ambiente.cadastrar()
+    ambiente.pedir_nova_senha()
 
     with pytest.raises(CodigoInvalido):
-        ambiente.confirmar(codigo="999999")
+        ambiente.criar_nova_senha(codigo="999999")
 
     assert TipoDeEventoDeAcesso.CODIGO_RECUSADO in ambiente.acessos.tipos()
-    conta = ambiente.conta()
-    ultimo = ambiente.codigos.ultimo(conta.id, FinalidadeDoCodigo.CONFIRMAR_EMAIL)
+    ultimo = ambiente.codigos.ultimo(ambiente.conta().id, FinalidadeDoCodigo.REDEFINIR_SENHA)
     assert ultimo is not None
     assert ultimo.tentativas == 1
 
 
 @pytest.mark.usefixtures("codigos_previsiveis")
-def test_codigo_antigo_nao_vale_depois_do_reenvio() -> None:
+def test_codigo_antigo_nao_vale_depois_de_pedir_outro() -> None:
     ambiente = Ambiente()
     ambiente.cadastrar()
+    ambiente.pedir_nova_senha()
     ambiente.relogio.avancar(timedelta(minutes=2))
-    ReenviarCodigoDeConfirmacao(ambiente.servicos).executar(EMAIL)
+    ambiente.pedir_nova_senha()
 
     with pytest.raises(CodigoInvalido):
-        ambiente.confirmar(codigo="111111")
-    ambiente.confirmar(codigo="222222")
+        ambiente.criar_nova_senha(codigo="111111")
+    ambiente.criar_nova_senha(codigo="222222")
 
 
 def test_codigo_vencido_e_recusado() -> None:
     ambiente = Ambiente()
     ambiente.cadastrar()
+    ambiente.pedir_nova_senha()
     ambiente.relogio.avancar(timedelta(minutes=16))
 
     with pytest.raises(CodigoInvalido):
-        ambiente.confirmar()
+        ambiente.criar_nova_senha()
 
 
-def test_reenvio_em_menos_de_um_minuto_nao_manda_outro_email() -> None:
+def test_novo_pedido_em_menos_de_um_minuto_nao_manda_outro_email() -> None:
     ambiente = Ambiente()
     ambiente.cadastrar()
+    ambiente.pedir_nova_senha()
 
-    ReenviarCodigoDeConfirmacao(ambiente.servicos).executar(EMAIL)
+    ambiente.pedir_nova_senha()
 
     assert len(ambiente.emails.mensagens) == 1
 
@@ -223,18 +203,9 @@ def entrar(ambiente: Ambiente, area: AreaDeAcesso) -> None:
     caso.executar(EMAIL, SENHA, area)
 
 
-def test_cidadao_sem_confirmacao_nao_entra() -> None:
-    ambiente = Ambiente()
-    ambiente.cadastrar()
-
-    with pytest.raises(EmailNaoConfirmado):
-        entrar(ambiente, AreaDeAcesso.CIDADE)
-
-
 def test_cidadao_nao_entra_pela_area_da_gestao() -> None:
     ambiente = Ambiente()
     ambiente.cadastrar()
-    ambiente.confirmar()
 
     with pytest.raises(AreaDaGestaoNegada):
         entrar(ambiente, AreaDeAcesso.GESTAO)
@@ -244,15 +215,12 @@ def test_cidadao_nao_entra_pela_area_da_gestao() -> None:
 def test_recuperar_senha_troca_a_senha_e_derruba_as_sessoes() -> None:
     ambiente = Ambiente()
     ambiente.cadastrar()
-    ambiente.confirmar()
 
-    PedirNovaSenha(ambiente.servicos).executar(EMAIL)
-    codigo = ambiente.emails.ultimo_codigo()
-    nova = NovaSenhaComCodigo(EMAIL, codigo, "outra senha bem comprida")
-    CriarNovaSenha(ambiente.servicos).executar(nova)
+    ambiente.pedir_nova_senha()
+    ambiente.criar_nova_senha()
 
     assert ambiente.sessoes_guardadas.ativas() == []
-    assert ambiente.conta().hash_da_senha == HashDeSenhaDeTeste().gerar(nova.nova_senha)
+    assert ambiente.conta().hash_da_senha == HashDeSenhaDeTeste().gerar(NOVA_SENHA)
 
 
 def test_conta_da_gestao_nao_recupera_senha_por_e_mail() -> None:
@@ -266,7 +234,6 @@ def test_conta_da_gestao_nao_recupera_senha_por_e_mail() -> None:
 def test_excluir_conta_pede_a_senha_e_apaga_os_dados() -> None:
     ambiente = Ambiente()
     ambiente.cadastrar()
-    ambiente.confirmar()
     conta = ambiente.conta()
 
     with pytest.raises(SenhaAtualIncorreta):

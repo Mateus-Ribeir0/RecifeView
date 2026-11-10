@@ -23,7 +23,6 @@ from app.domain.erros import (
     DiaForaDaJanela,
     EmailInvalido,
     EmailJaCadastrado,
-    EmailNaoConfirmado,
     EnviosDemais,
     ErroDeDominio,
     ImportacaoEmEstadoInvalido,
@@ -138,11 +137,6 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
         status.HTTP_403_FORBIDDEN,
         "area_da_gestao_negada",
         "Esta conta não tem acesso à área da gestão. Entre pela área do cidadão.",
-    ),
-    EmailNaoConfirmado: RespostaDeErro(
-        status.HTTP_403_FORBIDDEN,
-        "email_nao_confirmado",
-        "Falta confirmar o seu e-mail. Use o código que enviamos ou peça um novo.",
     ),
     CodigoInvalido: RespostaDeErro(
         status.HTTP_400_BAD_REQUEST,

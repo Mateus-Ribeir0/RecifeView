@@ -31,17 +31,11 @@ class Usuario:
     deve_trocar_senha: bool = True
     tentativas_falhas: int = 0
     bloqueado_ate: datetime | None = None
-    email_confirmado_em: datetime | None = None
     bairro_oficial: str | None = None
 
     @property
     def e_da_gestao(self) -> bool:
         return self.perfil in PERFIS_DA_GESTAO
-
-    @property
-    def precisa_confirmar_email(self) -> bool:
-        """Conta da gestão nasce pela administração, que já conhece o e-mail."""
-        return not self.e_da_gestao and self.email_confirmado_em is None
 
     def fim_do_bloqueio(self, agora: datetime) -> datetime | None:
         if self.bloqueado_ate is not None and agora < self.bloqueado_ate:
@@ -65,9 +59,6 @@ class Usuario:
             tentativas_falhas=0,
             bloqueado_ate=None,
         )
-
-    def com_email_confirmado(self, agora: datetime) -> Self:
-        return replace(self, email_confirmado_em=agora)
 
     def com_dados_pessoais(self, nome: str, bairro_oficial: str | None) -> Self:
         return replace(self, nome=nome, bairro_oficial=bairro_oficial)
