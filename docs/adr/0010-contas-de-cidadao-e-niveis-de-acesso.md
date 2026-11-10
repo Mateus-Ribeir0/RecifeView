@@ -43,7 +43,7 @@ Perfil `CIDADAO` na tabela `app.usuario`, com guarda por perfil. Três níveis d
 - Excluir a conta pede a senha, apaga nome, e-mail e bairro, derruba as sessões e mantém só a linha que a auditoria referencia.
 - Pela porta da gestão (`area=gestao`), conta de cidadão recebe 403.
 
-**E-mail:** o provedor de envio está em aberto (SMTP, Amazon SES ou outro). A porta `EnvioDeEmail` tem só a implementação local, que grava cada mensagem em `API_PASTA_DOS_EMAILS`, fora do git. Sem um provedor, o cadastro não funciona fora da máquina de desenvolvimento.
+**E-mail:** o provedor de envio está em aberto. A porta `EnvioDeEmail` tem duas implementações: a local, que grava cada mensagem em `API_PASTA_DOS_EMAILS`, fora do git, e uma por SMTP genérico (`API_SMTP_*`), que serve para qualquer provedor (Gmail para teste, Amazon SES, Brevo, o servidor da Prefeitura). Sem `API_SMTP_SERVIDOR`, vale a local. Se o servidor recusar o envio, a operação é desfeita e a API responde 503. O que falta decidir é qual provedor e qual remetente o RecifeView usa de verdade.
 
 **Visual:** a área do cidadão usa o cabeçalho em `azul-principal`, e a da gestão continua em `azul-marinho`. Os dois logins têm painéis de cores diferentes.
 

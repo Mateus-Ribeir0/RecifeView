@@ -17,7 +17,7 @@ from app.infrastructure.auth.senhas import HashDeSenhaArgon2
 from app.infrastructure.auth.tokens import EmissorDeTokenJwt
 from app.infrastructure.contribuicoes.limite_em_memoria import LimiteEmMemoria
 from app.infrastructure.db.conexao import criar_fabrica_de_sessoes
-from app.infrastructure.email.caixa_de_saida_local import CaixaDeSaidaLocal
+from app.infrastructure.email.montagem import montar_envio_de_email
 from app.infrastructure.importacao.fila_em_processo import FilaEmProcesso
 from app.infrastructure.importacao.montagem import (
     montar_servicos_de_contribuicoes,
@@ -66,7 +66,7 @@ def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
     app.state.configuracao = configuracao
     app.state.fabrica_de_sessoes = criar_fabrica_de_sessoes(configuracao.url_do_banco)
     app.state.seguranca = _montar_seguranca(configuracao)
-    app.state.caixa_de_emails = CaixaDeSaidaLocal(configuracao.pasta_dos_emails)
+    app.state.caixa_de_emails = montar_envio_de_email(configuracao)
     app.state.limite_de_contas = LimiteEmMemoria(RelogioDoSistema(), OPERACOES_DE_CONTA_POR_JANELA)
     app.state.servicos_de_importacao = montar_servicos_de_importacao(
         configuracao, app.state.fabrica_de_sessoes, FilaEmProcesso()

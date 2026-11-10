@@ -1,12 +1,16 @@
 from pathlib import Path
+from typing import Self
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.infrastructure.email.envio_por_smtp import SegurancaDoSmtp, ServidorSmtp
 
 TAMANHO_MINIMO_DO_SEGREDO_JWT = 32
 PASTA_PADRAO_DAS_IMPORTACOES = Path("../data/importacoes")
 PASTA_PADRAO_DOS_EMAILS = Path("../data/emails")
 BYTES_POR_MEGABYTE = 1024 * 1024
+PORTA_PADRAO_DO_SMTP = 587
 
 
 class ConfiguracaoDoBanco(BaseSettings):
@@ -25,6 +29,12 @@ class Configuracao(ConfiguracaoDoBanco):
     tamanho_maximo_da_importacao_mb: int = Field(default=800, gt=0)
     sal_do_id_local: SecretStr | None = None
     pasta_dos_emails: Path = PASTA_PADRAO_DOS_EMAILS
+    smtp_servidor: str | None = None
+    smtp_porta: int = Field(default=PORTA_PADRAO_DO_SMTP, gt=0)
+    smtp_seguranca: SegurancaDoSmtp = SegurancaDoSmtp.STARTTLS
+    smtp_usuario: str | None = None
+    smtp_senha: SecretStr | None = None
+    smtp_remetente: str | None = None
 
     @field_validator("segredo_jwt")
     @classmethod
@@ -39,6 +49,33 @@ class Configuracao(ConfiguracaoDoBanco):
     @classmethod
     def _ignorar_sal_vazio(cls, sal: SecretStr | None) -> SecretStr | None:
         return sal if sal and sal.get_secret_value() else None
+
+    @field_validator("smtp_servidor", "smtp_usuario", "smtp_senha", "smtp_remetente", mode="before")
+    @classmethod
+    def _ignorar_texto_vazio(cls, valor: object) -> object:
+        return None if valor == "" else valor
+
+    @model_validator(mode="after")
+    def _exigir_remetente_do_smtp(self) -> Self:
+        if self.smtp_servidor and not (self.smtp_remetente or self.smtp_usuario):
+            raise ValueError(
+                "Com API_SMTP_SERVIDOR, informe API_SMTP_REMETENTE ou API_SMTP_USUARIO"
+            )
+        return self
+
+    @property
+    def servidor_smtp(self) -> ServidorSmtp | None:
+        remetente = self.smtp_remetente or self.smtp_usuario
+        if self.smtp_servidor is None or remetente is None:
+            return None
+        return ServidorSmtp(
+            endereco=self.smtp_servidor,
+            porta=self.smtp_porta,
+            remetente=remetente,
+            seguranca=self.smtp_seguranca,
+            usuario=self.smtp_usuario,
+            senha=self.smtp_senha,
+        )
 
     @property
     def limite_da_importacao_em_bytes(self) -> int:
