@@ -83,7 +83,7 @@ class Contribuicao:
         )
 
 
-def _tem_dado_pessoal(texto: str) -> bool:
+def tem_dado_pessoal(texto: str) -> bool:
     return (
         motivo_pelo_conteudo(texto) is not None
         or PADRAO_CPF_SEM_PONTUACAO.search(texto) is not None
@@ -92,7 +92,7 @@ def _tem_dado_pessoal(texto: str) -> bool:
 
 
 def exigir_texto_sem_dado_pessoal(campo: str, texto: str) -> None:
-    if _tem_dado_pessoal(texto):
+    if tem_dado_pessoal(texto):
         raise ContribuicaoInvalida(campo, AVISO_DE_DADO_PESSOAL)
 
 

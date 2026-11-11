@@ -4,7 +4,14 @@ from pydantic import BaseModel, Field
 
 from app.api.schemas.painel import Esquema
 from app.domain.ahp import BairroPriorizado
-from app.domain.prioridade import FonteDaFila, OcorrenciaClassificada, Prioridade
+from app.domain.encaminhamento.encaminhamento import Encaminhamento, SituacaoDoEncaminhamento
+from app.domain.encaminhamento.orgaos import Orgao, nome_do_orgao
+from app.domain.prioridade import (
+    FilaClassificada,
+    FonteDaFila,
+    OcorrenciaClassificada,
+    Prioridade,
+)
 
 ESCALA_MINIMA_DE_SAATY = 1 / 9
 ESCALA_MAXIMA_DE_SAATY = 9.0
@@ -101,7 +108,27 @@ class PrioridadeResposta(BaseModel):
         )
 
 
+class EncaminhamentoNaFilaResposta(BaseModel):
+    id: int
+    codigo: str
+    orgao: Orgao
+    nome_do_orgao: str
+    situacao: SituacaoDoEncaminhamento
+
+    @classmethod
+    def de_encaminhamento(cls, item: Encaminhamento) -> "EncaminhamentoNaFilaResposta":
+        return cls(
+            id=item.id,
+            codigo=item.codigo,
+            orgao=item.orgao,
+            nome_do_orgao=nome_do_orgao(item.orgao),
+            situacao=item.situacao,
+        )
+
+
 class OcorrenciaClassificadaResposta(BaseModel):
+    chave_registro: int | None
+    encaminhamento: EncaminhamentoNaFilaResposta | None
     fila: int
     indice: float
     notas: dict[str, float | None]
@@ -123,9 +150,18 @@ class OcorrenciaClassificadaResposta(BaseModel):
     dias_alem_do_prazo: int | None
 
     @classmethod
-    def de_classificada(cls, item: OcorrenciaClassificada) -> "OcorrenciaClassificadaResposta":
+    def de_classificada(
+        cls, item: OcorrenciaClassificada, encaminhamentos: dict[int, Encaminhamento]
+    ) -> "OcorrenciaClassificadaResposta":
         ocorrencia = item.ocorrencia
+        encaminhamento = encaminhamentos.get(ocorrencia.chave_registro or 0)
         return cls(
+            chave_registro=ocorrencia.chave_registro,
+            encaminhamento=(
+                EncaminhamentoNaFilaResposta.de_encaminhamento(encaminhamento)
+                if encaminhamento
+                else None
+            ),
             fila=item.fila,
             indice=item.indice,
             notas=item.notas,
@@ -164,3 +200,20 @@ class FilaClassificadaResposta(BaseModel):
     amostra: list[OcorrenciaClassificadaResposta]
     topo: list[OcorrenciaClassificadaResposta]
     distribuicao: list[FaixaDeNotaResposta]
+
+    @classmethod
+    def de_fila(cls, fila: FilaClassificada) -> "FilaClassificadaResposta":
+        def resposta(item: OcorrenciaClassificada) -> OcorrenciaClassificadaResposta:
+            return OcorrenciaClassificadaResposta.de_classificada(item, fila.encaminhamentos)
+
+        return cls(
+            fonte=fila.fonte,
+            registros_na_base=fila.registros_na_base,
+            em_aberto=fila.em_aberto,
+            classificados=fila.classificados,
+            com_nota_alta=fila.com_nota_alta,
+            pct_nota_alta=fila.pct_nota_alta,
+            amostra=[resposta(item) for item in fila.amostra],
+            topo=[resposta(item) for item in fila.topo],
+            distribuicao=[FaixaDeNotaResposta.model_validate(item) for item in fila.distribuicao],
+        )

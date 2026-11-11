@@ -9,6 +9,13 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.casos_de_uso.cadastrar_usuario import CadastrarUsuario
 from app.application.casos_de_uso.contribuicoes.carregar_logradouros import CarregarLogradouros
+from app.application.casos_de_uso.encaminhamentos.encaminhar_prioritarias import (
+    LIMITE_PADRAO_POR_EXECUCAO,
+    EncaminharPrioritarias,
+    MotivoParaPular,
+    PedidoAutomatico,
+)
+from app.application.casos_de_uso.encaminhamentos.servicos import ServicosDeEncaminhamento
 from app.application.casos_de_uso.importacoes.importar_pelo_terminal import (
     ImportacaoPendente,
     ImportarPeloTerminal,
@@ -16,10 +23,13 @@ from app.application.casos_de_uso.importacoes.importar_pelo_terminal import (
 from app.application.casos_de_uso.redefinir_senha import RedefinirSenha
 from app.application.sessoes import GestaoDeSessoes
 from app.domain.erros import EmailInvalido, EmailJaCadastrado, ErroDeDominio, UsuarioNaoEncontrado
+from app.domain.prioridade import NOTA_ALTA, FonteDaFila
 from app.domain.usuario import PERFIS_DA_GESTAO, Perfil
 from app.infrastructure.auth.senhas import HashDeSenhaArgon2
 from app.infrastructure.auth.tokens import EmissorDeTokenJwt
 from app.infrastructure.db.conexao import criar_fabrica_de_sessoes
+from app.infrastructure.email.montagem import montar_envio_de_email
+from app.infrastructure.encaminhamento.despacho import montar_despacho
 from app.infrastructure.importacao.leitores import LeitorDeArquivos
 from app.infrastructure.importacao.montagem import (
     FilaImediata,
@@ -28,6 +38,8 @@ from app.infrastructure.importacao.montagem import (
 from app.infrastructure.relogio import RelogioDoSistema
 from app.infrastructure.repositories.acessos import RegistroDeAcessosSql
 from app.infrastructure.repositories.contribuicoes import ReferenciaDoFormularioSql
+from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
+from app.infrastructure.repositories.prioridade import PrioridadeRepositorySql
 from app.infrastructure.repositories.referencias import ReferenciasSql
 from app.infrastructure.repositories.sessoes import SessaoRepositorySql
 from app.infrastructure.repositories.usuarios import UsuarioRepositorySql
@@ -48,6 +60,8 @@ def main(argumentos: Sequence[str] | None = None) -> int:
         return _importar(comando, configuracao, fabrica)
     if comando.comando == "carregar-logradouros":
         return _carregar_logradouros(comando, fabrica)
+    if comando.comando == "encaminhar-prioritarias":
+        return _encaminhar_prioritarias(comando, configuracao, fabrica)
     try:
         with fabrica.begin() as sessao:
             if comando.comando == "cadastrar-usuario":
@@ -94,6 +108,16 @@ def _ler_comando(argumentos: Sequence[str] | None) -> argparse.Namespace:
         "carregar-logradouros", help="Monta a lista de vias a partir de arquivos públicos do 156"
     )
     logradouros.add_argument("--arquivo", required=True, type=Path, action="append")
+
+    automatico = comandos.add_parser(
+        "encaminhar-prioritarias",
+        help="Encaminha as ocorrências de nota alta ao órgão sugerido (para o agendador)",
+    )
+    automatico.add_argument(
+        "--fonte", choices=[fonte.value for fonte in FonteDaFila], default=FonteDaFila.CENTRAL_156
+    )
+    automatico.add_argument("--nota-minima", type=float, default=NOTA_ALTA)
+    automatico.add_argument("--limite", type=int, default=LIMITE_PADRAO_POR_EXECUCAO)
     return leitor.parse_args(argumentos)
 
 
@@ -123,6 +147,27 @@ def _carregar_logradouros(comando: argparse.Namespace, fabrica: sessionmaker[Ses
     bairros = ReferenciasSql(fabrica).carregar().bairros
     carga = CarregarLogradouros(ReferenciaDoFormularioSql(fabrica))
     print(f"Vias somadas à lista: {carga.executar(tabelas, bairros)}")
+    return 0
+
+
+def _encaminhar_prioritarias(
+    comando: argparse.Namespace, configuracao: Configuracao, fabrica: sessionmaker[Session]
+) -> int:
+    despacho = montar_despacho(configuracao, montar_envio_de_email(configuracao))
+    with fabrica.begin() as sessao:
+        servicos = ServicosDeEncaminhamento(
+            EncaminhamentoRepositorySql(sessao),
+            despacho,
+            RelogioDoSistema(),
+            configuracao.endereco_do_site,
+        )
+        caso = EncaminharPrioritarias(servicos, PrioridadeRepositorySql(sessao))
+        pedido = PedidoAutomatico(FonteDaFila(comando.fonte), comando.nota_minima, comando.limite)
+        resultado = caso.executar(pedido)
+    print(f"Candidatas com nota a partir de {pedido.nota_minima:g}: {resultado.candidatas}")
+    print(f"Encaminhadas: {len(resultado.encaminhadas)} (falhas no canal: {resultado.falhas})")
+    print(f"Já tinham encaminhamento aberto: {resultado.puladas[MotivoParaPular.JA_ENCAMINHADA]}")
+    print(f"Sem órgão sugerido: {resultado.puladas[MotivoParaPular.SEM_SUGESTAO]}")
     return 0
 
 

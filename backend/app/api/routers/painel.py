@@ -23,11 +23,9 @@ from app.api.schemas.painel import (
 from app.api.schemas.prioridade import (
     CriterioResposta,
     CriteriosResposta,
-    FaixaDeNotaResposta,
     FilaClassificadaResposta,
     JulgamentoPadraoResposta,
     JulgamentosEntrada,
-    OcorrenciaClassificadaResposta,
     PedidoDeFilaEntrada,
     PrioridadeResposta,
 )
@@ -172,18 +170,8 @@ def classificar_fila(
     entrada: PedidoDeFilaEntrada, filtros: FiltrosDep, painel: PainelDep
 ) -> FilaClassificadaResposta:
     pedido = PedidoDeFila(entrada.fonte, _julgamentos(entrada), entrada.semente, filtros)
-    fila = ClassificarFila(painel.prioridade).executar(pedido)
-    return FilaClassificadaResposta(
-        fonte=fila.fonte,
-        registros_na_base=fila.registros_na_base,
-        em_aberto=fila.em_aberto,
-        classificados=fila.classificados,
-        com_nota_alta=fila.com_nota_alta,
-        pct_nota_alta=fila.pct_nota_alta,
-        amostra=[OcorrenciaClassificadaResposta.de_classificada(item) for item in fila.amostra],
-        topo=[OcorrenciaClassificadaResposta.de_classificada(item) for item in fila.topo],
-        distribuicao=[FaixaDeNotaResposta.model_validate(item) for item in fila.distribuicao],
-    )
+    fila = ClassificarFila(painel.prioridade, painel.encaminhamentos).executar(pedido)
+    return FilaClassificadaResposta.de_fila(fila)
 
 
 @war_room.get("/calendario", summary="Dias disponíveis para a War Room")

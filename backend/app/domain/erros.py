@@ -135,3 +135,30 @@ class PacoteVazio(ErroDeDominio):
 
 class ProtocoloInvalido(ErroDeDominio):
     pass
+
+
+class OcorrenciaNaoEncontrada(ErroDeDominio):
+    pass
+
+
+class OcorrenciaJaEncaminhada(ErroDeDominio):
+    pass
+
+
+class EncaminhamentoNaoEncontrado(ErroDeDominio):
+    pass
+
+
+class EncaminhamentoInvalido(ErroDeDominio):
+    def __init__(self, campo: str, motivo: str) -> None:
+        super().__init__(motivo)
+        self.campo = campo
+        self.motivo = motivo
+
+
+class TransicaoInvalida(ErroDeDominio):
+    pass
+
+
+class LinkDeRetornoInvalido(ErroDeDominio):
+    pass
