@@ -4,20 +4,14 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.api.dependencias import (
     CidadaoAtualDep,
-    PainelDep,
     SegurancaDep,
     ServicosDeContribuicoesDep,
     ServicosDePedidosDep,
     auditar_consulta,
 )
-from app.api.schemas.cidade import (
-    IndicadoresDoBairroResposta,
-    MeuRelatoResposta,
-    OcorrenciaPublicaResposta,
-)
+from app.api.schemas.cidade import MeuRelatoResposta, OcorrenciaPublicaResposta
 from app.api.schemas.erros import ErroResposta
 from app.api.schemas.pedidos import PedidoAcompanhadoResposta, ProtocoloEntrada
-from app.application.casos_de_uso.cidade.meu_bairro import ConsultarMeuBairro
 from app.application.casos_de_uso.cidade.meus_relatos import ListarMeusRelatos
 from app.application.casos_de_uso.cidade.ocorrencias import ListarOcorrenciasDaCidade
 from app.application.casos_de_uso.pedidos.meus_pedidos import (
@@ -49,18 +43,6 @@ def listar_ocorrencias(
 ) -> list[OcorrenciaPublicaResposta]:
     caso = ListarOcorrenciasDaCidade(servicos.contribuicoes, servicos.relogio)
     return [OcorrenciaPublicaResposta.model_validate(item) for item in caso.executar(bairro, tema)]
-
-
-@roteador.get(
-    "/bairros/{bairro_oficial}",
-    summary="Indicadores de um bairro, comparados com o Recife",
-    responses={422: {"model": ErroResposta, "description": "Bairro desconhecido"}},
-)
-def meu_bairro(
-    bairro_oficial: str, _: CidadaoAtualDep, painel: PainelDep
-) -> IndicadoresDoBairroResposta:
-    caso = ConsultarMeuBairro(painel.visao_geral, painel.territorio)
-    return IndicadoresDoBairroResposta.model_validate(caso.executar(bairro_oficial))
 
 
 @roteador.get(
