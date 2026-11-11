@@ -1,4 +1,5 @@
 import { formatarNumero, formatarPorcentagem } from './formatacao'
+import { nomeDaCategoria } from './nomes'
 
 export type Orgao =
   | 'EMLURB'
@@ -162,6 +163,14 @@ export const ROTULOS_DAS_SITUACOES: Readonly<Record<SituacaoDoEncaminhamento, st
   devolvido: 'Devolvido pelo órgão',
 }
 
+export const ROTULOS_DAS_ETAPAS: Readonly<Record<SituacaoDoEncaminhamento, string>> = {
+  enviado: 'Enviado',
+  falhou: 'Falha no envio',
+  recebido: 'Recebido pelo órgão',
+  resolvido: 'Resolvido',
+  devolvido: 'Devolvido pelo órgão',
+}
+
 export const ROTULOS_DAS_RESPOSTAS: Readonly<Record<RespostaPossivel, string>> = {
   recebido: 'Recebemos e vamos tratar',
   resolvido: 'Resolvido',
@@ -212,7 +221,7 @@ export function explicarSugestao(sugestao: SugestaoDeDestino): string {
   const lider = sugestao.participacoes[0]
   const evidencia =
     lider && sugestao.tema
-      ? ` Nas ${formatarNumero(sugestao.indicacoesDoTema)} indicações da Câmara sobre ${sugestao.tema.toLowerCase()}, ${formatarPorcentagem(lider.pct, 1)} citam ${lider.nome}.`
+      ? ` Nas ${formatarNumero(sugestao.indicacoesDoTema)} indicações da Câmara sobre ${nomeDaCategoria(sugestao.tema).toLowerCase()}, ${formatarPorcentagem(lider.pct, 1)} citam ${lider.nome}.`
       : ''
   if (sugestao.motivo === 'apontado_no_registro') {
     return `O próprio registro aponta este órgão.${evidencia}`

@@ -76,7 +76,11 @@ function Indicadores({ resumo }: { resumo: ResumoDosEncaminhamentos }) {
 const COLUNAS: readonly ColunaDaTabela<Encaminhamento>[] = [
   {
     titulo: 'Código',
-    valor: (item) => <Link to={`/painel/encaminhamentos/${item.id}`}>{item.codigo}</Link>,
+    valor: (item) => (
+      <Link to={`/painel/encaminhamentos/${item.id}`} className={estilos.codigo}>
+        {item.codigo}
+      </Link>
+    ),
   },
   { titulo: 'Órgão', valor: (item) => item.nomeDoOrgao },
   {
@@ -216,7 +220,7 @@ export function PaginaEncaminhamentos() {
               />
             )}
             <Paginacao total={dados.total} filtro={filtro} aoMudar={definirFiltro} />
-            <p className={estilos.nota}>{NOTA_DA_TELA}</p>
+            <p className={estilos.notaDaTabela}>{NOTA_DA_TELA}</p>
           </>
         )}
       </EstadoDaConsulta>

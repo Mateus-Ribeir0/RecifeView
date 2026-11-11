@@ -1,5 +1,5 @@
 import {
-  ROTULOS_DAS_SITUACOES,
+  ROTULOS_DAS_ETAPAS,
   ROTULOS_DOS_AUTORES,
   type EventoDoEncaminhamento,
 } from '../../../domain/encaminhamentos'
@@ -18,7 +18,7 @@ export function LinhaDoTempo({ eventos, comObservacao = false }: Propriedades) {
         <li key={`${evento.ocorridoEm}-${indice}`}>
           <time dateTime={evento.ocorridoEm}>{formatarDataEHora(evento.ocorridoEm)}</time>
           <strong>
-            {ROTULOS_DAS_SITUACOES[evento.situacao]}, {ROTULOS_DOS_AUTORES[evento.autor]}
+            {ROTULOS_DAS_ETAPAS[evento.situacao]}, {ROTULOS_DOS_AUTORES[evento.autor]}
           </strong>
           {evento.protocoloDoOrgao && <span>Protocolo no órgão: {evento.protocoloDoOrgao}</span>}
           {comObservacao && evento.observacao && <span>{evento.observacao}</span>}
