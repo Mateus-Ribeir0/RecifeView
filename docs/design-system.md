@@ -140,7 +140,7 @@ Na página inicial pública, que é lida e não operada, a escala cresce:
 | Texto de abertura | 18px | 400 | `--texto-abertura` |
 | Corpo | 16px | 400 | `--texto-corpo` |
 
-A página pública tem cinco abas, com endereço próprio: Início, O que muda, A plataforma, Dados e confiança e Relatar um problema. Ela é a vitrine do produto, então pode usar o que o painel não usa:
+A página pública tem cinco abas, com endereço próprio: Início, Como funciona, A cidade em números, Acompanhar um pedido e Relatar um problema. Ela é a vitrine do produto, então pode usar o que o painel não usa:
 
 - **Foto:** a do banner `AssetsVisuais/BannersHome/07`, já no azul da marca, em `ui/assets/imagens/`. Texto sobre ela sempre em branco puro.
 - **Capturas:** telas reais do painel em `ui/assets/capturas/`, geradas sem dado fictício. Se a tela usar dado de demonstração, a nota diz "dado fictício".
@@ -204,11 +204,13 @@ O mockup 04 da pasta `MockupsDashboard` serve de referência de estrutura. Os n�
 
 Quem tem conta de cidadão vê os relatos da cidade e os números do próprio bairro, sem nada que identifique quem relatou (o que cada nível vê está na [ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)).
 
-- **Navegação:** abas no cabeçalho azul (Relatos da cidade, Meus relatos, Meu bairro, Relatar um problema), sem barra lateral e sem linha de filtros. A escolha do bairro e do tema fica no topo da lista.
+- **Navegação:** abas no cabeçalho azul (Relatos da cidade, Meus relatos, Meus pedidos, Meu bairro, Relatar um problema), sem barra lateral e sem linha de filtros. A escolha do bairro e do tema fica no topo da lista.
 - **Cartão de ocorrência:** categoria, rua (só quando é uma via reconhecida da base oficial), faixa de numeração ("entre 100 e 199"), bairro, há quanto tempo, quantas pessoas relataram e o selo de situação. O texto que a pessoa escreveu nunca aparece.
 - **Selo de situação:** texto sempre escrito, com a cor como reforço. Recebido em `cinza-fundo`; Em análise em `alerta-fundo` com `alerta-texto`; No painel da gestão em `azul-claro` com `azul-escuro`; Coberto por pedido oficial em `sucesso-fundo` com `sucesso`. A explicação de cada situação fica na própria tela.
 - **Andamento em Meus relatos:** três etapas lado a lado (Recebido, Em análise pela gestão e No painel da gestão, ou Já tem pedido oficial no lugar da última), cada uma com borda superior de 3px e um círculo: etapa feita em `azul-principal` com marca de confirmado, etapa atual em `azul-principal` com o miolo branco e etapa que falta em `cinza` (`borda-de-campo`). O nome da etapa vem sempre escrito, e abaixo vai a explicação da situação atual. No desktop, uma coluna em `azul-claro` explica as quatro situações.
 - **Escolha do bairro no mapa:** o mapa marca só se o bairro tem relato ou não (sem escala graduada) e o bairro escolhido fica em `selecao`.
+- **Andamento de um pedido** (`/acompanhar` e Meus pedidos): cartão com a fonte, o protocolo, o assunto e a situação na fonte. Se a gestão encaminhou, uma faixa em `azul-claro` diz para qual órgão, com o selo da etapa e as etapas lado a lado (borda superior de 3px em `azul-principal`). A justificativa da gestão e a observação do órgão nunca aparecem para o cidadão.
+- **Selo do encaminhamento:** Enviado, sem resposta em `alerta-fundo` com `alerta-texto`; Recebido pelo órgão em `azul-claro` com `azul-escuro`; Resolvido em `sucesso-fundo` com `sucesso`; Falha no envio em `erro-fundo`; Devolvido em `cinza-fundo`. "Prazo vencido" vem escrito no selo, nunca só pela cor.
 - **Celular primeiro:** ao contrário do painel, esta área é desenhada para 390px e alargada até 1280px.
 
 ## Gráficos (Recharts)

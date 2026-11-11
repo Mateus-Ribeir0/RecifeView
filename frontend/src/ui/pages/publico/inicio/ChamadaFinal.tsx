@@ -16,9 +16,9 @@ interface Caminho {
 const CAMINHOS: readonly Caminho[] = [
   {
     icone: 'pessoas',
-    titulo: 'Fiscalize junto',
+    titulo: 'Acompanhe tudo num lugar só',
     texto:
-      'Crie uma conta para ver o que já foi relatado perto de você e acompanhar cada caso até ele entrar nos números da gestão.',
+      'Com uma conta, você guarda os protocolos dos seus pedidos, acompanha os seus relatos e vê o que já foi relatado perto de você.',
     para: '/cadastrar',
     acao: 'Criar conta',
   },

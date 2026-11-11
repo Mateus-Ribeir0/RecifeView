@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type {
-  FiltroDaCidade,
-  IndicadoresDoBairro,
-  MeuRelato,
-  OcorrenciaDaCidade,
-} from '../../domain/cidade'
+import type { FiltroDaCidade, MeuRelato, OcorrenciaDaCidade } from '../../domain/cidade'
 import { useServicoDaCidade } from './contexto'
 
 interface Resultado<T> {
@@ -55,12 +50,6 @@ export function useOcorrenciasDaCidade(
   const { bairro, tema } = filtro
   const buscar = useCallback(() => servico.ocorrencias({ bairro, tema }), [servico, bairro, tema])
   return useConsultaDaCidade(`${bairro}|${tema}`, buscar)
-}
-
-export function useMeuBairro(bairro: string): Resultado<IndicadoresDoBairro> {
-  const servico = useServicoDaCidade()
-  const buscar = useCallback(() => servico.meuBairro(bairro), [servico, bairro])
-  return useConsultaDaCidade(bairro, bairro ? buscar : null)
 }
 
 export function useMeusRelatos(): Resultado<readonly MeuRelato[]> {

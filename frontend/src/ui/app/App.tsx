@@ -5,6 +5,7 @@ import { ProvedorDeSessao } from '../../application/autenticacao/ProvedorDeSessa
 import { ContextoDaCidade } from '../../application/cidade/contexto'
 import { ContextoDasContribuicoes } from '../../application/contribuicoes/contexto'
 import { ContextoDoRetornoDoOrgao } from '../../application/encaminhamentos/contexto'
+import { ContextoDaInformacao } from '../../application/informacao/contexto'
 import { PaginaAjudaDeAcesso } from '../pages/ajuda-de-acesso/PaginaAjudaDeAcesso'
 import { PaginaCadastrar } from '../pages/cadastrar/PaginaCadastrar'
 import { LayoutDaCidade } from '../pages/cidade/LayoutDaCidade'
@@ -19,6 +20,7 @@ import {
   servicoDaCidade,
   servicoDeAutenticacao,
   servicoDeContribuicoes,
+  servicoDeInformacao,
   servicoDeRetornoDoOrgao,
 } from './servicos'
 import { SoParaCidadaos } from './SoParaCidadaos'
@@ -60,6 +62,13 @@ const roteador = createBrowserRouter([
           { path: 'o-que-muda', element: <Navigate to="/a-cidade-em-numeros" replace /> },
           { path: 'plataforma', element: <Navigate to="/como-funciona" replace /> },
           { path: 'dados-e-confianca', element: <Navigate to="/como-funciona" replace /> },
+          {
+            path: 'acompanhar',
+            lazy: async () => ({
+              Component: (await import('../pages/publico/acompanhar/PaginaAcompanhar'))
+                .PaginaAcompanhar,
+            }),
+          },
           {
             path: 'contribuir',
             lazy: async () => ({
@@ -123,6 +132,13 @@ const roteador = createBrowserRouter([
                     lazy: async () => ({
                       Component: (await import('../pages/cidade/PaginaMeusRelatos'))
                         .PaginaMeusRelatos,
+                    }),
+                  },
+                  {
+                    path: 'meus-pedidos',
+                    lazy: async () => ({
+                      Component: (await import('../pages/cidade/PaginaMeusPedidos'))
+                        .PaginaMeusPedidos,
                     }),
                   },
                   {
@@ -270,7 +286,9 @@ export function App() {
   return (
     <ProvedorDeSessao servico={servicoDeAutenticacao}>
       <ContextoDasContribuicoes value={servicoDeContribuicoes}>
-        <RouterProvider router={roteador} />
+        <ContextoDaInformacao value={servicoDeInformacao}>
+          <RouterProvider router={roteador} />
+        </ContextoDaInformacao>
       </ContextoDasContribuicoes>
     </ProvedorDeSessao>
   )

@@ -6,14 +6,15 @@ import secao from '../Secao.module.css'
 import estilos from './ComOuSemConta.module.css'
 
 const SEM_CONTA = [
+  'Acompanhar um pedido pelo protocolo',
+  'Ver os números da cidade e do seu bairro',
   'Relatar um problema em um minuto',
-  'Ver os números da cidade nos dados abertos',
 ] as const
 
 const COM_CONTA = [
-  'Ver os relatos da cidade e da sua rua',
+  'Guardar os protocolos dos seus pedidos em Meus pedidos',
   'Acompanhar os seus relatos, do envio à revisão',
-  'Comparar o seu bairro com o Recife',
+  'Ver os relatos da cidade e da sua rua',
 ] as const
 
 export function ComOuSemConta() {
@@ -23,7 +24,7 @@ export function ComOuSemConta() {
         <Aparecer>
           <p className={secao.rotulo}>Como funciona</p>
           <h2 id="titulo-como-funciona" className={secao.titulo}>
-            Do seu relato até a gestão, e de volta para você
+            Do seu pedido até o órgão, e de volta para você
           </h2>
         </Aparecer>
         <PassosDoCidadao />
@@ -38,8 +39,8 @@ export function ComOuSemConta() {
                 </li>
               ))}
             </ul>
-            <LinkDeBotao para="/contribuir" variante="secundario">
-              Relatar sem conta
+            <LinkDeBotao para="/acompanhar" variante="secundario">
+              Acompanhar um pedido
             </LinkDeBotao>
           </Aparecer>
           <Aparecer atraso={120} className={`${estilos.plano} ${estilos.planoEmDestaque}`}>

@@ -51,9 +51,9 @@ export const NOTA_DA_BASE =
 export const RAZOES_PARA_RELATAR: readonly Razao[] = [
   {
     icone: 'relogio',
-    antes: 'Você relatava um problema e não sabia mais o que tinha acontecido com ele.',
+    antes: 'Você fazia um pedido e não sabia mais o que tinha acontecido com ele.',
     agora:
-      'Cada relato mostra em que pé está: recebido, em análise, no painel da gestão ou já com pedido oficial.',
+      'Pelo protocolo, você vê a situação, para qual órgão a gestão encaminhou e o que ele respondeu.',
   },
   {
     icone: 'somar',
@@ -77,30 +77,39 @@ export const RAZOES_PARA_RELATAR: readonly Razao[] = [
 
 export const PASSOS_DO_CIDADAO: readonly Passo[] = [
   {
-    icone: 'relato',
-    titulo: 'Você relata',
-    texto: 'Escolhe o problema e a rua. Leva um minuto e não precisa de conta.',
-  },
-  {
-    icone: 'somar',
-    titulo: 'A plataforma confere',
-    texto: 'Se outra pessoa já relatou o mesmo problema, os relatos viram uma ocorrência só.',
-  },
-  {
-    icone: 'pessoas',
-    titulo: 'A gestão revisa',
-    texto: 'Uma pessoa da gestão confere os casos parecidos antes de o relato entrar nos números.',
+    icone: 'telefone',
+    titulo: 'Você pede no canal de sempre',
+    texto: 'Conecta Recife, Central 156 ou Ouvidoria. O pedido sai com um protocolo.',
   },
   {
     icone: 'telas',
-    titulo: 'Você acompanha',
-    texto: 'Com uma conta, você acompanha cada relato seu em Meus relatos e vê o seu bairro.',
+    titulo: 'A gestão vê o que se repete',
+    texto:
+      'Os pedidos de todos os canais chegam ao mesmo painel, e a fila mostra o que atender primeiro.',
+  },
+  {
+    icone: 'seta',
+    titulo: 'Vai para quem resolve',
+    texto:
+      'A gestão encaminha à Emlurb, à Compesa, à Neoenergia ou a outro órgão, que tem 30 dias para resolver ou devolver.',
+  },
+  {
+    icone: 'confirmado',
+    titulo: 'Você acompanha pelo protocolo',
+    texto:
+      'Sem conta, em Acompanhar um pedido. Com conta, em Meus pedidos, junto com os seus relatos.',
   },
 ]
 
 export const NIVEIS_DE_ACESSO: readonly LinhaDeAcesso[] = [
   {
-    recurso: 'Números da cidade, a partir dos dados abertos',
+    recurso: 'Números da cidade e do seu bairro, a partir dos dados abertos',
+    semConta: true,
+    cidadao: true,
+    gestao: true,
+  },
+  {
+    recurso: 'Andamento de um pedido pelo protocolo, com o órgão para o qual ele foi encaminhado',
     semConta: true,
     cidadao: true,
     gestao: true,
@@ -113,16 +122,10 @@ export const NIVEIS_DE_ACESSO: readonly LinhaDeAcesso[] = [
     gestao: true,
   },
   {
-    recurso: 'Os seus relatos e o andamento de cada um, do envio à revisão',
+    recurso: 'Os seus relatos e os protocolos que você guardou, com o andamento de cada um',
     semConta: false,
     cidadao: true,
     gestao: false,
-  },
-  {
-    recurso: 'Indicadores do seu bairro comparados com o Recife',
-    semConta: false,
-    cidadao: true,
-    gestao: true,
   },
   {
     recurso: 'Número exato e texto escrito do relato, para conferir duplicidade',
@@ -131,7 +134,7 @@ export const NIVEIS_DE_ACESSO: readonly LinhaDeAcesso[] = [
     gestao: true,
   },
   {
-    recurso: 'Painel da gestão, prioridade, importação de arquivos e pente fino',
+    recurso: 'Painel, prioridade, encaminhamento aos órgãos, importação e pente fino',
     semConta: false,
     cidadao: false,
     gestao: true,

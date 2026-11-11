@@ -6,6 +6,7 @@ import estilos from './RodapePublico.module.css'
 const LINKS = [
   { caminho: '/como-funciona', rotulo: 'Como funciona' },
   { caminho: '/a-cidade-em-numeros', rotulo: 'A cidade em números' },
+  { caminho: '/acompanhar', rotulo: 'Acompanhar um pedido' },
   { caminho: '/contribuir', rotulo: 'Relatar um problema' },
   { caminho: '/cadastrar', rotulo: 'Criar conta' },
   { caminho: '/entrar', rotulo: 'Entrar' },

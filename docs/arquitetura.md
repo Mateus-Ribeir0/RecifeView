@@ -5,7 +5,8 @@ Baseada no rascunho C4 v0.1 de 15/10/2026, feito a partir do esboço do Prof. Ma
 ## C1 · Contexto
 
 - **Gestor público:** acessa o painel pelo navegador, com login.
-- **Cidadão:** usa a página pública e envia relato anônimo pelo formulário ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md), proposta). Com conta própria, acompanha também os relatos da cidade e os números do seu bairro ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta).
+- **Cidadão:** faz o pedido no canal de sempre (Conecta Recife, Central 156, Ouvidoria) e, no RecifeView, consulta o andamento pelo protocolo e os números do bairro, sem conta ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md), proposta). Pode também enviar relato anônimo pelo formulário ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md), proposta). Com conta própria, guarda os protocolos e acompanha os relatos da cidade ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta).
+- **Órgãos responsáveis:** Emlurb, Compesa, Neoenergia, CTTU, Defesa Civil e outros. Recebem as ocorrências encaminhadas pela gestão (por e-mail, webhook ou caixa local) e respondem por um link, sem conta ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md), proposta).
 - **RecifeView:** o sistema.
 - **Fontes externas:** Portal de Dados Abertos do Recife, Câmara Municipal (SAGL), IBGE/SIDRA, catálogo de serviços do Conecta Recife, cópia do Internet Archive do dataset da SEDEC e, no futuro, o SGDE/Emprel (depende do pedido LAI). APAC/INMET (chuva) aparece no diagrama, mas o clima é estudo futuro.
 
@@ -66,11 +67,12 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 
 | Tela | O que mostra | Router da API |
 |---|---|---|
-| Página pública (`/`, `/como-funciona`, `/a-cidade-em-numeros`) | O que a plataforma é para quem mora no Recife, o caminho do relato, os níveis de acesso, o pente fino, a privacidade e os achados da base aberta | Nenhum (conteúdo estático e a malha dos bairros) |
+| Página pública (`/`, `/como-funciona`, `/a-cidade-em-numeros`) | O que a plataforma é para quem mora no Recife, o caminho de um pedido até o órgão e de volta, os níveis de acesso, o pente fino, a privacidade e os achados da base aberta | Nenhum (conteúdo estático e a malha dos bairros) |
+| Acompanhar um pedido (`/acompanhar`, pública) | Andamento pelo protocolo, com o encaminhamento e a resposta do órgão, e os números de um bairro ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) | Acesso à informação (`/publico`) |
 | Relatar um problema (`/contribuir`, pública) | Formulário em três passos, sem identificação | Contribuições |
 | Entrar, ajuda e definir senha (`/entrar`, `/entrar/gestao`, `/entrar/ajuda`, `/definir-senha`) | Entrada do cidadão e da gestão, orientação de acesso, troca da senha | Autenticação |
 | Criar conta e recuperar senha (`/cadastrar`, `/recuperar-senha`) | Cadastro do cidadão, que já abre a sessão, e nova senha com código por e-mail | Contas |
-| Área do cidadão (`/cidade`, `/cidade/meus-relatos`, `/cidade/meu-bairro`, `/cidade/relatar`, `/cidade/conta`), só para conta de cidadão | Relatos da cidade sem endereço exato, os próprios relatos com o andamento, números do bairro comparados com o Recife, formulário e dados da conta | Cidade, Contribuições e Contas |
+| Área do cidadão (`/cidade`, `/cidade/meus-relatos`, `/cidade/meus-pedidos`, `/cidade/meu-bairro`, `/cidade/relatar`, `/cidade/conta`), só para conta de cidadão | Relatos da cidade sem endereço exato, os próprios relatos com o andamento, os protocolos guardados com o andamento, números do bairro comparados com o Recife, formulário e dados da conta | Cidade, Acesso à informação, Contribuições e Contas |
 | Início (`/painel`) | KPIs-síntese e volume por fonte | Indicadores |
 | War Room (`/painel/war-room`) | Estado de um dia simulado: entradas, estoque, fila e alertas | War Room |
 | Retorno (`/painel/retorno`) | Abas: funil, canais, destinos e caminhos das indicações; canais e prazo da Ouvidoria | Retorno |
