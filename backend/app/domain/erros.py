@@ -131,3 +131,7 @@ class PenteFinoPendente(ErroDeDominio):
 
 class PacoteVazio(ErroDeDominio):
     pass
+
+
+class ProtocoloInvalido(ErroDeDominio):
+    pass

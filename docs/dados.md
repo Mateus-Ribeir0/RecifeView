@@ -56,6 +56,7 @@ A lista completa, com tipo e as fontes em que cada coluna é preenchida, está n
 | Serviço | `servico_codigo`, `servico` |
 | Canal e retorno | `canal_entrada`, `camara_canal_envio`, `camara_desfecho`, `ouv_no_prazo` |
 | Texto | `texto` (SEDEC e Câmara), `rotulos_ocorrencia` |
+| Consulta pelo cidadão | `protocolo`: o protocolo que a fonte publica (hoje, só o arquivo da Ouvidoria traz). Não existe no dataset do Drive; entra quando o arquivo da fonte é importado pelo painel ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) |
 
 ## Privacidade (LGPD)
 
@@ -78,6 +79,7 @@ Regras para o código:
 | Conta de cidadão vê de um relato só a rua da lista oficial e a faixa de numeração de 100 em 100; nunca o número, o texto nem quem relatou. O relato completo só volta para quem o enviou, em "Meus relatos" | O endereço pode ser o de quem relatou ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)) |
 | O relato enviado com a conta aberta guarda o id da conta (`contribuicao.usuario_id`). Nenhuma tela, rota ou pacote da gestão lê esse campo | A gestão revisa sem saber quem relatou ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)) |
 | Contas de cidadão guardam nome, e-mail e, se a pessoa quiser, o bairro. Nada de CPF ou telefone. Excluir a conta apaga esses dados | Minimização da LGPD |
+| O `protocolo` só volta numa busca exata, pela página pública ou por "Meus pedidos". Nenhuma rota lista protocolos, e ele não vai para log nem para fixture com número real | É o identificador do pedido de alguém ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) |
 | Endereço e detalhe do formulário ficam só em `app.contribuicao`, nunca em `ouro.*`, no pacote, em log ou em rota pública, e são apagados em 90 dias | O texto é livre e o endereço pode ser o de quem relatou |
 
 Algumas bases publicadas trazem dado pessoal exposto por defeito da própria fonte. Os detalhes ficam no Drive do grupo, fora deste repositório público, até a Prefeitura ser avisada. Esses registros nunca devem ser reproduzidos. Se o Processor encontrar algo parecido, ele descarta a linha e registra só a contagem.

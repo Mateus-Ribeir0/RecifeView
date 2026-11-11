@@ -52,6 +52,7 @@ from app.domain.importacao.territorio_da_linha import (
     decidir_valor,
 )
 from app.domain.importacao.texto import normalizar_texto
+from app.domain.protocolo import normalizar_protocolo
 
 CAMPOS_COM_TEXTO_LIVRE_DA_FONTE = (
     "categoria",
@@ -68,6 +69,14 @@ INDICE_DA_ABERTURA = 2
 INDICE_DO_MOVIMENTO = 3
 INDICE_DO_BAIRRO = 12
 LAYOUTS_JA_NORMALIZADOS = frozenset({CodigoDoLayout.DATASET, CodigoDoLayout.FORMULARIO})
+
+
+def _assinar(
+    principal: tuple[object, ...], complemento: tuple[object, ...], protocolo: str | None
+) -> int:
+    """Sem protocolo, a assinatura fica igual à de antes: a base já carregada não muda."""
+    conteudo = (*principal, *complemento, *((protocolo,) if protocolo else ()))
+    return calcular_hash("|".join(map(str, conteudo)))
 
 
 @dataclass(frozen=True)
@@ -400,7 +409,8 @@ class NormalizadorDeLinhas:
             "data_ult_movimento": principal[INDICE_DO_MOVIMENTO],
             "bairro_oficial": principal[INDICE_DO_BAIRRO],
         }
-        assinatura = calcular_hash("|".join(map(str, (*principal, *complemento))))
+        protocolo = normalizar_protocolo(valores.get("protocolo", ""))
+        assinatura = _assinar(principal, complemento, protocolo)
         return RegistroDeDemanda._make(
             (
                 self._gerar_chave(fonte, partes, assinatura),
@@ -411,6 +421,7 @@ class NormalizadorDeLinhas:
                 *complemento,
                 valores.get("arquivo_origem") or self._plano.arquivo_origem,
                 ano_do_arquivo,
+                protocolo,
             )
         )
 

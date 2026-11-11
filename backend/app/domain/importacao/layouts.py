@@ -72,7 +72,7 @@ PORTAL_OUVIDORIA = Layout(
     Fonte.OUVIDORIA,
     {
         "ANO": "ano",
-        "NO_PROTOCOLO": SEM_USO,
+        "NO_PROTOCOLO": "protocolo",
         "DATA_REGISTRO": "data_abertura",
         "DATA_PRAZO_RESPOSTA": "ouv_data_prazo",
         "DATA_RESPOSTA": "data_ult_movimento",
