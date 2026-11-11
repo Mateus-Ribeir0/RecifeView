@@ -58,6 +58,7 @@ class EncaminhamentoResposta(BaseModel):
     orgao: Orgao
     nome_do_orgao: str
     orgao_sugerido: Orgao | None
+    nome_do_orgao_sugerido: str | None
     canal: CanalDeEnvio
     situacao: SituacaoDoEncaminhamento
     atrasado: bool
@@ -79,6 +80,9 @@ class EncaminhamentoResposta(BaseModel):
             orgao=item.orgao,
             nome_do_orgao=nome_do_orgao(item.orgao),
             orgao_sugerido=item.orgao_sugerido,
+            nome_do_orgao_sugerido=(
+                nome_do_orgao(item.orgao_sugerido) if item.orgao_sugerido else None
+            ),
             canal=item.canal,
             situacao=item.situacao,
             atrasado=item.esta_atrasado(hoje),
