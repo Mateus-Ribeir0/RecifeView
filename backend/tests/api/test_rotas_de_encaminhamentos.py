@@ -42,7 +42,7 @@ def cabecalho_da_gestora(cliente: TestClient, ambiente: Ambiente) -> dict[str, s
 def encaminhar(cliente: TestClient, ambiente: Ambiente) -> dict[str, object]:
     resposta = cliente.post(
         f"{BASE}/encaminhamentos",
-        json={"chave_registro": 7, "orgao": "COMPESA", "justificativa": "Terceira vez no mês"},
+        json={"chave_registro": "7", "orgao": "COMPESA", "justificativa": "Terceira vez no mês"},
         headers=cabecalho_da_gestora(cliente, ambiente),
     )
     assert resposta.status_code == 201, resposta.text
@@ -62,6 +62,7 @@ def test_gestora_ve_a_sugestao_antes_de_encaminhar(
     assert corpo["sugestao"]["orgao"] == "EMLURB"
     assert corpo["sugestao"]["motivo"] == "apontado_no_registro"
     assert corpo["pode_encaminhar"] is True
+    assert corpo["ocorrencia"]["chave_registro"] == "7"
     assert {orgao["orgao"] for orgao in corpo["orgaos"]} >= {"COMPESA", "NEOENERGIA"}
 
 
@@ -135,3 +136,17 @@ def test_observacao_com_telefone_e_recusada(
 
     assert resposta.status_code == 422
     assert resposta.json()["erro"]["detalhes"]["campo"] == "observacao"
+
+
+def test_chave_de_64_bits_volta_como_texto_sem_perder_digitos(
+    cliente: TestClient, ambiente: AmbienteComEncaminhamentos
+) -> None:
+    chave = 6671749688801546836
+    ambiente.repositorio.ocorrencias[chave] = ocorrencia_de_teste(chave)
+
+    resposta = cliente.get(
+        f"{BASE}/encaminhamentos/ocorrencias/{chave}",
+        headers=cabecalho_da_gestora(cliente, ambiente),
+    )
+
+    assert resposta.json()["ocorrencia"]["chave_registro"] == str(chave)

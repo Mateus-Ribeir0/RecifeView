@@ -2,6 +2,7 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
+from app.api.schemas.comum import ChaveDoRegistro
 from app.api.schemas.painel import Esquema
 from app.domain.ahp import BairroPriorizado
 from app.domain.encaminhamento.encaminhamento import Encaminhamento, SituacaoDoEncaminhamento
@@ -127,7 +128,7 @@ class EncaminhamentoNaFilaResposta(BaseModel):
 
 
 class OcorrenciaClassificadaResposta(BaseModel):
-    chave_registro: int | None
+    chave_registro: ChaveDoRegistro | None
     encaminhamento: EncaminhamentoNaFilaResposta | None
     fila: int
     indice: float
