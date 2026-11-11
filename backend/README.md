@@ -48,6 +48,22 @@ uv run recifeview importar \
 
 A carga completa leva alguns minutos, ocupa cerca de 1 GB de disco e aparece como a primeira linha do histórico de importações. O mesmo comando sem `--carga-inicial` importa outro arquivo pelo terminal, e para com aviso se houver algo para decidir: nesse caso, responda pelo painel.
 
+### Outras origens além do arquivo
+
+A importação também lê de um endereço na internet e de um banco externo, pelo painel ou pelo terminal ([ADR 0012](../docs/adr/0012-origens-de-dados-alem-do-arquivo.md)). Os dois caminhos entregam um arquivo ao mesmo fluxo: colunas, pendências, pente fino, carga e desfazer.
+
+- **Endereço:** só `https` e só os hosts de `API_HOSTS_DE_IMPORTACAO` (por padrão, o portal de dados abertos do Recife). Redirecionamento para outro host é recusado.
+- **Banco:** só as conexões de `API_BANCOS_DE_ORIGEM` (hoje, PostgreSQL). A consulta precisa começar com `SELECT` ou `WITH`, roda em transação só de leitura e para depois de `API_SEGUNDOS_DA_EXTRACAO`.
+
+```bash
+uv run recifeview importar --endereco "https://dados.recife.pe.gov.br/<caminho do arquivo>.csv" \
+  --data-do-retrato 2026-11-11
+uv run recifeview importar --banco sgde --consulta "SELECT * FROM demandas WHERE ano = 2026" \
+  --data-do-retrato 2026-11-11
+```
+
+É assim que o agendador (cron ou EventBridge) traz os arquivos novos enquanto o Processor não existe. A importação do arquivo da Ouvidoria pelo portal também traz o protocolo de cada manifestação, que alimenta a consulta pública pelo protocolo.
+
 O formulário público sugere as ruas de cada bairro e escreve o endereço como a Central 156 escreve. A lista vem dos arquivos públicos do 156, que têm a coluna de logradouro (o dataset do grupo não tem). Baixe um deles do Drive (`Dados/02_fontes_separadas/bruto`), descompacte em `data/` e rode:
 
 ```bash
@@ -124,6 +140,9 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `API_ENDERECO_DO_SITE` | Endereço público do site, usado no link de retorno que vai na mensagem ao órgão | `http://localhost:5173` |
 | `API_PASTA_DOS_ENCAMINHAMENTOS` | Onde ficam as mensagens dos órgãos sem canal configurado. Fica fora do git | `../data/encaminhamentos` |
 | `API_CANAIS_DOS_ORGAOS` | Canal de cada órgão, em JSON (ver [Encaminhar ao órgão](#encaminhar-ao-órgão)). Vazio: todos na pasta acima | `{}` |
+| `API_HOSTS_DE_IMPORTACAO` | Hosts de onde a importação pode baixar, em JSON | `["dados.recife.pe.gov.br"]` |
+| `API_BANCOS_DE_ORIGEM` | Conexões de leitura para a importação por banco, em JSON (nome e URL). A URL tem senha: só no `.env` | `{}` |
+| `API_SEGUNDOS_DA_EXTRACAO` | Tempo máximo de uma consulta ao banco externo | `120` |
 | `API_URL_DO_BANCO_DE_TESTE` | Banco dos testes de integração. Sem ela, esses testes são pulados | `postgresql+psycopg://...@localhost:5432/recifeview_teste` |
 
 ## Comandos
@@ -138,7 +157,7 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `uv run ruff check .` | Lint |
 | `uv run mypy app tests` | Checagem de tipos (modo estrito) |
 | `uv run lint-imports` | Confere a regra da dependência entre as camadas |
-| `uv run recifeview importar --arquivo ... --data-do-retrato AAAA-MM-DD` | Importa um arquivo pelo terminal |
+| `uv run recifeview importar --arquivo ... --data-do-retrato AAAA-MM-DD` | Importa um arquivo pelo terminal. Troque `--arquivo` por `--endereco URL` ou por `--banco NOME --consulta SQL` para as outras origens |
 | `uv run recifeview carregar-logradouros --arquivo ...` | Soma as vias de um arquivo público do 156 à lista do formulário |
 | `uv run recifeview encaminhar-prioritarias --fonte 156 --nota-minima 7 --limite 20` | Encaminha ao órgão sugerido as ocorrências de nota alta sem encaminhamento aberto. Feito para o agendador (cron ou EventBridge) |
 | `uv run recifeview --help` | Administração de contas e importação |
@@ -218,6 +237,9 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `GET /importacoes` | Histórico, com busca e filtros |
 | `POST /importacoes?nome=...` | Recebe um arquivo. O corpo da requisição é o próprio arquivo |
 | `GET /importacoes/campos` | Campos da base para o mapeamento |
+| `GET /importacoes/origens` | Hosts permitidos e conexões de banco configuradas (só o nome) |
+| `POST /importacoes/por-endereco` | Baixa o arquivo de um endereço permitido e abre a importação |
+| `POST /importacoes/por-banco` | Roda uma consulta só de leitura numa conexão configurada e abre a importação |
 | `GET /importacoes/{id}` | Colunas, pendências, prévia e relatório de uma importação |
 | `PUT /importacoes/{id}/colunas` | Define a fonte, a data do retrato e o mapeamento |
 | `PUT /importacoes/{id}/pendencias` | Responde o que não bateu e valida de novo |

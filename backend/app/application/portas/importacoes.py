@@ -197,3 +197,22 @@ class ConferenciaEntreCanais(Protocol):
     def conferir(self, registro: RegistroDeDemanda, endereco: EnderecoDaLinha | None) -> None: ...
 
     def concluir(self) -> ResultadoDaConferencia: ...
+
+
+class OrigemPorEndereco(Protocol):
+    @property
+    def hosts_permitidos(self) -> list[str]: ...
+
+    def baixar(self, endereco: str) -> ArquivoRecebido: ...
+
+
+class OrigemPorBanco(Protocol):
+    def conexoes(self) -> list[str]: ...
+
+    def extrair(self, conexao: str, consulta: str) -> ArquivoRecebido: ...
+
+
+@dataclass(frozen=True)
+class OrigensDeDados:
+    por_endereco: OrigemPorEndereco
+    por_banco: OrigemPorBanco

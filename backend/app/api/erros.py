@@ -34,6 +34,8 @@ from app.domain.erros import (
     LinkDeRetornoInvalido,
     OcorrenciaJaEncaminhada,
     OcorrenciaNaoEncontrada,
+    OrigemIndisponivel,
+    OrigemRecusada,
     PacoteVazio,
     ParNaoEncontrado,
     PenteFinoPendente,
@@ -208,6 +210,14 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
         "resposta_fora_de_ordem",
         "A situação do encaminhamento mudou e não aceita esta resposta. Atualize a página.",
     ),
+    OrigemRecusada: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, "origem_recusada", "Confira a origem dos dados."
+    ),
+    OrigemIndisponivel: RespostaDeErro(
+        status.HTTP_502_BAD_GATEWAY,
+        "origem_indisponivel",
+        "Não foi possível ler a origem agora. Confira o endereço ou a conexão e tente de novo.",
+    ),
     LimiteDePedidosAtingido: RespostaDeErro(
         status.HTTP_409_CONFLICT,
         "limite_de_pedidos",
@@ -243,6 +253,7 @@ def _tratar_erro_de_dominio(_: Request, erro: ErroDeDominio) -> JSONResponse:
         ContribuicaoInvalida,
         CadastroInvalido,
         EncaminhamentoInvalido,
+        OrigemRecusada,
     )
     mensagem = erro.motivo if isinstance(erro, com_motivo) else resposta.mensagem
     detalhes = _detalhes_do_erro(erro)

@@ -31,6 +31,7 @@ from app.infrastructure.email.montagem import montar_envio_de_email
 from app.infrastructure.encaminhamento.despacho import montar_despacho
 from app.infrastructure.importacao.fila_em_processo import FilaEmProcesso
 from app.infrastructure.importacao.montagem import (
+    montar_origens_de_dados,
     montar_servicos_de_contribuicoes,
     montar_servicos_de_importacao,
 )
@@ -86,6 +87,9 @@ def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
     app.state.despacho_aos_orgaos = montar_despacho(configuracao, app.state.caixa_de_emails)
     app.state.servicos_de_importacao = montar_servicos_de_importacao(
         configuracao, app.state.fabrica_de_sessoes, FilaEmProcesso()
+    )
+    app.state.origens_de_dados = montar_origens_de_dados(
+        configuracao, app.state.servicos_de_importacao
     )
     app.state.servicos_de_contribuicoes = montar_servicos_de_contribuicoes(
         app.state.fabrica_de_sessoes, app.state.servicos_de_importacao

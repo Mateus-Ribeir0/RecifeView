@@ -13,6 +13,7 @@ from app.domain.importacao.decisoes import (
     PoliticaEntreCanais,
 )
 from app.domain.importacao.importacao import Importacao
+from app.domain.importacao.origens import TAMANHO_MAXIMO_DA_CONSULTA
 
 
 class ColunaResposta(BaseModel):
@@ -234,3 +235,21 @@ class PaginaDeRegistrosResposta(BaseModel):
 
     itens: list[RegistroImportadoResposta]
     total: int
+
+
+TAMANHO_MAXIMO_DO_ENDERECO = 2000
+TAMANHO_MAXIMO_DO_NOME_DA_CONEXAO = 60
+
+
+class OrigensResposta(BaseModel):
+    hosts_permitidos: list[str]
+    bancos: list[str]
+
+
+class ImportarDeEnderecoEntrada(BaseModel):
+    endereco: str = Field(min_length=1, max_length=TAMANHO_MAXIMO_DO_ENDERECO)
+
+
+class ImportarDeBancoEntrada(BaseModel):
+    conexao: str = Field(min_length=1, max_length=TAMANHO_MAXIMO_DO_NOME_DA_CONEXAO)
+    consulta: str = Field(min_length=1, max_length=TAMANHO_MAXIMO_DA_CONSULTA)

@@ -25,7 +25,12 @@ class ImportarPeloTerminal:
     servicos: ServicosDeImportacao
 
     def executar(self, caminho: Path, data_do_retrato: date, carga_inicial: bool) -> Importacao:
-        arquivo = self._copiar_arquivo(caminho)
+        return self.executar_recebido(self._copiar_arquivo(caminho), data_do_retrato, carga_inicial)
+
+    def executar_recebido(
+        self, arquivo: ArquivoRecebido, data_do_retrato: date, carga_inicial: bool
+    ) -> Importacao:
+        """Para o arquivo que já chegou por outra origem (endereço ou banco)."""
         importacao = self.servicos.importacoes.criar(
             NovaImportacao(arquivo, None, carga_inicial), StatusDaImportacao.ANALISANDO
         )

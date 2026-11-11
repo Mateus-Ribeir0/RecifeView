@@ -25,6 +25,7 @@ from app.application.portas.encaminhamentos import (
     DespachoAosOrgaos,
     EncaminhamentosDasOcorrencias,
 )
+from app.application.portas.importacoes import OrigensDeDados
 from app.application.portas.painel import (
     CatalogoRepository,
     PrazoRepository,
@@ -388,3 +389,11 @@ def obter_servicos_de_pedidos(
 
 
 ServicosDePedidosDep = Annotated[ServicosDePedidos, Depends(obter_servicos_de_pedidos)]
+
+
+def obter_origens_de_dados(request: Request) -> OrigensDeDados:
+    origens: OrigensDeDados = request.app.state.origens_de_dados
+    return origens
+
+
+OrigensDeDadosDep = Annotated[OrigensDeDados, Depends(obter_origens_de_dados)]
