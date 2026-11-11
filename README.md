@@ -13,7 +13,7 @@
 
 As demandas que chegam à Prefeitura do Recife passam por portas diferentes: Central 156, Ouvidoria, Defesa Civil, SEDEC e indicações da Câmara Municipal. Cada porta tem a sua base, e essas bases não têm um identificador em comum. Por isso fica difícil saber onde um mesmo problema se repete, quanto tempo ele leva para ser atendido e em que ponto entre o canal e o órgão a resposta se perde.
 
-O RecifeView junta essas bases, trata e pseudonimiza os dados e mostra o resultado num painel para gestores públicos: mapa por bairro e RPA, prazos por serviço, recorrências e o fluxo das indicações da Câmara até a Prefeitura.
+O RecifeView junta essas bases, trata e pseudonimiza os dados e mostra o resultado num painel para gestores públicos: mapa por bairro e RPA, prazos por serviço, recorrências e o fluxo das indicações da Câmara até a Prefeitura. Da fila de prioridade, a gestão encaminha cada ocorrência ao órgão que resolve (Emlurb, Compesa, Neoenergia, CTTU e outros), o órgão responde por um link, e quem fez o pedido acompanha o andamento pelo protocolo.
 
 O projeto responde ao desafio [Fragmentação do Tratamento de Denúncias Recebidas via Conecta Recife](https://inovacaoaberta.recife.pe.gov.br/), do Banco de Oportunidades da Prefeitura do Recife.
 
@@ -22,10 +22,11 @@ O projeto responde ao desafio [Fragmentação do Tratamento de Denúncias Recebi
 | Fase | Situação |
 |---|---|
 | Pesquisa, dados, EDA (N1 a N3) | Concluída. Os entregáveis estão no Drive do grupo. |
-| Site público e acesso | Prontos: quatro abas públicas, entrada, troca de senha, sessão e saída |
-| Contas de cidadão | Prontas: cadastro que já entra na conta, área do cidadão com relatos da cidade, "Meus relatos" com o andamento e números do bairro, entrada separada da gestão ([ADR 0010](docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta) |
+| Site público e acesso | Prontos: cinco abas públicas (com Acompanhar um pedido, que consulta pelo protocolo sem conta), entrada, troca de senha, sessão e saída |
+| Contas de cidadão | Prontas: cadastro que já entra na conta, área do cidadão com relatos da cidade, "Meus relatos" e "Meus pedidos" com o andamento, números do bairro, entrada separada da gestão ([ADR 0010](docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md), proposta) |
 | Telas de dados do painel | Prontas: Início, War Room, Retorno, Reincidência, Prazos, Território, Prioridade e Sobre os dados |
-| Importação de arquivos | Pronta: envio, normalização, decisões, histórico e desfazer |
+| Encaminhamento aos órgãos | Pronto: sugestão do órgão a partir dos dados, envio por caixa local, e-mail ou webhook, link de retorno para o órgão, envio automático pelo terminal e tela Encaminhamentos ([ADR 0011](docs/adr/0011-encaminhamento-ao-orgao-e-retorno.md), proposta). Os canais reais de cada órgão dependem de acordo |
+| Importação | Pronta: arquivo, endereço permitido do portal ou consulta a um banco configurado, com normalização, decisões, histórico e desfazer ([ADR 0012](docs/adr/0012-origens-de-dados-alem-do-arquivo.md), proposta) |
 | Formulário público | Pronto: relatos em quarentena, pente fino entre canais e pacote pela importação ([ADR 0009](docs/adr/0009-formulario-publico-e-pente-fino.md), proposta) |
 | Processor | Ainda não começou |
 
@@ -37,6 +38,8 @@ flowchart LR
     cidadao([Cidadão]) -->|HTTPS| spa
     spa -->|JSON/HTTPS| api[API REST<br/>Python · FastAPI]
     api -->|SQL| db[(PostgreSQL)]
+    api -->|encaminha: e-mail, webhook| orgaos([Órgãos responsáveis<br/>Emlurb, Compesa, Neoenergia...])
+    orgaos -->|respondem pelo link| spa
     eb[AWS EventBridge<br/>regra agendada] -->|dispara| proc[Processor<br/>Python]
     proc -->|coleta| fontes[Fontes públicas<br/>Dados Abertos, Câmara, IBGE]
     proc -->|upsert| db
