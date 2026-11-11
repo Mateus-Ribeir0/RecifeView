@@ -16,6 +16,7 @@ Baseada no rascunho C4 v0.1 de 15/10/2026, feito a partir do esboço do Prof. Ma
 flowchart TB
     gestor([Gestor público])
     cidadao([Cidadão])
+    orgaos([Órgãos responsáveis<br/><small>Emlurb, Compesa, Neoenergia, CTTU...</small>])
 
     subgraph rv [RecifeView]
         spa["Aplicação Web (SPA)<br/><small>React · Recharts · Leaflet</small>"]
@@ -33,6 +34,8 @@ flowchart TB
     cidadao -->|HTTPS| spa
     spa -->|JSON/HTTPS| api
     api -->|valida identidade| idp
+    api -->|encaminha por e-mail ou webhook| orgaos
+    orgaos -->|respondem pelo link de retorno| spa
     api -->|lê indicadores, grava auditoria e importações| db
     eb -->|dispara a cada X min/h/dia| proc
     proc -->|coleta HTTPS, CSV, HTML| fontes
@@ -43,7 +46,7 @@ flowchart TB
 | Container | Responsabilidade | Não faz |
 |---|---|---|
 | SPA | Telas, filtros globais, gráficos, mapa, sessão do usuário | Não calcula indicador; só exibe o que a API devolve |
-| API | Autenticação, autorização por rota, auditoria de consulta, agregações, percentis, per capita, reincidência, priorização, importação de arquivos enviados pelo painel ([ADR 0007](adr/0007-importacao-de-arquivos-pelo-painel.md)) | Não coleta dado externo; nunca devolve o texto da SEDEC |
+| API | Autenticação, autorização por rota, auditoria de consulta, agregações, percentis, per capita, reincidência, priorização, importação ([ADR 0007](adr/0007-importacao-de-arquivos-pelo-painel.md) e [ADR 0012](adr/0012-origens-de-dados-alem-do-arquivo.md)), encaminhamento aos órgãos e consulta pública pelo protocolo ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) | Só busca dado externo quando a gestão ou o agendador pede, e só dos hosts e bancos configurados; nunca devolve o texto da SEDEC |
 | Banco | Camada tratada (fato unificado e dimensões), usuários, auditoria, registro de execuções do Processor | |
 | Processor | Coleta, limpeza, pseudonimização, unificação e carga idempotente | Não serve dados a usuários |
 | Agendador | Regra do EventBridge que dispara o Processor | |
@@ -99,6 +102,8 @@ Componentes do C3:
 5. **Importação:** leitores de arquivo, normalização no domínio, fila em processo e carga por `COPY`, tudo atrás de portas. Depois da carga, as views são atualizadas com o painel no ar. Enquanto o Processor não existe, é por aqui que os dados entram ([ADR 0007](adr/0007-importacao-de-arquivos-pelo-painel.md)).
 6. **Contribuições:** recebe os relatos do formulário público numa quarentena, aplica o pente fino e gera o pacote que segue pela importação. É a única rota de escrita sem sessão, e nada do que chega por ela aparece no painel sem revisão ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md)).
 
+7. **Encaminhamento:** sugere o órgão de destino a partir dos dados, grava o encaminhamento e despacha a mensagem pelo canal configurado do órgão (caixa local, e-mail ou webhook), com um link de retorno. O órgão responde pelo link, sem conta, e o andamento volta para a consulta pública pelo protocolo e para "Meus pedidos" ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)).
+
 Esses componentes se distribuem nas camadas da Clean Architecture (`api`, `application`, `domain`, `infrastructure`). A correspondência está em [clean-architecture.md](clean-architecture.md#backend-fastapi).
 
 ### Processor
@@ -131,6 +136,8 @@ O Processor é a versão de produção do pipeline que já existe no Drive (`Dad
 - Token de acesso de 15 minutos só na memória do navegador; sessão de 12 horas num cookie `httpOnly` e `SameSite=Strict`, revogável no servidor. Detalhes e alternativas na [ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md) (proposta).
 - O texto da SEDEC não tem rota, não entra em resposta e não vai para log.
 - O formulário público não pede identificação, recusa CPF, telefone e e-mail no texto, tem limite de envios por origem e um campo-armadilha para robôs. O endereço e o detalhe do relato só aparecem para a gestão autenticada, com auditoria, e são apagados em 90 dias.
+- O link de retorno do órgão leva um token aleatório de 32 bytes, guardado só como hash, válido por 60 dias e aceito só para a resposta seguinte do ciclo. O token e o protocolo da consulta pública vão no corpo da requisição, nunca no caminho, para não ficarem em log de acesso. As rotas sem sessão (`/retornos` e `/publico`) têm limite por origem.
+- A importação por endereço só baixa por `https` e dos hosts de `API_HOSTS_DE_IMPORTACAO`, e recusa redirecionamento para outro host. A importação por banco só usa as conexões de `API_BANCOS_DE_ORIGEM`, em transação só de leitura e com tempo limite.
 - O sal do `id_local` fica no gerenciador de segredos (proposta: AWS Secrets Manager) e nunca no repositório nem no banco.
 - Os acessos são auditados (entrada, recusa, bloqueio, saída, troca de senha) sem IP e sem o e-mail digitado. As consultas aos dados também são auditadas, com usuário, rota, filtros e horário.
 - Os segredos de cada container chegam por variável de ambiente, e cada pasta tem um `.env.example` sem valores reais.
