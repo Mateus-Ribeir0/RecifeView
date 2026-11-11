@@ -2,6 +2,10 @@ import { criarServicoDeAutenticacao } from '../../infrastructure/api/autenticaca
 import { criarServicoDaCidade } from '../../infrastructure/api/cidade'
 import { ClienteHttp } from '../../infrastructure/api/cliente'
 import { criarServicoDeContribuicoes } from '../../infrastructure/api/contribuicoes'
+import {
+  criarServicoDeEncaminhamentos,
+  criarServicoDeRetornoDoOrgao,
+} from '../../infrastructure/api/encaminhamentos'
 import { criarServicoDeImportacoes } from '../../infrastructure/api/importacoes'
 import { criarServicoDoPainel } from '../../infrastructure/api/painel'
 
@@ -14,3 +18,5 @@ export const servicoDoPainel = criarServicoDoPainel(cliente)
 export const servicoDeImportacoes = criarServicoDeImportacoes(cliente)
 export const servicoDeContribuicoes = criarServicoDeContribuicoes(cliente)
 export const servicoDaCidade = criarServicoDaCidade(cliente)
+export const servicoDeEncaminhamentos = criarServicoDeEncaminhamentos(cliente)
+export const servicoDeRetornoDoOrgao = criarServicoDeRetornoDoOrgao(cliente)

@@ -24,10 +24,18 @@ const CODIGOS_CONHECIDOS: ReadonlySet<string> = new Set<CodigoDeErro>([
   'cadastro_invalido',
   'tentativas_demais',
   'envio_de_email_indisponivel',
+  'protocolo_invalido',
+  'limite_de_pedidos',
+  'encaminhamento_invalido',
+  'ocorrencia_ja_encaminhada',
+  'resposta_fora_de_ordem',
+  'link_de_retorno_invalido',
+  'origem_recusada',
+  'origem_indisponivel',
 ])
 
 export interface Requisicao {
-  metodo?: 'GET' | 'POST' | 'PUT'
+  metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   corpo?: unknown
   arquivo?: Blob
   autenticada?: boolean

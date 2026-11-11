@@ -79,9 +79,16 @@ export const GRUPOS_DE_TELAS: readonly GrupoDeTelas[] = [
       {
         nome: 'Prioridade',
         caminho: '/painel/prioridade',
-        mostra: 'Um índice com critérios explícitos e ajustáveis.',
+        mostra: 'Um índice com critérios explícitos e ajustáveis, e a fila para encaminhar.',
         icone: 'bandeira',
         filtros: ['rpa', 'bairro', 'categoria'],
+      },
+      {
+        nome: 'Encaminhamentos',
+        caminho: '/painel/encaminhamentos',
+        mostra: 'Para qual órgão cada ocorrência foi e se ele já respondeu.',
+        icone: 'seta',
+        filtros: SEM_FILTROS,
       },
     ],
   },

@@ -15,7 +15,8 @@
   color: var(--cor-branco);
 }
 
-[data-tom='gestao'] .painel {
+[data-tom='gestao'] .painel,
+[data-tom='orgao'] .painel {
   background: var(--cor-cabecalho-da-gestao);
 }
 

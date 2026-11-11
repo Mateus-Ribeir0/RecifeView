@@ -77,7 +77,9 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 | Reincidência (`/painel/reincidencia`) | Local repetido, intervalos e pontos crônicos | Recorrências |
 | Prazos (`/painel/prazos`) | Percentis, faixas, categorias e estoque aberto | Prazos |
 | Território (`/painel/territorio`) | Taxas por bairro, faixas e tendência, com mapa e tabela | Território |
-| Prioridade (`/painel/prioridade`) | Abas: índice AHP com seis comparações, mapa e ranking; fila de ocorrências; método e sensibilidade | Prioridade |
+| Prioridade (`/painel/prioridade`) | Abas: índice AHP com seis comparações, mapa e ranking; fila de ocorrências, com o botão Encaminhar; método e sensibilidade | Prioridade e Encaminhamentos |
+| Encaminhamentos (`/painel/encaminhamentos` e `/:id`) | Para qual órgão cada ocorrência foi, prazo, retorno do órgão, etapas e reenvio ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) | Encaminhamentos |
+| Retorno do órgão (`/retorno/:token`, sem login) | O que chegou ao órgão e o formulário de resposta. O token do link é a credencial | Retorno do órgão |
 | Sobre os dados (`/painel/sobre-os-dados`) | Abas: fontes e cobertura, correções, cuidados e privacidade, glossário | Sobre |
 | Contribuições (`/painel/contribuicoes`) | Pente fino dos relatos parecidos, ocorrências e geração do pacote | Contribuições |
 | Importações (`/painel/importacoes`, `/nova` e `/:id`) | Histórico, envio de arquivo, decisões, relatório e desfazer | Importações |
