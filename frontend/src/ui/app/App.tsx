@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router/dom'
 import { ProvedorDeSessao } from '../../application/autenticacao/ProvedorDeSessao'
 import { ContextoDaCidade } from '../../application/cidade/contexto'
 import { ContextoDasContribuicoes } from '../../application/contribuicoes/contexto'
+import { ContextoDoRetornoDoOrgao } from '../../application/encaminhamentos/contexto'
 import { PaginaAjudaDeAcesso } from '../pages/ajuda-de-acesso/PaginaAjudaDeAcesso'
 import { PaginaCadastrar } from '../pages/cadastrar/PaginaCadastrar'
 import { LayoutDaCidade } from '../pages/cidade/LayoutDaCidade'
@@ -14,7 +15,12 @@ import { LayoutPublico } from '../pages/publico/LayoutPublico'
 import { PaginaInicial } from '../pages/publico/inicio/PaginaInicial'
 import { PaginaRecuperarSenha } from '../pages/recuperar-senha/PaginaRecuperarSenha'
 import { RotaProtegida } from './RotaProtegida'
-import { servicoDaCidade, servicoDeAutenticacao, servicoDeContribuicoes } from './servicos'
+import {
+  servicoDaCidade,
+  servicoDeAutenticacao,
+  servicoDeContribuicoes,
+  servicoDeRetornoDoOrgao,
+} from './servicos'
 import { SoParaCidadaos } from './SoParaCidadaos'
 import { SoParaGestao } from './SoParaGestao'
 import { SoParaVisitantes } from './SoParaVisitantes'
@@ -72,6 +78,23 @@ const roteador = createBrowserRouter([
         ],
       },
       { path: 'entrar/ajuda', element: <PaginaAjudaDeAcesso /> },
+      {
+        path: 'retorno/:token',
+        element: (
+          <ContextoDoRetornoDoOrgao value={servicoDeRetornoDoOrgao}>
+            <Outlet />
+          </ContextoDoRetornoDoOrgao>
+        ),
+        children: [
+          {
+            index: true,
+            lazy: async () => ({
+              Component: (await import('../pages/retorno/PaginaRetornoDoOrgao'))
+                .PaginaRetornoDoOrgao,
+            }),
+          },
+        ],
+      },
       { path: 'recuperar-senha', element: <PaginaRecuperarSenha /> },
       {
         element: <RotaProtegida />,
@@ -195,6 +218,20 @@ const roteador = createBrowserRouter([
                     lazy: async () => ({
                       Component: (await import('../pages/contribuicoes/PaginaContribuicoes'))
                         .PaginaContribuicoes,
+                    }),
+                  },
+                  {
+                    path: 'encaminhamentos',
+                    lazy: async () => ({
+                      Component: (await import('../pages/encaminhamentos/PaginaEncaminhamentos'))
+                        .PaginaEncaminhamentos,
+                    }),
+                  },
+                  {
+                    path: 'encaminhamentos/:id',
+                    lazy: async () => ({
+                      Component: (await import('../pages/encaminhamentos/PaginaDoEncaminhamento'))
+                        .PaginaDoEncaminhamento,
                     }),
                   },
                   {

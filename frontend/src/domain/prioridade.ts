@@ -1,3 +1,5 @@
+import type { EncaminhamentoNaFila } from './encaminhamentos'
+
 export type ChaveDoCriterio = 'risco' | 'vulnerabilidade' | 'atraso' | 'reincidencia'
 export type FonteDaFila = '156' | 'camara' | 'ouvidoria'
 
@@ -64,6 +66,8 @@ export interface Prioridade {
 }
 
 export interface OcorrenciaClassificada {
+  chaveRegistro: string | null
+  encaminhamento: EncaminhamentoNaFila | null
   fila: number
   indice: number
   notas: Readonly<Record<ChaveDoCriterio, number | null>>

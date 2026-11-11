@@ -1,0 +1,227 @@
+.selo {
+  display: inline-block;
+  padding: 2px var(--espaco-2);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-fundo-alternativo);
+  color: var(--cor-preto);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.seloAguardando {
+  background: var(--cor-alerta-fundo);
+  color: var(--cor-alerta-texto);
+}
+
+.seloFalha {
+  background: var(--cor-erro-fundo);
+}
+
+.seloRecebido {
+  background: var(--cor-azul-claro);
+  color: var(--cor-azul-escuro);
+}
+
+.seloResolvido {
+  background: var(--cor-sucesso-fundo);
+  color: var(--cor-sucesso);
+}
+
+.atraso {
+  font-weight: 700;
+}
+
+.painel {
+  display: grid;
+  gap: var(--espaco-4);
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-azul-principal);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+}
+
+.formulario {
+  display: grid;
+  gap: var(--espaco-4);
+}
+
+.painel h3 {
+  font-size: var(--texto-subtitulo);
+  font-weight: 700;
+}
+
+.cabecalhoDoPainel {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+}
+
+.resumoDaOcorrencia {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--espaco-3);
+}
+
+.resumoDaOcorrencia dt {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+.resumoDaOcorrencia dd {
+  font-weight: 600;
+}
+
+.sugestao {
+  display: grid;
+  gap: var(--espaco-2);
+  padding: var(--espaco-4);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-azul-claro);
+  color: var(--cor-texto-secundario);
+}
+
+.sugestao strong {
+  color: var(--cor-preto);
+}
+
+.participacoes {
+  display: grid;
+  gap: var(--espaco-1);
+  list-style: none;
+  padding: 0;
+}
+
+.participacoes li {
+  display: grid;
+  grid-template-columns: 180px 1fr 56px;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: var(--texto-apoio);
+}
+
+.barra {
+  height: 8px;
+  border-radius: 2px;
+  background: var(--cor-contexto);
+}
+
+.barraEmFoco {
+  background: var(--cor-azul-principal);
+}
+
+.valor {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.nota {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+.campo {
+  display: grid;
+  gap: var(--espaco-1);
+}
+
+.campo label,
+.campo legend {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.campo select,
+.campo textarea,
+.campo input {
+  width: 100%;
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-campo);
+  font: inherit;
+  background: var(--cor-branco);
+}
+
+.campo textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.linhaDoTempo {
+  display: grid;
+  gap: var(--espaco-3);
+  list-style: none;
+  padding: 0;
+}
+
+.linhaDoTempo li {
+  display: grid;
+  gap: var(--espaco-1);
+  padding-left: var(--espaco-4);
+  border-left: 3px solid var(--cor-azul-principal);
+}
+
+.linhaDoTempo time {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+}
+
+.filtros label {
+  display: grid;
+  gap: var(--espaco-1);
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.filtros select {
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-campo);
+  font: inherit;
+  background: var(--cor-branco);
+}
+
+.marcacao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: var(--texto-apoio);
+}
+
+.detalhe {
+  display: grid;
+  gap: var(--espaco-5);
+}
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-3);
+  font-size: var(--texto-apoio);
+}
+
+@media (max-width: 720px) {
+  .participacoes li {
+    grid-template-columns: 1fr 56px;
+  }
+
+  .participacoes .barra {
+    display: none;
+  }
+}

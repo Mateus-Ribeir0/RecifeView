@@ -7,7 +7,7 @@ import estilos from './LayoutDeAcesso.module.css'
 import { Logo } from './Logo'
 import { ID_DO_CONTEUDO_PRINCIPAL, PularParaConteudo } from './PularParaConteudo'
 
-export type TomDoAcesso = 'cidade' | 'gestao'
+export type TomDoAcesso = 'cidade' | 'gestao' | 'orgao'
 
 const APRESENTACAO: Readonly<
   Record<TomDoAcesso, { selo: string; frase: string; detalhe: string }>
@@ -23,6 +23,12 @@ const APRESENTACAO: Readonly<
     frase: 'Onde as demandas do Recife se repetem, demoram ou ficam sem resposta.',
     detalhe:
       'Painel, pente fino dos relatos e importação de arquivos, só para contas criadas pela administração.',
+  },
+  orgao: {
+    selo: 'Retorno do órgão',
+    frase: 'Uma ocorrência priorizada pela gestão do Recife chegou ao seu órgão.',
+    detalhe:
+      'Diga se recebeu, se resolveu ou se não é com o seu órgão. A resposta volta para a gestão e para quem fez o pedido, que acompanha pelo protocolo.',
   },
 }
 
@@ -51,7 +57,7 @@ export function LayoutDeAcesso({ tom = 'cidade', children }: Propriedades) {
           <p className={estilos.frase}>{frase}</p>
           <p className={estilos.detalhe}>{detalhe}</p>
         </div>
-        {tom === 'gestao' && (
+        {tom !== 'cidade' && (
           <div className={estilos.mapa} aria-hidden="true">
             <Suspense fallback={null}>
               <MapaDosBairros tom="sobreAzul" descricao="Bairros do Recife" />

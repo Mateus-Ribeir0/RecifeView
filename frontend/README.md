@@ -31,33 +31,35 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 
 ## Telas
 
-| Caminho                  | Tela                                                                           | Acesso             |
-| ------------------------ | ------------------------------------------------------------------------------ | ------------------ |
-| `/`                      | Início: abertura para quem mora no Recife, números, o que muda, passos e mapa  | Público            |
-| `/como-funciona`         | Caminho do relato, os três níveis de acesso, pente fino e privacidade          | Público            |
-| `/a-cidade-em-numeros`   | Os achados da base aberta, cada um com fonte e período                         | Público            |
-| `/contribuir`            | Formulário público em três passos (relatar sem conta)                          | Público            |
-| `/entrar`                | Entrada do cidadão (cabeçalho azul e foto do Recife)                           | Só quem não entrou |
-| `/entrar/gestao`         | Entrada da gestão (cabeçalho azul-marinho); recusa conta de cidadão            | Só quem não entrou |
-| `/cadastrar`             | Criação da conta de cidadão, que já entra na área do cidadão                   | Só quem não entrou |
-| `/recuperar-senha`       | Nova senha com código por e-mail (só contas de cidadão)                        | Público            |
-| `/entrar/ajuda`          | Senha esquecida, conta bloqueada, pedido de acesso da gestão                   | Público            |
-| `/definir-senha`         | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária | Quem entrou        |
-| `/cidade`                | Relatos da cidade nos últimos 90 dias, com rua, faixa de numeração e situação  | Cidadão            |
-| `/cidade/meus-relatos`   | Os relatos que a pessoa enviou com a conta aberta e o andamento de cada um     | Cidadão            |
-| `/cidade/meu-bairro`     | Indicadores do bairro escolhido comparados com o Recife                        | Cidadão            |
-| `/cidade/relatar`        | O formulário público dentro da área do cidadão                                 | Cidadão            |
-| `/cidade/conta`          | Nome, bairro, troca de senha e exclusão da conta                               | Cidadão            |
-| `/painel`                | Início: principais indicadores e volume por fonte                              | Gestor             |
-| `/painel/war-room`       | Estado de um dia: o que está parado e por onde começar                         | Gestor             |
-| `/painel/retorno`        | Abas da Câmara e da Ouvidoria: para onde vai cada pedido e quanto volta        | Gestor             |
-| `/painel/reincidencia`   | Local repetido, intervalos e pontos crônicos                                   | Gestor             |
-| `/painel/prazos`         | Percentis, faixas, categorias e estoque aberto                                 | Gestor             |
-| `/painel/territorio`     | Mapa, tabela e tendência por bairro                                            | Gestor             |
-| `/painel/prioridade`     | Abas: índice AHP com mapa e ranking, ocorrências, método e sensibilidade       | Gestor             |
-| `/painel/sobre-os-dados` | Cobertura, glossário e correções aplicadas                                     | Gestor             |
-| `/painel/contribuicoes`  | Pente fino dos relatos, ocorrências e geração do pacote                        | Gestor             |
-| `/painel/importacoes`    | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório    | Gestor             |
+| Caminho                   | Tela                                                                                                                                        | Acesso             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `/`                       | Início: abertura para quem mora no Recife, números, o que muda, passos e mapa                                                               | Público            |
+| `/como-funciona`          | Caminho do relato, os três níveis de acesso, pente fino e privacidade                                                                       | Público            |
+| `/a-cidade-em-numeros`    | Os achados da base aberta, cada um com fonte e período                                                                                      | Público            |
+| `/contribuir`             | Formulário público em três passos (relatar sem conta)                                                                                       | Público            |
+| `/entrar`                 | Entrada do cidadão (cabeçalho azul e foto do Recife)                                                                                        | Só quem não entrou |
+| `/entrar/gestao`          | Entrada da gestão (cabeçalho azul-marinho); recusa conta de cidadão                                                                         | Só quem não entrou |
+| `/cadastrar`              | Criação da conta de cidadão, que já entra na área do cidadão                                                                                | Só quem não entrou |
+| `/recuperar-senha`        | Nova senha com código por e-mail (só contas de cidadão)                                                                                     | Público            |
+| `/entrar/ajuda`           | Senha esquecida, conta bloqueada, pedido de acesso da gestão                                                                                | Público            |
+| `/retorno/:token`         | Página do órgão que recebeu um encaminhamento: o que chegou e a resposta (recebido, resolvido ou devolvido)                                 | Quem tem o link    |
+| `/definir-senha`          | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária                                                              | Quem entrou        |
+| `/cidade`                 | Relatos da cidade nos últimos 90 dias, com rua, faixa de numeração e situação                                                               | Cidadão            |
+| `/cidade/meus-relatos`    | Os relatos que a pessoa enviou com a conta aberta e o andamento de cada um                                                                  | Cidadão            |
+| `/cidade/meu-bairro`      | Indicadores do bairro escolhido comparados com o Recife                                                                                     | Cidadão            |
+| `/cidade/relatar`         | O formulário público dentro da área do cidadão                                                                                              | Cidadão            |
+| `/cidade/conta`           | Nome, bairro, troca de senha e exclusão da conta                                                                                            | Cidadão            |
+| `/painel`                 | Início: principais indicadores e volume por fonte                                                                                           | Gestor             |
+| `/painel/war-room`        | Estado de um dia: o que está parado e por onde começar                                                                                      | Gestor             |
+| `/painel/retorno`         | Abas da Câmara e da Ouvidoria: para onde vai cada pedido e quanto volta                                                                     | Gestor             |
+| `/painel/reincidencia`    | Local repetido, intervalos e pontos crônicos                                                                                                | Gestor             |
+| `/painel/prazos`          | Percentis, faixas, categorias e estoque aberto                                                                                              | Gestor             |
+| `/painel/territorio`      | Mapa, tabela e tendência por bairro                                                                                                         | Gestor             |
+| `/painel/prioridade`      | Abas: índice AHP com mapa e ranking, ocorrências, método e sensibilidade. A fila tem o botão Encaminhar, com o órgão sugerido e a evidência | Gestor             |
+| `/painel/encaminhamentos` | Encaminhamentos aos órgãos: abertos, prazo vencido, resolvidos e devolvidos; `/:id` mostra as etapas, registra o retorno e reenvia          | Gestor             |
+| `/painel/sobre-os-dados`  | Cobertura, glossário e correções aplicadas                                                                                                  | Gestor             |
+| `/painel/contribuicoes`   | Pente fino dos relatos, ocorrências e geração do pacote                                                                                     | Gestor             |
+| `/painel/importacoes`     | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório                                                                 | Gestor             |
 
 Os endereços antigos do site (`/o-que-muda`, `/plataforma` e `/dados-e-confianca`) redirecionam para as abas novas. Cada perfil vê só a sua área: quem não é da gestão e abre `/painel` vai para `/cidade`, e a gestão que abre `/cidade` vai para `/painel`. O que cada nível de acesso vê está na [ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md).
 

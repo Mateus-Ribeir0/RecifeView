@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router'
 
 import { useCatalogo, useFila } from '../../../../application/consultas/usePainel'
 import { useFiltrosGlobais } from '../../../../application/filtros/contexto'
+import { ROTULOS_DOS_CANAIS, type Encaminhamento } from '../../../../domain/encaminhamentos'
 import { temTerritorio } from '../../../../domain/filtros'
 import { formatarNumero, formatarPorcentagem } from '../../../../domain/formatacao'
 import {
@@ -16,6 +18,7 @@ import {
 } from '../../../../domain/prioridade'
 import { Histograma } from '../../../charts/Histograma'
 import { Legenda } from '../../../charts/Legenda'
+import { Aviso } from '../../../components/Aviso'
 import { Botao } from '../../../components/Botao'
 import { Cartao } from '../../../components/Cartao'
 import { EstadoDaConsulta } from '../../../components/EstadoDaConsulta'
@@ -23,6 +26,8 @@ import { KpiCard } from '../../../components/KpiCard'
 import { Medidor } from '../../../components/Medidor'
 import { Colunas } from '../../../components/Secao'
 import { Tabela, type ColunaDaTabela } from '../../../components/Tabela'
+import { PainelDeEncaminhamento } from '../../encaminhamentos/PainelDeEncaminhamento'
+import { AcaoDeEncaminhar } from './AcaoDeEncaminhar'
 import { CORES_DOS_CRITERIOS } from './cores'
 import estilos from './PaginaPrioridade.module.css'
 import { textosDaOcorrencia } from './textosDaOcorrencia'
@@ -92,9 +97,10 @@ interface CartaoProps {
   fonte: FonteDaFila
   total: number
   nomeDoBairro: string
+  aoEncaminhar: (item: OcorrenciaClassificada) => void
 }
 
-function CartaoDeOcorrencia({ item, fonte, total, nomeDoBairro }: CartaoProps) {
+function CartaoDeOcorrencia({ item, fonte, total, nomeDoBairro, aoEncaminhar }: CartaoProps) {
   const textos = textosDaOcorrencia(item, fonte, nomeDoBairro)
   return (
     <article className={estilos.ocorrencia}>
@@ -113,6 +119,9 @@ function CartaoDeOcorrencia({ item, fonte, total, nomeDoBairro }: CartaoProps) {
         <p>{textos.tempo}</p>
         <p>{textos.repeticao}</p>
         <BarraDeContribuicao item={item} />
+        <div className={estilos.acaoDaOcorrencia}>
+          <AcaoDeEncaminhar item={item} aoEscolher={aoEncaminhar} />
+        </div>
       </div>
     </article>
   )
@@ -121,6 +130,7 @@ function CartaoDeOcorrencia({ item, fonte, total, nomeDoBairro }: CartaoProps) {
 function colunasDoTopo(
   fonte: FonteDaFila,
   nomes: ReadonlyMap<string, string>,
+  aoEncaminhar: (item: OcorrenciaClassificada) => void,
 ): ColunaDaTabela<OcorrenciaClassificada>[] {
   return [
     {
@@ -152,6 +162,11 @@ function colunasDoTopo(
       numerica: true,
       valor: (item) => `${formatarNumero(item.idadeDias)} dias`,
     },
+    {
+      titulo: 'Encaminhamento',
+      ajuda: 'Para qual órgão a ocorrência foi e em que etapa está.',
+      valor: (item) => <AcaoDeEncaminhar item={item} aoEscolher={aoEncaminhar} />,
+    },
   ]
 }
 
@@ -160,9 +175,10 @@ interface ResultadoProps {
   opcao: OpcaoDeFonte
   aoSortear: () => void
   criterios: readonly Criterio[]
+  aoEncaminhar: (item: OcorrenciaClassificada) => void
 }
 
-function ResultadoDaFila({ fila, opcao, aoSortear, criterios }: ResultadoProps) {
+function ResultadoDaFila({ fila, opcao, aoSortear, criterios, aoEncaminhar }: ResultadoProps) {
   const { dados: catalogo } = useCatalogo()
   const nomes = useMemo(
     () => new Map(catalogo?.bairros.map((bairro) => [bairro.bairroOficial, bairro.nome])),
@@ -208,7 +224,7 @@ function ResultadoDaFila({ fila, opcao, aoSortear, criterios }: ResultadoProps) 
       {aba === 'tabela' ? (
         <Tabela
           legenda="Registros sorteados"
-          colunas={colunasDoTopo(fila.fonte, nomes)}
+          colunas={colunasDoTopo(fila.fonte, nomes, aoEncaminhar)}
           linhas={fila.amostra}
           chave={(item) => String(item.fila)}
         />
@@ -223,6 +239,7 @@ function ResultadoDaFila({ fila, opcao, aoSortear, criterios }: ResultadoProps) 
                 fonte={fila.fonte}
                 total={fila.classificados}
                 nomeDoBairro={nomeDe(item)}
+                aoEncaminhar={aoEncaminhar}
               />
             ))}
           </div>
@@ -262,12 +279,29 @@ function ResultadoDaFila({ fila, opcao, aoSortear, criterios }: ResultadoProps) 
         <summary>A fila inteira: os 20 de maior nota</summary>
         <Tabela
           legenda="Os 20 registros de maior nota"
-          colunas={colunasDoTopo(fila.fonte, nomes)}
+          colunas={colunasDoTopo(fila.fonte, nomes, aoEncaminhar)}
           linhas={fila.topo}
           chave={(item, indice) => `${item.fila}-${indice}`}
         />
       </details>
     </>
+  )
+}
+
+function AvisoDeEnviado({ encaminhamento }: { encaminhamento: Encaminhamento }) {
+  const falhou = encaminhamento.situacao === 'falhou'
+  return (
+    <Aviso
+      tipo={falhou ? 'alerta' : 'sucesso'}
+      titulo={`${encaminhamento.codigo} para ${encaminhamento.nomeDoOrgao}`}
+    >
+      <p>
+        {falhou
+          ? 'O canal do órgão não aceitou a mensagem. Confira a configuração e reenvie.'
+          : `Mensagem enviada pela ${ROTULOS_DOS_CANAIS[encaminhamento.canal]}, com o link para o órgão responder.`}{' '}
+        <Link to={`/painel/encaminhamentos/${encaminhamento.id}`}>Acompanhar</Link>
+      </p>
+    </Aviso>
   )
 }
 
@@ -285,7 +319,21 @@ export function FilaDeOcorrencias({ julgamentos, criterios }: Propriedades) {
     [fonte, julgamentos, semente, filtros],
   )
   const consulta = useFila(parametros)
+  const [escolhida, definirEscolhida] = useState<OcorrenciaClassificada | null>(null)
+  const [enviado, definirEnviado] = useState<Encaminhamento | null>(null)
   const opcao = OPCOES_DE_FONTE.find((item) => item.fonte === fonte) ?? OPCOES_DE_FONTE[0]
+
+  function escolher(item: OcorrenciaClassificada) {
+    definirEnviado(null)
+    definirEscolhida(item)
+  }
+
+  function concluir(encaminhamento: Encaminhamento) {
+    definirEscolhida(null)
+    definirEnviado(encaminhamento)
+    consulta.tentarDeNovo()
+  }
+
   if (!opcao) return null
   const naoSeAplica =
     fonte === 'ouvidoria' && (temTerritorio(filtros) || filtros.categorias.length > 0)
@@ -323,11 +371,21 @@ export function FilaDeOcorrencias({ julgamentos, criterios }: Propriedades) {
               {opcao.nome} tem {formatarNumero(fila.registrosNaBase)} registros na base;{' '}
               {formatarNumero(fila.emAberto)} estão em aberto.
             </p>
+            {enviado && <AvisoDeEnviado encaminhamento={enviado} />}
+            {escolhida?.chaveRegistro && (
+              <PainelDeEncaminhamento
+                chaveRegistro={escolhida.chaveRegistro}
+                nota={escolhida.indice}
+                aoFechar={() => definirEscolhida(null)}
+                aoConcluir={concluir}
+              />
+            )}
             <ResultadoDaFila
               fila={fila}
               opcao={opcao}
               criterios={criterios}
               aoSortear={() => definirSemente(Math.floor(Math.random() * LIMITE_DA_SEMENTE))}
+              aoEncaminhar={escolher}
             />
           </>
         )}
