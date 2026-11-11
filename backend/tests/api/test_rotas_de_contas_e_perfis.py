@@ -54,7 +54,6 @@ SENHA_NOVA = "uma senha bem comprida"
 ROTAS_DO_CIDADAO = [
     "/cidade/ocorrencias",
     "/cidade/meus-relatos",
-    "/cidade/bairros/AFOGADOS",
     "/cidade/pedidos",
 ]
 ROTAS_DA_GESTAO = [

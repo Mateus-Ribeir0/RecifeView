@@ -212,7 +212,6 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `PUT /contas/eu` | Atualiza nome e bairro |
 | `POST /contas/eu/excluir` | Exclui a conta de cidadão, com a senha |
 | `GET /cidade/ocorrencias` | Relatos dos últimos 90 dias, com rua só da lista oficial e número em faixa de centena |
-| `GET /cidade/bairros/{bairro}` | Indicadores do bairro comparados com o Recife |
 | `GET /cidade/meus-relatos` | Os relatos que a própria pessoa enviou com a conta aberta, com endereço e situação. A de um relato somado é a da ocorrência que o recebeu |
 | `GET /cidade/pedidos` | Os protocolos que a pessoa guardou, com o andamento e o encaminhamento de cada um |
 | `POST /cidade/pedidos` | Guarda um protocolo para acompanhar (até 20 por conta) |
