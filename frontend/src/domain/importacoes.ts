@@ -320,3 +320,8 @@ export function descreverDecisoes(decisoes: DecisoesDaImportacao): string[] {
     ...valores,
   ]
 }
+
+export interface OrigensDeImportacao {
+  hostsPermitidos: readonly string[]
+  bancos: readonly string[]
+}

@@ -120,6 +120,41 @@ describe('nova importação', () => {
   })
 })
 
+describe('nova importação por outras origens', () => {
+  it('baixa de um endereço permitido pelo mesmo fluxo', async () => {
+    const servico = criarServicoDeImportacoesFalso()
+    montar(servico, <PaginaNovaImportacao />)
+    const endereco = 'https://dados.recife.pe.gov.br/arquivo.csv'
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Endereço na internet' }))
+    await userEvent.type(screen.getByLabelText('Endereço do arquivo'), endereco)
+    await userEvent.click(screen.getByRole('button', { name: 'Baixar e analisar' }))
+
+    expect(servico.importarDeEndereco).toHaveBeenCalledWith(endereco)
+  })
+
+  it('avisa quando não há banco configurado', async () => {
+    montar(criarServicoDeImportacoesFalso(), <PaginaNovaImportacao />)
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Banco de dados' }))
+
+    expect(await screen.findByText('Nenhum banco configurado')).toBeInTheDocument()
+  })
+
+  it('lê de um banco configurado com a consulta digitada', async () => {
+    const servico = criarServicoDeImportacoesFalso()
+    servico.origens = vi.fn().mockResolvedValue({ hostsPermitidos: [], bancos: ['sgde'] })
+    montar(servico, <PaginaNovaImportacao />)
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Banco de dados' }))
+    await userEvent.selectOptions(await screen.findByLabelText('Conexão'), 'sgde')
+    await userEvent.type(screen.getByLabelText('Consulta'), 'SELECT * FROM demandas')
+    await userEvent.click(screen.getByRole('button', { name: 'Ler e analisar' }))
+
+    expect(servico.importarDeBanco).toHaveBeenCalledWith('sgde', 'SELECT * FROM demandas')
+  })
+})
+
 describe('colunas', () => {
   it('esconde os valores de coluna bloqueada e diz o motivo', async () => {
     montar(

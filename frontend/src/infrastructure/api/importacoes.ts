@@ -3,6 +3,7 @@ import type {
   CampoDaBase,
   DetalheDaImportacao,
   EscolhaDeColunas,
+  OrigensDeImportacao,
   PaginaDeImportacoes,
   PaginaDeRegistros,
   RespostasDePendencias,
@@ -73,6 +74,13 @@ export function criarServicoDeImportacoes(cliente: ClienteHttp): ServicoDeImport
       })
       return converterChaves<ResumoDaImportacao>(resposta, CHAVES_OPACAS)
     },
+    origens: async () =>
+      converterChaves<OrigensDeImportacao>(
+        await cliente.enviar<unknown>(`${BASE}/origens`, { autenticada: true }),
+      ),
+    importarDeEndereco: (endereco) => mudar(`${BASE}/por-endereco`, 'POST', { endereco }),
+    importarDeBanco: (conexao, consulta) =>
+      mudar(`${BASE}/por-banco`, 'POST', { conexao, consulta }),
     consultar: (id) => ler<DetalheDaImportacao>(`${BASE}/${id}`),
     definirColunas: (id, escolha: EscolhaDeColunas) =>
       mudar(`${BASE}/${id}/colunas`, 'PUT', {
