@@ -1,8 +1,16 @@
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PlainSerializer, WithJsonSchema
 
 from app.domain.procedencia import Procedencia
+
+# A chave é um hash de 64 bits: como número, o navegador perderia os últimos dígitos.
+ChaveDoRegistro = Annotated[
+    int,
+    PlainSerializer(str, return_type=str),
+    WithJsonSchema({"type": "string", "pattern": "^-?[0-9]+$"}),
+]
 
 
 class PeriodoResposta(BaseModel):

@@ -2,6 +2,7 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
+from app.api.schemas.comum import ChaveDoRegistro
 from app.api.schemas.painel import Esquema
 from app.application.casos_de_uso.encaminhamentos.consultar import QuadroDeEncaminhamentos
 from app.application.casos_de_uso.encaminhamentos.encaminhar import OcorrenciaParaEncaminhar
@@ -30,7 +31,7 @@ class OrgaoResposta(BaseModel):
 
 
 class OcorrenciaEncaminhavelResposta(Esquema):
-    chave_registro: int
+    chave_registro: ChaveDoRegistro
     fonte: str
     data_abertura: date | None
     categoria: str | None
@@ -159,7 +160,7 @@ class PreparoResposta(BaseModel):
 
 
 class EncaminharEntrada(BaseModel):
-    chave_registro: int
+    chave_registro: ChaveDoRegistro
     orgao: Orgao
     justificativa: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_DA_OBSERVACAO)
     nota: float | None = Field(default=None, ge=0, le=NOTA_MAXIMA)
