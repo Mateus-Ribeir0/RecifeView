@@ -3,6 +3,7 @@ import type {
   DetalheDaImportacao,
   EscolhaDeColunas,
   FiltroDoHistorico,
+  OrigensDeImportacao,
   PaginaDeImportacoes,
   PaginaDeRegistros,
   RespostasDePendencias,
@@ -13,6 +14,9 @@ export interface ServicoDeImportacoes {
   campos(): Promise<readonly CampoDaBase[]>
   listar(filtro: FiltroDoHistorico): Promise<PaginaDeImportacoes>
   enviar(arquivo: File): Promise<ResumoDaImportacao>
+  origens(): Promise<OrigensDeImportacao>
+  importarDeEndereco(endereco: string): Promise<ResumoDaImportacao>
+  importarDeBanco(conexao: string, consulta: string): Promise<ResumoDaImportacao>
   consultar(id: number): Promise<DetalheDaImportacao>
   definirColunas(id: number, escolha: EscolhaDeColunas): Promise<ResumoDaImportacao>
   responderPendencias(id: number, respostas: RespostasDePendencias): Promise<ResumoDaImportacao>

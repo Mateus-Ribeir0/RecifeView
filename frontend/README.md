@@ -61,7 +61,7 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 | `/painel/encaminhamentos` | Encaminhamentos aos órgãos: abertos, prazo vencido, resolvidos e devolvidos; `/:id` mostra as etapas, registra o retorno e reenvia          | Gestor             |
 | `/painel/sobre-os-dados`  | Cobertura, glossário e correções aplicadas                                                                                                  | Gestor             |
 | `/painel/contribuicoes`   | Pente fino dos relatos, ocorrências e geração do pacote                                                                                     | Gestor             |
-| `/painel/importacoes`     | Histórico; `/nova` envia um arquivo e `/:id` mostra os passos e o relatório                                                                 | Gestor             |
+| `/painel/importacoes`     | Histórico; `/nova` traz um arquivo, um endereço permitido ou uma consulta a um banco configurado, e `/:id` mostra os passos e o relatório   | Gestor             |
 
 Os endereços antigos do site (`/o-que-muda`, `/plataforma` e `/dados-e-confianca`) redirecionam para as abas novas. Cada perfil vê só a sua área: quem não é da gestão e abre `/painel` vai para `/cidade`, e a gestão que abre `/cidade` vai para `/painel`. O que cada nível de acesso vê está na [ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md).
 

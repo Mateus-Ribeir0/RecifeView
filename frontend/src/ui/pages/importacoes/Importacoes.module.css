@@ -364,3 +364,12 @@
   font-size: var(--texto-apoio);
   color: var(--cor-texto-secundario);
 }
+
+.origem {
+  display: grid;
+  gap: var(--espaco-4);
+  max-width: 760px;
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-cartao);
+}
