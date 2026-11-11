@@ -70,6 +70,8 @@ Uma tarefa típica de código passa por eles nesta ordem:
 | [docs/adr/0008-navegacao-lateral-com-filtros.md](docs/adr/0008-navegacao-lateral-com-filtros.md) | Proposta: lateral recolhível, filtros numa linha acima do conteúdo, cache de consultas próprio e Leaflet direto |
 | [docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md](docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md) | Proposta: contas de cidadão, o que cada nível vê, proteções do cadastro e envio de e-mail (local ou por SMTP) |
 | [docs/adr/0009-formulario-publico-e-pente-fino.md](docs/adr/0009-formulario-publico-e-pente-fino.md) | Proposta: formulário público em quarentena, pente fino entre canais, comparação com busca vetorial e medição do limite |
+| [docs/adr/0011-encaminhamento-ao-orgao-e-retorno.md](docs/adr/0011-encaminhamento-ao-orgao-e-retorno.md) | Proposta: sugestão do órgão de destino, envio por canal configurável, link de retorno do órgão, envio automático e consulta pelo protocolo |
+| [docs/adr/0012-origens-de-dados-alem-do-arquivo.md](docs/adr/0012-origens-de-dados-alem-do-arquivo.md) | Proposta: importação a partir de um endereço na internet e de um banco externo, com as mesmas regras do arquivo |
 
 As ADRs alimentam a Documentação Final (N9), que pede o histórico de decisões.
 

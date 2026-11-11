@@ -31,6 +31,8 @@ Cada decisão técnica que muda a forma do sistema ganha um arquivo curto aqui: 
 | [0008](0008-navegacao-lateral-com-filtros.md) | Lateral recolhível e filtros numa linha acima do conteúdo | Proposta | 05/11/2026 |
 | [0009](0009-formulario-publico-e-pente-fino.md) | Formulário público com quarentena e pente fino entre canais | Proposta | 06/11/2026 |
 | [0010](0010-contas-de-cidadao-e-niveis-de-acesso.md) | Contas de cidadão e três níveis de acesso | Proposta | 10/11/2026 |
+| [0011](0011-encaminhamento-ao-orgao-e-retorno.md) | Encaminhamento ao órgão responsável, retorno do órgão e consulta pelo protocolo | Proposta | 11/11/2026 |
+| [0012](0012-origens-de-dados-alem-do-arquivo.md) | Origens de dados além do arquivo: endereço na internet e banco externo | Proposta | 11/11/2026 |
 
 ## Decisões em aberto
 
@@ -42,6 +44,7 @@ Levantadas ao montar o C4 v0.1 (15/10/2026) e ao definir a stack. Cada uma vira 
 | Onde roda o Processor | AWS Lambda ou ECS/Fargate | O Lambda tem limite de 15 minutos, e a carga histórica tem cerca de 2,6 milhões de linhas. Dá para combinar: Fargate na carga completa e Lambda no incremental |
 | Provedor de e-mail | Gmail ou outra conta de teste, Amazon SES, Brevo, servidor da Prefeitura | A recuperação de senha das contas de cidadão depende dele. A API já envia por qualquer SMTP (`API_SMTP_*`); falta escolher o provedor e o remetente oficiais ([ADR 0010](0010-contas-de-cidadao-e-niveis-de-acesso.md)) |
 | Autenticação | JWT próprio ou serviço gerenciado (ex.: Amazon Cognito) | Já existe uma implementação local com JWT próprio atrás de portas, descrita na [ADR 0005](0005-autenticacao-com-jwt-proprio.md) (proposta). Falta o grupo aceitar ou trocar pelo serviço gerenciado |
+| Canal real de cada órgão no encaminhamento | E-mail, webhook do sistema do órgão ou robô que preenche o formulário dele | Depende de acordo com Emlurb, Compesa, Neoenergia e os demais. Até lá, tudo fica na caixa de saída local ([ADR 0011](0011-encaminhamento-ao-orgao-e-retorno.md)) |
 | Seta sem destino abaixo da API no esboço | Cache, fila, módulo de ML ou outro serviço | Perguntar ao Prof. Marcelo |
 | Ferramentas ainda propostas | TanStack Query, react-leaflet, GitHub Actions, pre-commit com commitlint | Confirmar quando forem necessárias (ver [stack.md](../stack.md)) |
 | Definição de reincidência | Uma das três em [dados.md](../dados.md#definições-de-métricas) | Precisa estar fechada antes da tela de Recorrências |
