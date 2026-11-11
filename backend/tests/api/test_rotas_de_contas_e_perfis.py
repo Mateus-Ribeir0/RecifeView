@@ -61,6 +61,13 @@ ROTAS_DA_GESTAO = [
     ("get", "/contribuicoes/resumo"),
     ("get", "/contribuicoes/pares"),
     ("post", "/contribuicoes/pacotes"),
+    ("get", "/encaminhamentos"),
+    ("get", "/encaminhamentos/orgaos"),
+    ("get", "/encaminhamentos/ocorrencias/1"),
+    ("post", "/encaminhamentos"),
+    ("get", "/encaminhamentos/1"),
+    ("post", "/encaminhamentos/1/retorno"),
+    ("post", "/encaminhamentos/1/reenvio"),
 ]
 
 

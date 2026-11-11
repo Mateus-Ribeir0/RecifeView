@@ -42,19 +42,21 @@ backend/app/
   domain/
     importacao/          Campos, layouts, privacidade, normalizador, correções, pendências e chaves
     contribuicao/        Catálogo do formulário, endereço canônico, semelhança, comparação de relatos e conferência entre canais
+    encaminhamento/      Órgãos de destino, sugestão a partir dos dados, ciclo enviado, recebido, resolvido ou devolvido e a mensagem ao órgão
     filtros.py           Filtros globais como objeto de valor (período, bairro, rpa, categoria...)
     prazos.py            Regras de prazo: o que conta como defeito, censura, percentis
     territorio.py        Per capita, limiar de população mínima
     recorrencias.py      Duplicidade × reincidência
     privacidade.py       O que pode e o que não pode sair
   application/
-    portas/              Protocols: repositórios do painel, importacoes.py (armazenamento, fila, leitor, carregador), contribuicoes.py
-    casos_de_uso/        painel/ (um por tela), importacoes/ (um por passo), contribuicoes/, acesso
+    portas/              Protocols: repositórios do painel, importacoes.py (armazenamento, fila, leitor, carregador), contribuicoes.py, encaminhamentos.py (repositório e despacho aos órgãos)
+    casos_de_uso/        painel/ (um por tela), importacoes/ (um por passo), contribuicoes/, encaminhamentos/, acesso
   infrastructure/
     db/                  sessão SQLAlchemy, modelos ORM
     repositories/        implementações das portas com SQLAlchemy
     importacao/          leitores de arquivo, armazenamento local, fila em processo, montagem
     contribuicoes/       limite de envios em memória
+    encaminhamento/      canais de envio ao órgão (caixa local, e-mail, webhook) e o despacho configurado por órgão
     auth/                implementação do ProvedorIdentidade (JWT próprio ou Cognito, conforme a ADR)
     settings.py          Pydantic Settings
   api/

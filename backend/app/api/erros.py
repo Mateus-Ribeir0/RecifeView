@@ -23,19 +23,26 @@ from app.domain.erros import (
     DiaForaDaJanela,
     EmailInvalido,
     EmailJaCadastrado,
+    EncaminhamentoInvalido,
+    EncaminhamentoNaoEncontrado,
     EnviosDemais,
     ErroDeDominio,
     ImportacaoEmEstadoInvalido,
     ImportacaoNaoEncontrada,
     ImportacaoNaoPodeSerDesfeita,
+    LinkDeRetornoInvalido,
+    OcorrenciaJaEncaminhada,
+    OcorrenciaNaoEncontrada,
     PacoteVazio,
     ParNaoEncontrado,
     PenteFinoPendente,
     PeriodoInvalido,
+    ProtocoloInvalido,
     SenhaAtualIncorreta,
     SenhaFraca,
     SessaoInvalida,
     TentativasDemais,
+    TransicaoInvalida,
     UsuarioNaoEncontrado,
     ValorDeFiltroInvalido,
 )
@@ -172,6 +179,39 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
     PacoteVazio: RespostaDeErro(
         status.HTTP_409_CONFLICT, "pacote_vazio", "Não há ocorrências novas para gerar um pacote."
     ),
+    ProtocoloInvalido: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT,
+        "protocolo_invalido",
+        "Confira o protocolo: de 4 a 40 caracteres, só letras, números, ponto, barra e hífen.",
+    ),
+    OcorrenciaNaoEncontrada: RespostaDeErro(
+        status.HTTP_404_NOT_FOUND,
+        "ocorrencia_nao_encontrada",
+        "Esta ocorrência não está mais na base. Atualize a fila.",
+    ),
+    OcorrenciaJaEncaminhada: RespostaDeErro(
+        status.HTTP_409_CONFLICT,
+        "ocorrencia_ja_encaminhada",
+        "Esta ocorrência já tem um encaminhamento aberto. Espere o retorno do órgão.",
+    ),
+    EncaminhamentoNaoEncontrado: RespostaDeErro(
+        status.HTTP_404_NOT_FOUND,
+        "encaminhamento_nao_encontrado",
+        "Encaminhamento não encontrado.",
+    ),
+    EncaminhamentoInvalido: RespostaDeErro(
+        status.HTTP_422_UNPROCESSABLE_CONTENT, "encaminhamento_invalido", "Confira os campos."
+    ),
+    TransicaoInvalida: RespostaDeErro(
+        status.HTTP_409_CONFLICT,
+        "resposta_fora_de_ordem",
+        "A situação do encaminhamento mudou e não aceita esta resposta. Atualize a página.",
+    ),
+    LinkDeRetornoInvalido: RespostaDeErro(
+        status.HTTP_404_NOT_FOUND,
+        "link_de_retorno_invalido",
+        "Este link venceu ou não existe. Peça um novo à gestão que encaminhou a ocorrência.",
+    ),
 }
 
 
@@ -191,7 +231,13 @@ def registrar_tratadores_de_erro(app: FastAPI) -> None:
 
 def _tratar_erro_de_dominio(_: Request, erro: ErroDeDominio) -> JSONResponse:
     resposta = RESPOSTAS_POR_ERRO.get(type(erro), ERRO_GENERICO)
-    com_motivo = (SenhaFraca, DecisaoInvalida, ContribuicaoInvalida, CadastroInvalido)
+    com_motivo = (
+        SenhaFraca,
+        DecisaoInvalida,
+        ContribuicaoInvalida,
+        CadastroInvalido,
+        EncaminhamentoInvalido,
+    )
     mensagem = erro.motivo if isinstance(erro, com_motivo) else resposta.mensagem
     detalhes = _detalhes_do_erro(erro)
     return _responder(
@@ -202,7 +248,7 @@ def _tratar_erro_de_dominio(_: Request, erro: ErroDeDominio) -> JSONResponse:
 def _detalhes_do_erro(erro: ErroDeDominio) -> dict[str, Any] | None:
     if isinstance(erro, ContaBloqueada):
         return {"desbloqueio_em": erro.desbloqueio_em.isoformat()}
-    if isinstance(erro, (ContribuicaoInvalida, CadastroInvalido)):
+    if isinstance(erro, (ContribuicaoInvalida, CadastroInvalido, EncaminhamentoInvalido)):
         return {"campo": erro.campo}
     return None
 

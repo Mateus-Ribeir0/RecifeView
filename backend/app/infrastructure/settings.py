@@ -1,16 +1,37 @@
 from pathlib import Path
 from typing import Self
 
-from pydantic import Field, SecretStr, field_validator, model_validator
+from pydantic import BaseModel, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.domain.encaminhamento.encaminhamento import CanalDeEnvio
+from app.domain.encaminhamento.orgaos import Orgao
 from app.infrastructure.email.envio_por_smtp import SegurancaDoSmtp, ServidorSmtp
 
 TAMANHO_MINIMO_DO_SEGREDO_JWT = 32
 PASTA_PADRAO_DAS_IMPORTACOES = Path("../data/importacoes")
 PASTA_PADRAO_DOS_EMAILS = Path("../data/emails")
+PASTA_PADRAO_DOS_ENCAMINHAMENTOS = Path("../data/encaminhamentos")
+ENDERECO_PADRAO_DO_SITE = "http://localhost:5173"
+INICIOS_ACEITOS_DO_WEBHOOK = ("https://", "http://localhost", "http://127.0.0.1")
 BYTES_POR_MEGABYTE = 1024 * 1024
 PORTA_PADRAO_DO_SMTP = 587
+
+
+class CanalConfigurado(BaseModel):
+    canal: CanalDeEnvio
+    destino: str = ""
+    token: SecretStr | None = None
+
+    @model_validator(mode="after")
+    def _exigir_destino_do_canal(self) -> Self:
+        if self.canal is CanalDeEnvio.EMAIL and "@" not in self.destino:
+            raise ValueError("O canal de e-mail precisa de um endereço em destino")
+        if self.canal is CanalDeEnvio.WEBHOOK and not self.destino.startswith(
+            INICIOS_ACEITOS_DO_WEBHOOK
+        ):
+            raise ValueError("O webhook precisa de um endereço https em destino")
+        return self
 
 
 class ConfiguracaoDoBanco(BaseSettings):
@@ -35,6 +56,9 @@ class Configuracao(ConfiguracaoDoBanco):
     smtp_usuario: str | None = None
     smtp_senha: SecretStr | None = None
     smtp_remetente: str | None = None
+    canais_dos_orgaos: dict[Orgao, CanalConfigurado] = Field(default_factory=dict)
+    pasta_dos_encaminhamentos: Path = PASTA_PADRAO_DOS_ENCAMINHAMENTOS
+    endereco_do_site: str = ENDERECO_PADRAO_DO_SITE
 
     @field_validator("segredo_jwt")
     @classmethod

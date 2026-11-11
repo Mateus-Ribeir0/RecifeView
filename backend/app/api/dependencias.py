@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.casos_de_uso.contas.servicos import ServicosDeConta
 from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
+from app.application.casos_de_uso.encaminhamentos.servicos import ServicosDeEncaminhamento
 from app.application.casos_de_uso.entrar import Entrar
 from app.application.casos_de_uso.identificar_usuario import IdentificarUsuario
 from app.application.casos_de_uso.importacoes.servicos import ServicosDeImportacao
@@ -18,6 +19,10 @@ from app.application.casos_de_uso.trocar_senha import TrocarSenha
 from app.application.portas.acessos import RegistroDeAcessos
 from app.application.portas.contas import EnvioDeEmail
 from app.application.portas.contribuicoes import LimiteDeEnvios
+from app.application.portas.encaminhamentos import (
+    DespachoAosOrgaos,
+    EncaminhamentosDasOcorrencias,
+)
 from app.application.portas.painel import (
     CatalogoRepository,
     PrazoRepository,
@@ -47,6 +52,7 @@ from app.infrastructure.repositories.catalogos import (
 )
 from app.infrastructure.repositories.codigos_de_conta import CodigoDeContaRepositorySql
 from app.infrastructure.repositories.consultas import RegistroDeConsultasSql
+from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
 from app.infrastructure.repositories.prazos import PrazoRepositorySql
 from app.infrastructure.repositories.prioridade import PrioridadeRepositorySql
 from app.infrastructure.repositories.recorrencias import RecorrenciaRepositorySql
@@ -91,6 +97,7 @@ class RepositoriosDoPainel:
     prioridade: PrioridadeRepository
     war_room: WarRoomRepository
     sobre: SobreRepository
+    encaminhamentos: EncaminhamentosDasOcorrencias
 
 
 def obter_configuracao(request: Request) -> Configuracao:
@@ -217,6 +224,7 @@ def obter_repositorios_do_painel(
         prioridade=PrioridadeRepositorySql(sessao),
         war_room=WarRoomRepositorySql(sessao),
         sobre=SobreRepositorySql(sessao),
+        encaminhamentos=EncaminhamentoRepositorySql(sessao),
     )
 
 
@@ -336,3 +344,30 @@ def auditar_consulta(
     consultas.registrar(
         ConsultaAuditada(usuario.id, request.url.path, parametros, seguranca.relogio.agora())
     )
+
+
+def obter_servicos_de_encaminhamento(
+    request: Request, sessao: Annotated[Session, Depends(abrir_transacao)]
+) -> ServicosDeEncaminhamento:
+    configuracao: Configuracao = request.app.state.configuracao
+    despacho: DespachoAosOrgaos = request.app.state.despacho_aos_orgaos
+    seguranca: Seguranca = request.app.state.seguranca
+    return ServicosDeEncaminhamento(
+        encaminhamentos=EncaminhamentoRepositorySql(sessao),
+        despacho=despacho,
+        relogio=seguranca.relogio,
+        endereco_do_site=configuracao.endereco_do_site,
+    )
+
+
+ServicosDeEncaminhamentoDep = Annotated[
+    ServicosDeEncaminhamento, Depends(obter_servicos_de_encaminhamento)
+]
+
+
+def limitar_consultas_publicas(request: Request) -> None:
+    """Link de retorno e consulta pelo protocolo não têm sessão: cada origem tem um limite."""
+    limite: LimiteDeEnvios = request.app.state.limite_de_consultas_publicas
+    origem = request.client.host if request.client else ORIGEM_DESCONHECIDA
+    if not limite.permitir(origem):
+        raise TentativasDemais

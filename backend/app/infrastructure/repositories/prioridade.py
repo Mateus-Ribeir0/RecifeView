@@ -1,3 +1,6 @@
+from collections.abc import Sequence
+from typing import Any
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -21,6 +24,22 @@ FONTES_DO_REGISTRO = {
 }
 
 
+def _ocorrencia_do_156(linha: Sequence[Any]) -> Ocorrencia:
+    abertura, idade, prazo, anteriores, bairro, rpa, categoria, servico, situacao, chave = linha
+    return Ocorrencia(
+        data_abertura=abertura,
+        idade_dias=idade,
+        prazo_tipico_dias=prazo,
+        pedidos_anteriores=anteriores,
+        bairro_oficial=bairro,
+        rpa=rpa,
+        categoria=categoria,
+        servico=servico,
+        situacao=situacao,
+        chave_registro=chave,
+    )
+
+
 class PrioridadeRepositorySql:
     def __init__(self, sessao: Session) -> None:
         self._sessao = sessao
@@ -35,13 +54,14 @@ class PrioridadeRepositorySql:
         consulta = f"""
         SELECT
             t.data_abertura, r.data_referencia - t.data_abertura, t.prazo_tipico_dias,
-            t.pedidos_anteriores, t.bairro_oficial, t.rpa, t.categoria, t.servico, t.situacao
+            t.pedidos_anteriores, t.bairro_oficial, t.rpa, t.categoria, t.servico, t.situacao,
+            t.chave_registro
         FROM ouro.mv_linha_do_tempo_156 t
         CROSS JOIN ouro.vw_referencia r
         {recorte.onde}
         """
         linhas = self._sessao.execute(text(consulta), recorte.parametros)
-        return [Ocorrencia(*linha) for linha in linhas]
+        return [_ocorrencia_do_156(linha) for linha in linhas]
 
     def ocorrencias_da_camara(self, filtros: Filtros) -> list[Ocorrencia]:
         recorte = (
@@ -53,7 +73,7 @@ class PrioridadeRepositorySql:
         SELECT
             t.data_abertura, r.data_referencia - t.data_envio, t.prazo_tipico_dias,
             t.pedidos_anteriores, t.bairro_oficial, t.rpa, t.categoria, t.orgao, t.canal_envio,
-            t.data_envio
+            t.data_envio, t.chave_registro
         FROM ouro.mv_linha_do_tempo_camara t
         CROSS JOIN ouro.vw_referencia r
         {recorte.onde}
@@ -70,17 +90,29 @@ class PrioridadeRepositorySql:
                 orgao=orgao,
                 canal=canal,
                 data_envio=envio,
+                chave_registro=chave,
             )
-            for abertura, idade, prazo, anteriores, bairro, rpa, categoria, orgao, canal, envio in (
-                self._sessao.execute(text(consulta), recorte.parametros)
-            )
+            for (
+                abertura,
+                idade,
+                prazo,
+                anteriores,
+                bairro,
+                rpa,
+                categoria,
+                orgao,
+                canal,
+                envio,
+                chave,
+            ) in self._sessao.execute(text(consulta), recorte.parametros)
         ]
 
     def ocorrencias_da_ouvidoria(self) -> list[Ocorrencia]:
         consulta = """
         SELECT
             t.data_abertura, t.data_prazo, r.data_referencia - t.data_prazo,
-            r.data_referencia - t.data_abertura, t.assunto, t.natureza, t.orgao, t.canal_entrada
+            r.data_referencia - t.data_abertura, t.assunto, t.natureza, t.orgao, t.canal_entrada,
+            t.chave_registro
         FROM ouro.mv_linha_do_tempo_ouvidoria t
         CROSS JOIN ouro.vw_referencia r
         WHERE t.data_fim IS NULL
@@ -95,8 +127,9 @@ class PrioridadeRepositorySql:
                 canal=canal,
                 data_prazo=prazo,
                 dias_alem_do_prazo=alem,
+                chave_registro=chave,
             )
-            for abertura, prazo, alem, idade, assunto, natureza, orgao, canal in (
+            for abertura, prazo, alem, idade, assunto, natureza, orgao, canal, chave in (
                 self._sessao.execute(text(consulta))
             )
         ]

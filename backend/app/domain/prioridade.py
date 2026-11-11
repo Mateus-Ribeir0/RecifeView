@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import date
 from enum import StrEnum
 from math import ceil
@@ -17,6 +17,7 @@ from app.domain.ahp import (
     notas_dos_bairros,
     posicoes_relativas,
 )
+from app.domain.encaminhamento.encaminhamento import Encaminhamento
 
 NOTA_ALTA = 7
 TAMANHO_DA_AMOSTRA = 3
@@ -48,6 +49,7 @@ class Ocorrencia:
     data_prazo: date | None = None
     natureza: str | None = None
     dias_alem_do_prazo: int | None = None
+    chave_registro: int | None = None
 
 
 @dataclass(frozen=True)
@@ -77,6 +79,7 @@ class FilaClassificada:
     amostra: list[OcorrenciaClassificada]
     topo: list[OcorrenciaClassificada]
     distribuicao: list[FaixaDeNota]
+    encaminhamentos: dict[int, Encaminhamento] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
