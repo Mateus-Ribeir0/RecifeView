@@ -7,6 +7,7 @@ from app.application.portas.contas import MensagemDeEmail
 from app.domain.acesso import EventoDeAcesso, TipoDeEventoDeAcesso
 from app.domain.conta import CodigoDeConta, FinalidadeDoCodigo
 from app.domain.email import Email
+from app.domain.pedido import PedidoAcompanhado, RegistroDoPedido
 from app.domain.sessao import Sessao
 from app.domain.usuario import Perfil, Usuario
 
@@ -139,3 +140,32 @@ class CaixaDeEmailsEmMemoria:
         achado = re.search(r"\b(\d{3}) (\d{3})\b", self.mensagens[-1].corpo)
         assert achado is not None
         return achado.group(1) + achado.group(2)
+
+
+class PedidosAcompanhadosEmMemoria:
+    def __init__(self) -> None:
+        self.por_usuario: dict[UUID, list[PedidoAcompanhado]] = {}
+
+    def listar(self, usuario_id: UUID) -> list[PedidoAcompanhado]:
+        return list(self.por_usuario.get(usuario_id, []))
+
+    def adicionar(self, usuario_id: UUID, protocolo: str, agora: datetime) -> PedidoAcompanhado:
+        total = sum(len(pedidos) for pedidos in self.por_usuario.values())
+        pedido = PedidoAcompanhado(total + 1, protocolo, agora)
+        self.por_usuario.setdefault(usuario_id, []).append(pedido)
+        return pedido
+
+    def remover(self, usuario_id: UUID, pedido_id: int) -> None:
+        pedidos = self.por_usuario.get(usuario_id, [])
+        self.por_usuario[usuario_id] = [item for item in pedidos if item.id != pedido_id]
+
+    def remover_todos(self, usuario_id: UUID) -> None:
+        self.por_usuario.pop(usuario_id, None)
+
+
+class ConsultaDePedidosEmMemoria:
+    def __init__(self, *registros: RegistroDoPedido) -> None:
+        self._registros = registros
+
+    def registros(self, protocolo: str) -> list[RegistroDoPedido]:
+        return [registro for registro in self._registros if registro.protocolo == protocolo]

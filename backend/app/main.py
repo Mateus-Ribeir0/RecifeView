@@ -17,6 +17,7 @@ from app.api.routers import (
     encaminhamentos,
     importacoes,
     painel,
+    publico,
     saude,
 )
 from app.application.casos_de_uso.contribuicoes.expurgar_enderecos import ExpurgarEnderecos
@@ -99,6 +100,7 @@ def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
     app.include_router(contribuicoes.roteador, prefix=PREFIXO_DA_API)
     app.include_router(encaminhamentos.roteador, prefix=PREFIXO_DA_API)
     app.include_router(encaminhamentos.retornos, prefix=PREFIXO_DA_API)
+    app.include_router(publico.roteador, prefix=PREFIXO_DA_API)
     for roteador in painel.ROTEADORES:
         app.include_router(roteador, prefix=PREFIXO_DA_API)
     return app
