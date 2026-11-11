@@ -7,6 +7,7 @@ import {
   criarServicoDeRetornoDoOrgao,
 } from '../../infrastructure/api/encaminhamentos'
 import { criarServicoDeImportacoes } from '../../infrastructure/api/importacoes'
+import { criarServicoDeInformacao } from '../../infrastructure/api/informacao'
 import { criarServicoDoPainel } from '../../infrastructure/api/painel'
 
 const URL_DA_API = import.meta.env.VITE_URL_DA_API ?? '/api/v1'
@@ -20,3 +21,4 @@ export const servicoDeContribuicoes = criarServicoDeContribuicoes(cliente)
 export const servicoDaCidade = criarServicoDaCidade(cliente)
 export const servicoDeEncaminhamentos = criarServicoDeEncaminhamentos(cliente)
 export const servicoDeRetornoDoOrgao = criarServicoDeRetornoDoOrgao(cliente)
+export const servicoDeInformacao = criarServicoDeInformacao(cliente)

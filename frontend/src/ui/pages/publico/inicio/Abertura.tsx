@@ -11,16 +11,16 @@ export function Abertura() {
         <div className={`conteudo ${estilos.texto}`}>
           <p className={estilos.chamada}>Para quem mora no Recife</p>
           <h1 id="titulo-abertura" className={estilos.titulo}>
-            Relate um problema na sua rua e acompanhe o que já foi relatado no seu bairro
+            Acompanhe o seu pedido até o órgão que resolve
           </h1>
           <p className={estilos.descricao}>
-            Buraco, lâmpada apagada, entulho, galeria entupida. O relato leva um minuto e não pede
-            seus dados. Com uma conta, você vê o que outras pessoas relataram e em que pé está cada
-            caso.
+            Você pede no Conecta Recife, na Central 156 ou na Ouvidoria. Aqui você vê em que pé
+            está, para qual órgão a gestão encaminhou e o que ele respondeu. E, se viu um problema
+            na rua, relata em um minuto, sem dar seus dados.
           </p>
           <div className={estilos.acoes}>
-            <LinkDeBotao para="/cadastrar" variante="claro">
-              Criar conta
+            <LinkDeBotao para="/acompanhar" variante="claro">
+              Acompanhar um pedido
             </LinkDeBotao>
             <LinkDeBotao para="/contribuir" variante="contorno">
               Relatar sem conta

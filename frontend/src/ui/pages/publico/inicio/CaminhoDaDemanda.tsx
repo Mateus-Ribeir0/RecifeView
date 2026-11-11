@@ -20,7 +20,7 @@ const ENTRADAS: readonly Entrada[] = [
 const ETAPAS = [
   { titulo: 'Pente fino', detalhe: 'compara e pergunta', x: 430 },
   { titulo: 'Base única', detalhe: 'bairro, serviço, período', x: 660 },
-  { titulo: 'Painel da gestão', detalhe: 'onde agir primeiro', x: 890 },
+  { titulo: 'Painel da gestão', detalhe: 'prioriza e encaminha', x: 890 },
 ] as const
 
 const LARGURA_DA_ENTRADA = 220
@@ -134,7 +134,8 @@ export function CaminhoDaDemanda() {
           <p className={secao.abertura}>
             Arquivos das fontes e relatos do formulário passam pelo mesmo pente fino. O que for
             repetido é somado ou vai para a decisão de uma pessoa, e só depois chega aos
-            indicadores.
+            indicadores. Da fila de prioridade, a ocorrência segue para o órgão que resolve, e a
+            resposta dele volta para quem pediu.
           </p>
         </Aparecer>
         <Aparecer className={estilos.moldura}>

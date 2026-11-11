@@ -36,6 +36,7 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 | `/`                       | Início: abertura para quem mora no Recife, números, o que muda, passos e mapa                                                               | Público            |
 | `/como-funciona`          | Caminho do relato, os três níveis de acesso, pente fino e privacidade                                                                       | Público            |
 | `/a-cidade-em-numeros`    | Os achados da base aberta, cada um com fonte e período                                                                                      | Público            |
+| `/acompanhar`             | Consulta de um pedido pelo protocolo, com o órgão para o qual foi encaminhado, e os números de um bairro comparados com o Recife            | Público            |
 | `/contribuir`             | Formulário público em três passos (relatar sem conta)                                                                                       | Público            |
 | `/entrar`                 | Entrada do cidadão (cabeçalho azul e foto do Recife)                                                                                        | Só quem não entrou |
 | `/entrar/gestao`          | Entrada da gestão (cabeçalho azul-marinho); recusa conta de cidadão                                                                         | Só quem não entrou |
@@ -46,7 +47,8 @@ Ela fica em http://localhost:4173, com o mesmo repasse de `/api`.
 | `/definir-senha`          | Troca da senha temporária (obrigatória no primeiro acesso) ou troca voluntária                                                              | Quem entrou        |
 | `/cidade`                 | Relatos da cidade nos últimos 90 dias, com rua, faixa de numeração e situação                                                               | Cidadão            |
 | `/cidade/meus-relatos`    | Os relatos que a pessoa enviou com a conta aberta e o andamento de cada um                                                                  | Cidadão            |
-| `/cidade/meu-bairro`      | Indicadores do bairro escolhido comparados com o Recife                                                                                     | Cidadão            |
+| `/cidade/meus-pedidos`    | Os protocolos que a pessoa guardou (até 20) e o andamento de cada um                                                                        | Cidadão            |
+| `/cidade/meu-bairro`      | Indicadores do bairro escolhido comparados com o Recife (os mesmos de `/acompanhar`, com a opção de salvar o bairro na conta)               | Cidadão            |
 | `/cidade/relatar`         | O formulário público dentro da área do cidadão                                                                                              | Cidadão            |
 | `/cidade/conta`           | Nome, bairro, troca de senha e exclusão da conta                                                                                            | Cidadão            |
 | `/painel`                 | Início: principais indicadores e volume por fonte                                                                                           | Gestor             |

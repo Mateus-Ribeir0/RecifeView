@@ -165,17 +165,17 @@ export function PaginaComoFunciona() {
     <>
       <CabecalhoDaPagina
         rotulo="Como funciona"
-        titulo="Do seu relato até a gestão, e de volta para você"
+        titulo="Do seu pedido até o órgão, e de volta para você"
       >
-        Quem pode ver o quê, como a plataforma evita duplicidade e o que ela faz para proteger quem
-        relata.
+        O caminho de um pedido até quem resolve, quem pode ver o quê, como a plataforma evita
+        duplicidade e o que ela faz para proteger quem pede e quem relata.
       </CabecalhoDaPagina>
       <section className={secao.secao} aria-labelledby="titulo-passos">
         <div className="conteudo">
           <Aparecer>
             <p className={secao.rotulo}>Passo a passo</p>
             <h2 id="titulo-passos" className={secao.titulo}>
-              Quatro passos, e você acompanha cada um
+              Quatro passos, e você acompanha cada um pelo protocolo
             </h2>
           </Aparecer>
           <PassosDoCidadao />
@@ -189,9 +189,10 @@ export function PaginaComoFunciona() {
               Três níveis de acesso
             </h2>
             <p className={secao.abertura}>
-              Com conta, você vê a rua e uma faixa de numeração de cada relato. O número exato e o
-              texto escrito ficam só com a gestão, que usa essas informações para conferir
-              duplicidade.
+              Sem conta, você consulta um pedido pelo protocolo e os números do seu bairro. Com
+              conta, guarda os seus protocolos e vê a rua e uma faixa de numeração de cada relato. O
+              número exato e o texto escrito ficam só com a gestão, que usa essas informações para
+              conferir duplicidade.
             </p>
           </Aparecer>
           <Aparecer>
@@ -203,7 +204,7 @@ export function PaginaComoFunciona() {
       <SecaoDePrivacidade />
       <section className={estilos.chamada} aria-label="Criar conta">
         <div className={`conteudo ${estilos.chamadaInterna}`}>
-          <p>Quer acompanhar o seu bairro?</p>
+          <p>Quer acompanhar os seus pedidos num lugar só?</p>
           <LinkDeBotao para="/cadastrar" variante="claro">
             Criar conta
           </LinkDeBotao>

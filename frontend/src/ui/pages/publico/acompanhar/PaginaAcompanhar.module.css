@@ -1,0 +1,64 @@
+.grade {
+  display: grid;
+  gap: var(--espaco-6);
+  align-items: start;
+  padding-block: var(--espaco-7) var(--espaco-8);
+}
+
+@media (min-width: 1000px) {
+  .grade {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: var(--espaco-7);
+  }
+}
+
+.secao {
+  display: grid;
+  gap: var(--espaco-4);
+  grid-column: 1;
+}
+
+.secao h2,
+.lateral h2 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.formulario {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+}
+
+.formulario > div {
+  flex: 1 1 260px;
+}
+
+.formulario button {
+  margin-top: 26px;
+}
+
+.nota {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-secundario);
+}
+
+.lista {
+  display: grid;
+  gap: var(--espaco-4);
+}
+
+.lateral {
+  display: grid;
+  gap: var(--espaco-3);
+  padding: var(--espaco-5);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-azul-claro);
+  color: var(--cor-texto-secundario);
+}
+
+.lateral a {
+  color: var(--cor-azul-escuro);
+  font-weight: 600;
+}
