@@ -2,13 +2,16 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Query, Request, status
 
-from app.api.dependencias import GestorAtualDep, ServicosDeImportacaoDep
+from app.api.dependencias import GestorAtualDep, OrigensDeDadosDep, ServicosDeImportacaoDep
 from app.api.schemas.erros import ErroResposta
 from app.api.schemas.importacoes import (
     CampoResposta,
     EscolhaDeColunasEntrada,
     ImportacaoDetalheResposta,
     ImportacaoResumoResposta,
+    ImportarDeBancoEntrada,
+    ImportarDeEnderecoEntrada,
+    OrigensResposta,
     PaginaDeImportacoesResposta,
     PaginaDeRegistrosResposta,
     RespostasDePendenciasEntrada,
@@ -26,6 +29,11 @@ from app.application.casos_de_uso.importacoes.definir_colunas import (
 )
 from app.application.casos_de_uso.importacoes.desfazer_importacao import DesfazerImportacao
 from app.application.casos_de_uso.importacoes.receber_arquivo import ReceberArquivo
+from app.application.casos_de_uso.importacoes.receber_de_origem import (
+    ImportarDeBanco,
+    ImportarDeEndereco,
+    PedidoDeExtracao,
+)
 from app.application.casos_de_uso.importacoes.responder_pendencias import (
     ResponderPendencias,
     RespostasDePendencias,
@@ -47,6 +55,62 @@ RESPOSTA_DE_ESTADO_INVALIDO: dict[int | str, dict[str, Any]] = {
 @roteador.get("/campos", summary="Lista os campos da base para o mapeamento de colunas")
 def listar_campos(_: GestorAtualDep) -> list[CampoResposta]:
     return [CampoResposta.model_validate(campo) for campo in CAMPOS]
+
+
+@roteador.get(
+    "/origens",
+    summary="De onde dá para importar além do arquivo: hosts permitidos e bancos configurados",
+)
+def listar_origens(_: GestorAtualDep, origens: OrigensDeDadosDep) -> OrigensResposta:
+    return OrigensResposta(
+        hosts_permitidos=origens.por_endereco.hosts_permitidos,
+        bancos=origens.por_banco.conexoes(),
+    )
+
+
+RESPOSTA_DE_ORIGEM: dict[int | str, dict[str, Any]] = {
+    413: {"model": ErroResposta, "description": "Arquivo maior que o limite"},
+    422: {"model": ErroResposta, "description": "Origem recusada ou arquivo vazio"},
+    502: {"model": ErroResposta, "description": "A origem não respondeu"},
+}
+
+
+@roteador.post(
+    "/por-endereco",
+    status_code=status.HTTP_201_CREATED,
+    summary="Baixa um arquivo de um endereço permitido e abre a importação",
+    description="Só https e só os hosts de API_HOSTS_DE_IMPORTACAO. Depois segue o fluxo normal.",
+    responses=RESPOSTA_DE_ORIGEM,
+)
+def importar_de_endereco(
+    dados: ImportarDeEnderecoEntrada,
+    usuario: GestorAtualDep,
+    servicos: ServicosDeImportacaoDep,
+    origens: OrigensDeDadosDep,
+) -> ImportacaoResumoResposta:
+    importacao = ImportarDeEndereco(servicos, origens).executar(dados.endereco, usuario.id)
+    return ImportacaoResumoResposta.de_importacao(importacao)
+
+
+@roteador.post(
+    "/por-banco",
+    status_code=status.HTTP_201_CREATED,
+    summary="Lê uma consulta de um banco configurado e abre a importação",
+    description=(
+        "A conexão vem de API_BANCOS_DE_ORIGEM, nunca da tela. Só SELECT ou WITH, um comando, "
+        "em transação só de leitura e com tempo limite."
+    ),
+    responses=RESPOSTA_DE_ORIGEM,
+)
+def importar_de_banco(
+    dados: ImportarDeBancoEntrada,
+    usuario: GestorAtualDep,
+    servicos: ServicosDeImportacaoDep,
+    origens: OrigensDeDadosDep,
+) -> ImportacaoResumoResposta:
+    pedido = PedidoDeExtracao(dados.conexao, dados.consulta)
+    importacao = ImportarDeBanco(servicos, origens).executar(pedido, usuario.id)
+    return ImportacaoResumoResposta.de_importacao(importacao)
 
 
 @roteador.get("", summary="Lista o histórico de importações")

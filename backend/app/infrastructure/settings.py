@@ -13,6 +13,9 @@ PASTA_PADRAO_DAS_IMPORTACOES = Path("../data/importacoes")
 PASTA_PADRAO_DOS_EMAILS = Path("../data/emails")
 PASTA_PADRAO_DOS_ENCAMINHAMENTOS = Path("../data/encaminhamentos")
 ENDERECO_PADRAO_DO_SITE = "http://localhost:5173"
+HOSTS_PADRAO_DE_IMPORTACAO = ["dados.recife.pe.gov.br"]
+SEGUNDOS_PADRAO_DA_EXTRACAO = 120
+ESQUEMA_ACEITO_DOS_BANCOS = "postgresql"
 INICIOS_ACEITOS_DO_WEBHOOK = ("https://", "http://localhost", "http://127.0.0.1")
 BYTES_POR_MEGABYTE = 1024 * 1024
 PORTA_PADRAO_DO_SMTP = 587
@@ -59,6 +62,9 @@ class Configuracao(ConfiguracaoDoBanco):
     canais_dos_orgaos: dict[Orgao, CanalConfigurado] = Field(default_factory=dict)
     pasta_dos_encaminhamentos: Path = PASTA_PADRAO_DOS_ENCAMINHAMENTOS
     endereco_do_site: str = ENDERECO_PADRAO_DO_SITE
+    hosts_de_importacao: list[str] = Field(default_factory=lambda: list(HOSTS_PADRAO_DE_IMPORTACAO))
+    bancos_de_origem: dict[str, SecretStr] = Field(default_factory=dict)
+    segundos_da_extracao: int = Field(default=SEGUNDOS_PADRAO_DA_EXTRACAO, gt=0)
 
     @field_validator("segredo_jwt")
     @classmethod
@@ -73,6 +79,14 @@ class Configuracao(ConfiguracaoDoBanco):
     @classmethod
     def _ignorar_sal_vazio(cls, sal: SecretStr | None) -> SecretStr | None:
         return sal if sal and sal.get_secret_value() else None
+
+    @field_validator("bancos_de_origem")
+    @classmethod
+    def _aceitar_so_postgresql(cls, bancos: dict[str, SecretStr]) -> dict[str, SecretStr]:
+        for nome, url in bancos.items():
+            if not url.get_secret_value().startswith(ESQUEMA_ACEITO_DOS_BANCOS):
+                raise ValueError(f"API_BANCOS_DE_ORIGEM: {nome} precisa ser um PostgreSQL")
+        return bancos
 
     @field_validator("smtp_servidor", "smtp_usuario", "smtp_senha", "smtp_remetente", mode="before")
     @classmethod

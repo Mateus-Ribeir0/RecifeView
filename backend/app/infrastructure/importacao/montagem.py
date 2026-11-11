@@ -4,10 +4,11 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
 from app.application.casos_de_uso.importacoes.servicos import ServicosDeImportacao
-from app.application.portas.importacoes import FilaDeImportacoes
+from app.application.portas.importacoes import FilaDeImportacoes, OrigensDeDados
 from app.infrastructure.contribuicoes.limite_em_memoria import LimiteEmMemoria
 from app.infrastructure.importacao.armazenamento_local import ArmazenamentoLocal
 from app.infrastructure.importacao.leitores import LeitorDeArquivos
+from app.infrastructure.importacao.origens import DownloadPorHttps, ExtracaoDeBanco
 from app.infrastructure.relogio import RelogioDoSistema
 from app.infrastructure.repositories.atualizador_do_painel import AtualizadorDoPainelSql
 from app.infrastructure.repositories.carregador_de_demandas import CarregadorSql
@@ -45,6 +46,19 @@ def montar_servicos_de_importacao(
         relogio=relogio,
         contribuicoes=ContribuicaoRepositorySql(fabrica),
         sal=sal.get_secret_value() if sal else None,
+    )
+
+
+def montar_origens_de_dados(
+    configuracao: Configuracao, servicos: ServicosDeImportacao
+) -> OrigensDeDados:
+    return OrigensDeDados(
+        por_endereco=DownloadPorHttps(servicos.armazenamento, configuracao.hosts_de_importacao),
+        por_banco=ExtracaoDeBanco(
+            servicos.armazenamento,
+            configuracao.bancos_de_origem,
+            configuracao.segundos_da_extracao,
+        ),
     )
 
 

@@ -21,8 +21,16 @@ from app.application.casos_de_uso.importacoes.importar_pelo_terminal import (
     ImportarPeloTerminal,
 )
 from app.application.casos_de_uso.redefinir_senha import RedefinirSenha
+from app.application.portas.importacoes import ArquivoRecebido, OrigensDeDados
 from app.application.sessoes import GestaoDeSessoes
-from app.domain.erros import EmailInvalido, EmailJaCadastrado, ErroDeDominio, UsuarioNaoEncontrado
+from app.domain.erros import (
+    EmailInvalido,
+    EmailJaCadastrado,
+    ErroDeDominio,
+    OrigemIndisponivel,
+    OrigemRecusada,
+    UsuarioNaoEncontrado,
+)
 from app.domain.prioridade import NOTA_ALTA, FonteDaFila
 from app.domain.usuario import PERFIS_DA_GESTAO, Perfil
 from app.infrastructure.auth.senhas import HashDeSenhaArgon2
@@ -33,6 +41,7 @@ from app.infrastructure.encaminhamento.despacho import montar_despacho
 from app.infrastructure.importacao.leitores import LeitorDeArquivos
 from app.infrastructure.importacao.montagem import (
     FilaImediata,
+    montar_origens_de_dados,
     montar_servicos_de_importacao,
 )
 from app.infrastructure.relogio import RelogioDoSistema
@@ -45,6 +54,7 @@ from app.infrastructure.repositories.sessoes import SessaoRepositorySql
 from app.infrastructure.repositories.usuarios import UsuarioRepositorySql
 from app.infrastructure.settings import Configuracao, carregar_configuracao
 
+MENSAGEM_DE_ORIGEM_INDISPONIVEL = "A origem não respondeu. Confira o endereço ou a conexão."
 MENSAGENS_DE_ERRO: dict[type[ErroDeDominio], str] = {
     EmailInvalido: "O e-mail informado não é válido.",
     EmailJaCadastrado: "Já existe uma conta com este e-mail.",
@@ -90,8 +100,14 @@ def _ler_comando(argumentos: Sequence[str] | None) -> argparse.Namespace:
     redefinicao = comandos.add_parser("redefinir-senha", help="Gera uma nova senha temporária")
     redefinicao.add_argument("--email", required=True)
 
-    importacao = comandos.add_parser("importar", help="Importa um arquivo pelo terminal")
-    importacao.add_argument("--arquivo", required=True, type=Path)
+    importacao = comandos.add_parser(
+        "importar", help="Importa um arquivo, um endereço permitido ou uma consulta a um banco"
+    )
+    origem = importacao.add_mutually_exclusive_group(required=True)
+    origem.add_argument("--arquivo", type=Path)
+    origem.add_argument("--endereco", help="Endereço https de um host de API_HOSTS_DE_IMPORTACAO")
+    origem.add_argument("--banco", help="Nome de uma conexão de API_BANCOS_DE_ORIGEM")
+    importacao.add_argument("--consulta", help="SELECT a rodar no banco, com --banco")
     importacao.add_argument(
         "--data-do-retrato",
         required=True,
@@ -127,9 +143,21 @@ def _importar(
     servicos = montar_servicos_de_importacao(configuracao, fabrica, FilaImediata())
     importar = ImportarPeloTerminal(servicos)
     try:
-        importacao = importar.executar(
-            comando.arquivo, comando.data_do_retrato, comando.carga_inicial
-        )
+        arquivo = _receber_da_origem(comando, montar_origens_de_dados(configuracao, servicos))
+        if arquivo is None:
+            importacao = importar.executar(
+                comando.arquivo, comando.data_do_retrato, comando.carga_inicial
+            )
+        else:
+            importacao = importar.executar_recebido(
+                arquivo, comando.data_do_retrato, comando.carga_inicial
+            )
+    except OrigemRecusada as recusa:
+        print(recusa.motivo, file=sys.stderr)
+        return 1
+    except OrigemIndisponivel:
+        print(MENSAGEM_DE_ORIGEM_INDISPONIVEL, file=sys.stderr)
+        return 1
     except ImportacaoPendente as pendente:
         print(
             f"A importação {pendente.importacao_id} tem pendências. Responda pelo painel.",
@@ -139,6 +167,16 @@ def _importar(
     print(f"Importação {importacao.id}: {importacao.status.value}")
     print(importacao.mensagem_de_erro or json.dumps(importacao.resultado, ensure_ascii=False))
     return 0
+
+
+def _receber_da_origem(
+    comando: argparse.Namespace, origens: OrigensDeDados
+) -> ArquivoRecebido | None:
+    if comando.endereco:
+        return origens.por_endereco.baixar(comando.endereco)
+    if comando.banco:
+        return origens.por_banco.extrair(comando.banco, comando.consulta or "")
+    return None
 
 
 def _carregar_logradouros(comando: argparse.Namespace, fabrica: sessionmaker[Session]) -> int:

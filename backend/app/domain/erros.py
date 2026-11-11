@@ -166,3 +166,13 @@ class LinkDeRetornoInvalido(ErroDeDominio):
 
 class LimiteDePedidosAtingido(ErroDeDominio):
     pass
+
+
+class OrigemRecusada(ErroDeDominio):
+    def __init__(self, motivo: str) -> None:
+        super().__init__(motivo)
+        self.motivo = motivo
+
+
+class OrigemIndisponivel(ErroDeDominio):
+    pass
