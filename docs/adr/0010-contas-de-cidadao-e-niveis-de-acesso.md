@@ -24,8 +24,8 @@ Perfil `CIDADAO` na tabela `app.usuario`, com guarda por perfil. Três níveis d
 
 | Nível | Vê |
 |---|---|
-| Sem conta | A página pública: números agregados dos dados abertos, como funciona, privacidade e o formulário de relato |
-| Cidadão | Também os relatos da cidade dos últimos 90 dias e os indicadores do bairro comparados com o Recife |
+| Sem conta | A página pública: números agregados dos dados abertos, indicadores do bairro comparados com o Recife, consulta de um pedido pelo protocolo, como funciona, privacidade e o formulário de relato |
+| Cidadão | Também os relatos da cidade dos últimos 90 dias, os próprios relatos e os pedidos que guardou para acompanhar |
 | Gestão | Tudo: painel, War Room, prioridade, pontos crônicos, pente fino com endereço completo e detalhe, importação |
 
 **O que o cidadão vê de um relato:** serviço, tema, bairro, rua (só se ela estiver na lista oficial de vias), faixa de numeração de 100 em 100, data, quantas pessoas relataram, quantas disseram que não tiveram retorno e a situação (recebido, em análise, no painel da gestão, coberto por pedido oficial). Nunca vê o número exato, o texto escrito, o pseudônimo nem quem relatou. A faixa segue a mesma ideia do arredondamento das coordenadas para cerca de 100 m ([dados.md](../dados.md#privacidade-lgpd)). Rua fora da lista oficial some, para o campo de rua não virar mural de recado.
@@ -46,6 +46,8 @@ Perfil `CIDADAO` na tabela `app.usuario`, com guarda por perfil. Três níveis d
 **E-mail:** só a recuperação de senha usa e-mail. O provedor de envio está em aberto. A porta `EnvioDeEmail` tem duas implementações: a local, que grava cada mensagem em `API_PASTA_DOS_EMAILS`, fora do git, e uma por SMTP genérico (`API_SMTP_*`), que serve para qualquer provedor (Gmail para teste, Amazon SES, Brevo, o servidor da Prefeitura). Sem `API_SMTP_SERVIDOR`, vale a local. Se o servidor recusar o envio, a operação é desfeita e a API responde 503. O que falta decidir é qual provedor e qual remetente o RecifeView usa de verdade.
 
 **Visual:** a área do cidadão usa o cabeçalho em `azul-principal`, e a da gestão continua em `azul-marinho`. Os dois logins têm painéis de cores diferentes.
+
+**Mudança de 11/11/2026 ([ADR 0011](0011-encaminhamento-ao-orgao-e-retorno.md)):** depois do retorno dado ao protótipo, o foco da área do cidadão passa a ser o acesso à informação. Os indicadores do bairro saem da conta e ficam públicos, a consulta pelo protocolo não pede conta, e a conta ganha "Meus pedidos": a pessoa guarda até 20 protocolos de pedidos feitos no Conecta Recife, no 156 ou na Ouvidoria e acompanha o andamento, incluindo para qual órgão a ocorrência foi encaminhada e o que ele respondeu. Os protocolos guardados são apagados com a conta.
 
 ## Consequências
 
