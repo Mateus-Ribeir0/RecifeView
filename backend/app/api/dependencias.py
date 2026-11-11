@@ -13,6 +13,8 @@ from app.application.casos_de_uso.encaminhamentos.servicos import ServicosDeEnca
 from app.application.casos_de_uso.entrar import Entrar
 from app.application.casos_de_uso.identificar_usuario import IdentificarUsuario
 from app.application.casos_de_uso.importacoes.servicos import ServicosDeImportacao
+from app.application.casos_de_uso.pedidos.consultar_pedido import ConsultarPedido
+from app.application.casos_de_uso.pedidos.meus_pedidos import ServicosDePedidos
 from app.application.casos_de_uso.renovar_acesso import RenovarAcesso
 from app.application.casos_de_uso.sair import Sair
 from app.application.casos_de_uso.trocar_senha import TrocarSenha
@@ -53,6 +55,10 @@ from app.infrastructure.repositories.catalogos import (
 from app.infrastructure.repositories.codigos_de_conta import CodigoDeContaRepositorySql
 from app.infrastructure.repositories.consultas import RegistroDeConsultasSql
 from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
+from app.infrastructure.repositories.pedidos import (
+    ConsultaDePedidosSql,
+    PedidoAcompanhadoRepositorySql,
+)
 from app.infrastructure.repositories.prazos import PrazoRepositorySql
 from app.infrastructure.repositories.prioridade import PrioridadeRepositorySql
 from app.infrastructure.repositories.recorrencias import RecorrenciaRepositorySql
@@ -310,6 +316,7 @@ def obter_servicos_de_conta(
         acessos=repositorios.acessos,
         sessoes=gestao_de_sessoes,
         relogio=seguranca.relogio,
+        pedidos=PedidoAcompanhadoRepositorySql(sessao),
     )
 
 
@@ -371,3 +378,13 @@ def limitar_consultas_publicas(request: Request) -> None:
     origem = request.client.host if request.client else ORIGEM_DESCONHECIDA
     if not limite.permitir(origem):
         raise TentativasDemais
+
+
+def obter_servicos_de_pedidos(
+    sessao: Annotated[Session, Depends(abrir_transacao)], seguranca: SegurancaDep
+) -> ServicosDePedidos:
+    consultar = ConsultarPedido(ConsultaDePedidosSql(sessao), EncaminhamentoRepositorySql(sessao))
+    return ServicosDePedidos(consultar, PedidoAcompanhadoRepositorySql(sessao), seguranca.relogio)
+
+
+ServicosDePedidosDep = Annotated[ServicosDePedidos, Depends(obter_servicos_de_pedidos)]

@@ -30,6 +30,7 @@ from app.domain.erros import (
     ImportacaoEmEstadoInvalido,
     ImportacaoNaoEncontrada,
     ImportacaoNaoPodeSerDesfeita,
+    LimiteDePedidosAtingido,
     LinkDeRetornoInvalido,
     OcorrenciaJaEncaminhada,
     OcorrenciaNaoEncontrada,
@@ -206,6 +207,11 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
         status.HTTP_409_CONFLICT,
         "resposta_fora_de_ordem",
         "A situação do encaminhamento mudou e não aceita esta resposta. Atualize a página.",
+    ),
+    LimiteDePedidosAtingido: RespostaDeErro(
+        status.HTTP_409_CONFLICT,
+        "limite_de_pedidos",
+        "Você já acompanha 20 pedidos. Tire um da lista para guardar outro.",
     ),
     LinkDeRetornoInvalido: RespostaDeErro(
         status.HTTP_404_NOT_FOUND,

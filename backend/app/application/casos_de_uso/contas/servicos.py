@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from app.application.portas.acessos import RegistroDeAcessos
 from app.application.portas.contas import CodigoDeContaRepository, EnvioDeEmail
+from app.application.portas.pedidos import PedidoAcompanhadoRepository
 from app.application.portas.relogio import Relogio
 from app.application.portas.seguranca import HashDeSenha
 from app.application.portas.usuarios import UsuarioRepository
@@ -17,3 +18,4 @@ class ServicosDeConta:
     acessos: RegistroDeAcessos
     sessoes: GestaoDeSessoes
     relogio: Relogio
+    pedidos: PedidoAcompanhadoRepository

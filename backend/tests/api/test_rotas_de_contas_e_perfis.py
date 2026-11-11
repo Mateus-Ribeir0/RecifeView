@@ -34,6 +34,7 @@ from tests.fakes import (
     CaixaDeEmailsEmMemoria,
     CodigosEmMemoria,
     HashDeSenhaDeTeste,
+    PedidosAcompanhadosEmMemoria,
     RelogioFixo,
     SessoesEmMemoria,
     UsuariosEmMemoria,
@@ -50,7 +51,12 @@ BASE = "/api/v1"
 EMAIL_DO_CIDADAO = "morador@exemplo.com"
 EMAIL_DA_GESTORA = "gestora@recife.pe.gov.br"
 SENHA_NOVA = "uma senha bem comprida"
-ROTAS_DO_CIDADAO = ["/cidade/ocorrencias", "/cidade/meus-relatos", "/cidade/bairros/AFOGADOS"]
+ROTAS_DO_CIDADAO = [
+    "/cidade/ocorrencias",
+    "/cidade/meus-relatos",
+    "/cidade/bairros/AFOGADOS",
+    "/cidade/pedidos",
+]
 ROTAS_DA_GESTAO = [
     ("get", "/indicadores/visao-geral"),
     ("get", "/war-room/calendario"),
@@ -89,6 +95,7 @@ class Ambiente:
         self.acessos = AcessosEmMemoria()
         self.emails = CaixaDeEmailsEmMemoria()
         self.codigos = CodigosEmMemoria()
+        self.pedidos = PedidosAcompanhadosEmMemoria()
         self.emissor = EmissorDeTokenJwt(SEGREDO_DE_TESTE, timedelta(minutes=15))
 
     def servicos_de_conta(self) -> ServicosDeConta:
@@ -100,6 +107,7 @@ class Ambiente:
             acessos=self.acessos,
             sessoes=GestaoDeSessoes(self.sessoes, self.emissor, self.relogio),
             relogio=self.relogio,
+            pedidos=self.pedidos,
         )
 
     def montar(self) -> FastAPI:

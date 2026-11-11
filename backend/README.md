@@ -195,6 +195,11 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `GET /cidade/ocorrencias` | Relatos dos últimos 90 dias, com rua só da lista oficial e número em faixa de centena |
 | `GET /cidade/bairros/{bairro}` | Indicadores do bairro comparados com o Recife |
 | `GET /cidade/meus-relatos` | Os relatos que a própria pessoa enviou com a conta aberta, com endereço e situação. A de um relato somado é a da ocorrência que o recebeu |
+| `GET /cidade/pedidos` | Os protocolos que a pessoa guardou, com o andamento e o encaminhamento de cada um |
+| `POST /cidade/pedidos` | Guarda um protocolo para acompanhar (até 20 por conta) |
+| `DELETE /cidade/pedidos/{id}` | Deixa de acompanhar um protocolo |
+| `POST /publico/pedidos/consultar` | Andamento de um pedido pelo protocolo, sem conta: situação na fonte e, se houver, o órgão para o qual foi encaminhado e a etapa. O protocolo vai no corpo |
+| `GET /publico/bairros/{bairro}` | Indicadores do bairro comparados com o Recife, sem conta |
 | `POST /autenticacao/trocar-senha` | Troca a senha, derruba as outras sessões e abre uma nova |
 
 | `GET /catalogos/filtros` | Anos, RPAs, bairros, categorias e fontes para os filtros |
@@ -238,7 +243,7 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `POST /retornos/abrir` | O órgão vê o que recebeu. Público: o token do link vai no corpo |
 | `POST /retornos` | O órgão marca `recebido`, `resolvido` ou `devolvido`, com o protocolo dele. Público, para pessoa ou sistema |
 
-O `POST /autenticacao/entrar` aceita `area` (`cidade` ou `gestao`): pela porta da gestão, conta de cidadão recebe 403. As rotas de `/contas` que mandam e-mail têm limite de 10 chamadas a cada 10 minutos por origem. As rotas de painel, importações, pente fino e encaminhamentos exigem conta da gestão. As rotas públicas de contribuições e de retorno do órgão são as únicas de dados sem sessão: nenhuma delas devolve relato de outra pessoa, e as de retorno só abrem com o token do link e têm limite de 30 chamadas a cada 10 minutos por origem. Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
+O `POST /autenticacao/entrar` aceita `area` (`cidade` ou `gestao`): pela porta da gestão, conta de cidadão recebe 403. As rotas de `/contas` que mandam e-mail têm limite de 10 chamadas a cada 10 minutos por origem. As rotas de painel, importações, pente fino e encaminhamentos exigem conta da gestão. As rotas públicas de contribuições, de retorno do órgão e de `/publico` são as únicas de dados sem sessão: nenhuma delas devolve relato de outra pessoa, endereço ou texto; as de retorno só abrem com o token do link; e as de retorno e de `/publico` têm limite de 30 chamadas a cada 10 minutos por origem. Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
 
 Como a autenticação funciona, e por que ela ainda é uma proposta, está na [ADR 0005](../docs/adr/0005-autenticacao-com-jwt-proprio.md).
 

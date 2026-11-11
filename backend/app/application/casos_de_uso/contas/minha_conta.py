@@ -28,7 +28,10 @@ class AtualizarMinhaConta:
 
 @dataclass(frozen=True)
 class ExcluirMinhaConta:
-    """Apaga o que identifica a pessoa e mantém a linha, porque a auditoria aponta para ela."""
+    """Apaga o que identifica a pessoa e mantém a linha, porque a auditoria aponta para ela.
+
+    Os protocolos guardados também saem: ligados à conta, diriam de quem é cada pedido.
+    """
 
     servicos: ServicosDeConta
 
@@ -40,6 +43,7 @@ class ExcluirMinhaConta:
         email_anonimo = Email(f"conta-{usuario.id.hex}@{DOMINIO_DAS_CONTAS_EXCLUIDAS}")
         hash_inutil = self.servicos.senhas.gerar(secrets.token_urlsafe(BYTES_DA_SENHA_INUTIL))
         self.servicos.usuarios.atualizar(usuario.excluido(email_anonimo, hash_inutil))
+        self.servicos.pedidos.remover_todos(usuario.id)
         self.servicos.sessoes.encerrar_todas(usuario.id)
         agora = self.servicos.relogio.agora()
         evento = EventoDeAcesso(TipoDeEventoDeAcesso.CONTA_EXCLUIDA, agora, usuario.id)

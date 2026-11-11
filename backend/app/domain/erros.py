@@ -162,3 +162,7 @@ class TransicaoInvalida(ErroDeDominio):
 
 class LinkDeRetornoInvalido(ErroDeDominio):
     pass
+
+
+class LimiteDePedidosAtingido(ErroDeDominio):
+    pass

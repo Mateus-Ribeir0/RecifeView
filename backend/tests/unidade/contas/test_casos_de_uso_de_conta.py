@@ -36,6 +36,7 @@ from tests.fakes import (
     CaixaDeEmailsEmMemoria,
     CodigosEmMemoria,
     HashDeSenhaDeTeste,
+    PedidosAcompanhadosEmMemoria,
     RelogioFixo,
     SessoesEmMemoria,
     UsuariosEmMemoria,
@@ -56,6 +57,7 @@ class Ambiente:
         self.emails = CaixaDeEmailsEmMemoria()
         self.acessos = AcessosEmMemoria()
         self.codigos = CodigosEmMemoria()
+        self.pedidos = PedidosAcompanhadosEmMemoria()
         emissor = EmissorDeTokenJwt(SEGREDO_DE_TESTE, timedelta(minutes=15))
         self.servicos = ServicosDeConta(
             usuarios=self.usuarios,
@@ -65,6 +67,7 @@ class Ambiente:
             acessos=self.acessos,
             sessoes=GestaoDeSessoes(self.sessoes_guardadas, emissor, self.relogio),
             relogio=self.relogio,
+            pedidos=self.pedidos,
         )
 
     def cadastrar(self, senha: str = SENHA, **mudancas: object) -> None:
@@ -236,10 +239,13 @@ def test_excluir_conta_pede_a_senha_e_apaga_os_dados() -> None:
     ambiente.cadastrar()
     conta = ambiente.conta()
 
+    ambiente.pedidos.adicionar(conta.id, "2026/1", ambiente.relogio.agora())
+
     with pytest.raises(SenhaAtualIncorreta):
         ExcluirMinhaConta(ambiente.servicos).executar(conta, "errada")
     ExcluirMinhaConta(ambiente.servicos).executar(conta, SENHA)
 
+    assert ambiente.pedidos.listar(conta.id) == []
     assert ambiente.conta_ou_nada() is None
     excluida = ambiente.usuarios.buscar_por_id(conta.id)
     assert excluida is not None

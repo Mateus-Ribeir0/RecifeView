@@ -25,6 +25,7 @@ from app.infrastructure.relogio import RelogioDoSistema
 from app.infrastructure.repositories.acessos import RegistroDeAcessosSql
 from app.infrastructure.repositories.codigos_de_conta import CodigoDeContaRepositorySql
 from app.infrastructure.repositories.contribuicoes import ContribuicaoRepositorySql
+from app.infrastructure.repositories.pedidos import PedidoAcompanhadoRepositorySql
 from app.infrastructure.repositories.sessoes import SessaoRepositorySql
 from app.infrastructure.repositories.usuarios import UsuarioRepositorySql
 from tests.conftest import SEGREDO_DE_TESTE
@@ -57,6 +58,7 @@ def servicos(sessao: Session, pasta: Path) -> ServicosDeConta:
         acessos=RegistroDeAcessosSql(sessao),
         sessoes=GestaoDeSessoes(SessaoRepositorySql(sessao), emissor, relogio),
         relogio=relogio,
+        pedidos=PedidoAcompanhadoRepositorySql(sessao),
     )
 
 
