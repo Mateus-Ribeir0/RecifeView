@@ -122,7 +122,14 @@ CAMPOS: tuple[Campo, ...] = (
         "Identificador da fonte",
         TipoDeCampo.TEXTO,
         "Usado só para reconhecer o registro. Não fica guardado.",
-        ("REQUERIMENTO", "PROCESSO_NUMERO", "NUMERO_DO_PROCESSO", "NO_PROTOCOLO"),
+        ("REQUERIMENTO", "PROCESSO_NUMERO", "NUMERO_DO_PROCESSO"),
+    ),
+    Campo(
+        "protocolo",
+        "Protocolo",
+        TipoDeCampo.TEXTO,
+        "Protocolo que a pessoa recebeu ao fazer o pedido. Serve só à consulta pelo protocolo.",
+        ("NO_PROTOCOLO", "NUMERO_PROTOCOLO", "NUMERO_DO_PROTOCOLO", "PROTOCOLO_ATENDIMENTO"),
     ),
     Campo(
         "ouv_data_prazo",

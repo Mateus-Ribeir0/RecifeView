@@ -43,3 +43,4 @@ class RegistroDeDemanda(NamedTuple):
     camara_desfecho: str | None
     arquivo_origem: str | None
     ano_do_arquivo: int | None
+    protocolo: str | None = None

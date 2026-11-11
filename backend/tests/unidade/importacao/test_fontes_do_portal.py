@@ -134,6 +134,49 @@ def test_ouvidoria_calcula_se_respondeu_no_prazo() -> None:
     assert registro.situacao == "CONCLUIDO"
 
 
+def ouvidoria_com_protocolo() -> NormalizadorDeLinhas:
+    decisoes = Decisoes(
+        fonte=Fonte.OUVIDORIA,
+        mapeamento={"Protocolo": "protocolo", **MAPEAMENTO_OUVIDORIA},
+        valores_fixos={"iniciativa": "CIDADAO"},
+    )
+    colunas = ("Protocolo", *COLUNAS_OUVIDORIA)
+    return normalizador_de(CodigoDoLayout.PORTAL_OUVIDORIA, colunas, decisoes)
+
+
+LINHA_DA_OUVIDORIA = [
+    "2024",
+    "02/01/2024",
+    "16/01/2024",
+    "10/01/2024",
+    "Secretaria de Saúde",
+    "Reclamação",
+    "Atendimento",
+    "Concluído",
+]
+
+
+def test_ouvidoria_guarda_o_protocolo_sem_espacos_e_em_maiusculas() -> None:
+    registro = ouvidoria_com_protocolo().normalizar([" 2024/ab 0001 ", *LINHA_DA_OUVIDORIA])
+
+    assert registro is not None
+    assert registro.protocolo == "2024/AB0001"
+
+
+def test_registro_sem_protocolo_mantem_a_assinatura_de_antes() -> None:
+    sem_coluna = ouvidoria().normalizar(LINHA_DA_OUVIDORIA)
+    com_coluna_vazia = ouvidoria_com_protocolo().normalizar(["", *LINHA_DA_OUVIDORIA])
+    com_protocolo = ouvidoria_com_protocolo().normalizar(["2024/1", *LINHA_DA_OUVIDORIA])
+
+    assert sem_coluna is not None
+    assert com_coluna_vazia is not None
+    assert com_protocolo is not None
+    assert com_coluna_vazia.protocolo is None
+    assert com_coluna_vazia.assinatura == sem_coluna.assinatura
+    assert com_protocolo.assinatura != sem_coluna.assinatura
+    assert com_protocolo.chave_registro == sem_coluna.chave_registro
+
+
 def test_ouvidoria_harmoniza_o_nome_do_orgao() -> None:
     linha = [
         "2022",
