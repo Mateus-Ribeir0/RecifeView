@@ -78,6 +78,19 @@ Se o canal falhar, o encaminhamento fica como `falhou` e pode ser reenviado. Uma
 - **Com conta de cidadão:** "Meus pedidos" guarda até 20 protocolos e mostra o andamento de todos juntos. "Meus relatos", do formulário, continua como estava.
 - Os números do bairro, que eram só da conta, passam a ser públicos: são agregados dos dados abertos.
 
+**5. Avisos às partes (revisão de 13/11/2026).** Na primeira versão, cada parte só ficava sabendo de uma mudança se abrisse a tela. Agora o próprio ciclo avisa, pela porta `EnvioDeEmail` das contas (SMTP, ou arquivos em `API_PASTA_DOS_EMAILS` enquanto o provedor segue em aberto):
+
+| Quando | Quem é avisado | Como |
+|---|---|---|
+| O órgão responde pelo link (recebeu, resolveu, devolveu) | A pessoa da gestão que encaminhou | E-mail com o código, a resposta e o link do detalhe. No envio automático não há autor: vale o contador do menu |
+| O prazo de 30 dias vence sem resolução nem devolução | O órgão | Lembrete pelo mesmo canal do envio, com um link novo que substitui o anterior. Um lembrete por encaminhamento, pelo comando `recifeview lembrar-orgaos`, feito para o agendador |
+| O encaminhamento é enviado, recebido, resolvido ou devolvido | O cidadão com conta que guardou o protocolo em "Meus pedidos" ou que enviou um relato somado à ocorrência | E-mail com a etapa, o órgão e o link da própria área. Sem endereço, sem texto e sem a justificativa da gestão. A pessoa desliga em "Minha conta" |
+| Há devolução sem novo destino, falha de envio, prazo vencido ou dupla esperando o pente fino | A gestão, dentro do painel | Contador no menu e filtro "Precisam de ação" na tela Encaminhamentos |
+
+Quem pede sem conta não deixa contato, de propósito: acompanha pela consulta pública. A falha de um aviso não desfaz a mudança que o motivou; ela fica no log.
+
+**6. O relato do formulário também chega ao órgão.** A ocorrência do formulário que já entrou na base pode ser encaminhada pela tela Contribuições. Como a base não guarda endereço, a mensagem leva a rua (só se estiver na lista oficial de vias) e a faixa de numeração de 100 em 100, o mesmo nível de detalhe que outras contas de cidadão já veem ([ADR 0010](0010-contas-de-cidadao-e-niveis-de-acesso.md)). O número exato e o texto continuam só com a gestão. "Meus relatos" mostra para qual órgão a ocorrência foi e em que etapa está.
+
 **Privacidade:**
 
 - O protocolo é um identificador publicado pela própria fonte (a Ouvidoria publica junto com assunto, órgão e situação). Ele só é devolvido em busca exata; nenhuma rota lista protocolos, e ele não vai para log.
@@ -87,6 +100,9 @@ Se o canal falhar, o encaminhamento fica como `falhou` e pode ser reenviado. Uma
 - Protocolo guardado na conta é apagado com a conta.
 
 ## Consequências
+
+- Os avisos por e-mail dependem do provedor de e-mail, que segue em aberto. Sem ele, os avisos ficam em arquivos e só servem para conferir o fluxo na máquina de desenvolvimento.
+- O lembrete troca o link do órgão. Quem guardou o e-mail antigo passa a usar o do lembrete; a mensagem diz isso.
 
 - O fluxo do produto passa a ser: entrada (importação ou conector), processamento (normalização e pente fino), priorização (fila), decisão e envio (encaminhamento), retorno do órgão e acesso à informação.
 - A consulta pelo protocolo só acha pedidos de fontes que publicam protocolo. Com os arquivos abertos, isso vale para a Ouvidoria, e só depois de importar o arquivo dela pelo painel (o dataset do Drive não tem a coluna). Para o 156 depende do conector da Prefeitura ou do pedido LAI ao SGDE. A tela diz isso.
