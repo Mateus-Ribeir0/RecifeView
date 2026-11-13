@@ -35,7 +35,7 @@ Ver [docs/adr/README.md](../docs/adr/README.md#decisões-em-aberto). Até a deci
 
 A importação do backend já lê de um endereço permitido do portal de dados abertos e de uma consulta só de leitura a um banco configurado, pelo painel ou pelo terminal (`recifeview importar --endereco ...` ou `--banco ... --consulta ...`, ver o [README do backend](../backend/README.md#outras-origens-além-do-arquivo) e a [ADR 0012](../docs/adr/0012-origens-de-dados-alem-do-arquivo.md)). O agendador pode rodar esse comando até o Processor existir. Quando ele existir, reaproveite as portas `OrigemPorEndereco` e `OrigemPorBanco` e as regras de `backend/app/domain/importacao`, em vez de reescrevê-las.
 
-O comando `recifeview encaminhar-prioritarias` também é feito para rodar agendado: ele encaminha ao órgão sugerido as ocorrências de nota alta ([ADR 0011](../docs/adr/0011-encaminhamento-ao-orgao-e-retorno.md)).
+Dois comandos do encaminhamento também são feitos para rodar agendados ([ADR 0011](../docs/adr/0011-encaminhamento-ao-orgao-e-retorno.md)): `recifeview encaminhar-prioritarias` encaminha ao órgão sugerido as ocorrências de nota alta, e `recifeview lembrar-orgaos`, uma vez por dia, lembra o órgão dos encaminhamentos com prazo vencido.
 
 ## Segredos
 
