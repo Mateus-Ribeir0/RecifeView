@@ -146,6 +146,14 @@ function FiltrosDaLista({ filtro, aoMudar }: FiltrosProps) {
       <label className={estilos.marcacao}>
         <input
           type="checkbox"
+          checked={filtro.pedemAcao}
+          onChange={(evento) => mudar({ pedemAcao: evento.target.checked })}
+        />
+        Só os que pedem ação
+      </label>
+      <label className={estilos.marcacao}>
+        <input
+          type="checkbox"
           checked={filtro.soAtrasados}
           onChange={(evento) => mudar({ soAtrasados: evento.target.checked })}
         />

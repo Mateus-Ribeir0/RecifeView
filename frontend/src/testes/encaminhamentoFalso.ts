@@ -24,6 +24,7 @@ export const OCORRENCIA: OcorrenciaEncaminhavel = {
   situacao: 'ENVIADA',
   orgao: 'COMPESA',
   protocolo: 'TESTE-0001',
+  referenciaDeLocal: null,
 }
 
 export const PREPARO: PreparoDoEncaminhamento = {
@@ -64,6 +65,8 @@ export const ENCAMINHAMENTO: Encaminhamento = {
   justificativa: null,
   automatico: false,
   protocoloDoOrgao: null,
+  lembreteEnviadoEm: null,
+  contribuicaoId: null,
   eventos: [{ situacao: 'enviado', autor: 'gestao', ocorridoEm: '2026-11-11T15:00:00Z' }],
 }
 
@@ -97,6 +100,13 @@ export function criarEncaminhamentosFalsos(
     consultar: vi.fn().mockResolvedValue(ENCAMINHAMENTO),
     registrarRetorno: vi.fn().mockResolvedValue({ ...ENCAMINHAMENTO, situacao: 'recebido' }),
     reenviar: vi.fn().mockResolvedValue(ENCAMINHAMENTO),
+    pendencias: vi.fn().mockResolvedValue({
+      devolvidos: 1,
+      falhas: 0,
+      prazoVencido: 2,
+      pedemAcao: 3,
+      duplasNoPenteFino: 4,
+    }),
     ...substituicoes,
   }
 }

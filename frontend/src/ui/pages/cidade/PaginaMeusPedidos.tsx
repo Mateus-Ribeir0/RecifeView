@@ -1,5 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
+import { Link } from 'react-router'
 
+import { useSessao } from '../../../application/autenticacao/useSessao'
 import { useServicoDeInformacao } from '../../../application/informacao/contexto'
 import { useMeusPedidos } from '../../../application/informacao/useInformacao'
 import { formatarData } from '../../../domain/formatacao'
@@ -100,6 +102,19 @@ function Pedido({ pedido, aoTirar }: { pedido: PedidoAcompanhado; aoTirar: () =>
   )
 }
 
+function SituacaoDosAvisos() {
+  const { estado } = useSessao()
+  const recebe = estado.situacao === 'autenticada' && estado.usuario.recebeAvisos
+  return (
+    <p className={estilos.nota}>
+      {recebe
+        ? 'Você recebe um e-mail quando um pedido daqui muda de etapa. '
+        : 'Os avisos por e-mail estão desligados. '}
+      <Link to="/cidade/conta">Mudar em Minha conta</Link>
+    </p>
+  )
+}
+
 export function PaginaMeusPedidos() {
   useTituloDaPagina('Meus pedidos')
   const pedidos = useMeusPedidos()
@@ -112,6 +127,7 @@ export function PaginaMeusPedidos() {
         Ouvidoria. Aqui aparece a situação de cada um e, se a gestão encaminhou o pedido a outro
         órgão, a resposta desse órgão. Até 20 protocolos por conta.
       </p>
+      <SituacaoDosAvisos />
       <NovoPedido aoGuardar={pedidos.recarregar} />
       {pedidos.erro !== null && (
         <Aviso tipo="erro" titulo="Não foi possível carregar os seus pedidos">

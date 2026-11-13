@@ -98,10 +98,16 @@ function ResumoDaOcorrencia({ preparo }: { preparo: PreparoDoEncaminhamento }) {
 interface FormularioProps {
   preparo: PreparoDoEncaminhamento
   nota: number | null
+  contribuicaoId: string | null
   aoConcluir: (encaminhamento: Encaminhamento) => void
 }
 
-function FormularioDeEncaminhamento({ preparo, nota, aoConcluir }: FormularioProps) {
+function FormularioDeEncaminhamento({
+  preparo,
+  nota,
+  contribuicaoId,
+  aoConcluir,
+}: FormularioProps) {
   const servico = useServicoDeEncaminhamentos()
   const id = useId()
   const [orgao, definirOrgao] = useState<Orgao | ''>(preparo.sugestao.orgao ?? '')
@@ -117,7 +123,9 @@ function FormularioDeEncaminhamento({ preparo, nota, aoConcluir }: FormularioPro
     definirFalha(null)
     try {
       const chaveRegistro = preparo.ocorrencia.chaveRegistro
-      aoConcluir(await servico.encaminhar({ chaveRegistro, orgao, justificativa, nota }))
+      aoConcluir(
+        await servico.encaminhar({ chaveRegistro, orgao, justificativa, nota, contribuicaoId }),
+      )
     } catch (motivo) {
       definirFalha(motivo)
     } finally {
@@ -189,6 +197,7 @@ function EncaminhamentoAberto({ preparo }: { preparo: PreparoDoEncaminhamento })
 interface Propriedades {
   chaveRegistro: string
   nota: number | null
+  contribuicaoId?: string | null
   aoFechar: () => void
   aoConcluir: (encaminhamento: Encaminhamento) => void
 }
@@ -196,6 +205,7 @@ interface Propriedades {
 export function PainelDeEncaminhamento({
   chaveRegistro,
   nota,
+  contribuicaoId = null,
   aoFechar,
   aoConcluir,
 }: Propriedades) {
@@ -222,7 +232,12 @@ export function PainelDeEncaminhamento({
             <ResumoDaOcorrencia preparo={dados} />
             <Evidencia sugestao={dados.sugestao} />
             {dados.podeEncaminhar ? (
-              <FormularioDeEncaminhamento preparo={dados} nota={nota} aoConcluir={aoConcluir} />
+              <FormularioDeEncaminhamento
+                preparo={dados}
+                nota={nota}
+                contribuicaoId={contribuicaoId}
+                aoConcluir={aoConcluir}
+              />
             ) : (
               <EncaminhamentoAberto preparo={dados} />
             )}

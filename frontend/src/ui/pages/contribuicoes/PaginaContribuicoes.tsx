@@ -131,6 +131,7 @@ export function PaginaContribuicoes() {
                       pagina={fila.ocorrencias}
                       deslocamento={deslocamento}
                       aoMudarDeslocamento={definirDeslocamento}
+                      aoEncaminhar={recarregar}
                     />
                   ),
                 },

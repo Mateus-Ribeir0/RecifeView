@@ -22,6 +22,7 @@ export interface Sessao {
   sair(): Promise<void>
   trocarSenha(troca: TrocaDeSenha): Promise<Usuario>
   atualizarConta(dados: DadosDaConta): Promise<Usuario>
+  definirAvisos(recebeAvisos: boolean): Promise<Usuario>
   excluirConta(senha: string): Promise<void>
   criarConta(conta: NovaConta): Promise<Usuario>
   pedirNovaSenha(email: string): Promise<string>

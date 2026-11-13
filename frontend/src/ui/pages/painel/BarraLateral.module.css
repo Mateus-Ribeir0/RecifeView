@@ -117,3 +117,25 @@
   transform: translateY(-50%);
   pointer-events: none;
 }
+
+.contador {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--cor-alerta-fundo);
+  color: var(--cor-alerta-texto);
+  font-size: var(--texto-legenda);
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+
+.recolhida .contador {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  padding: 0 4px;
+  line-height: 16px;
+}

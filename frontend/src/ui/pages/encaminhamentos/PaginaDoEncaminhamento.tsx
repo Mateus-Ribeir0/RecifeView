@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 
 import { useServicoDeEncaminhamentos } from '../../../application/encaminhamentos/contexto'
 import { useEncaminhamento } from '../../../application/encaminhamentos/useEncaminhamentos'
 import {
+  podeEncaminharDeNovo,
   podeReenviar,
   respostasPossiveis,
   ROTULOS_DOS_CANAIS,
@@ -24,6 +25,7 @@ import { Colunas } from '../../components/Secao'
 import estilos from './Encaminhamentos.module.css'
 import { FormularioDeRetorno } from './FormularioDeRetorno'
 import { LinhaDoTempo } from './LinhaDoTempo'
+import { PainelDeEncaminhamento } from './PainelDeEncaminhamento'
 import { SeloDoEncaminhamento } from './SeloDoEncaminhamento'
 
 function DadosDoEnvio({ item }: { item: Encaminhamento }) {
@@ -50,6 +52,12 @@ function DadosDoEnvio({ item }: { item: Encaminhamento }) {
         <dt>Protocolo no órgão</dt>
         <dd>{item.protocoloDoOrgao ?? 'ainda não informado'}</dd>
       </div>
+      {item.lembreteEnviadoEm && (
+        <div>
+          <dt>Lembrete ao órgão</dt>
+          <dd>enviado em {formatarDataEHora(item.lembreteEnviadoEm)}</dd>
+        </div>
+      )}
       <div>
         <dt>Nota na fila</dt>
         <dd>{item.nota === null ? 'não informada' : `${formatarNumero(item.nota, 1)} de 10`}</dd>
@@ -92,7 +100,40 @@ function DadosDaOcorrencia({ item }: { item: Encaminhamento }) {
         <dt>Situação na fonte</dt>
         <dd>{nomeDaCategoria(ocorrencia.situacao)}</dd>
       </div>
+      {ocorrencia.referenciaDeLocal && (
+        <div>
+          <dt>Local aproximado (foi na mensagem)</dt>
+          <dd>{ocorrencia.referenciaDeLocal}</dd>
+        </div>
+      )}
     </dl>
+  )
+}
+
+function OutroDestino({ item }: { item: Encaminhamento }) {
+  const navegar = useNavigate()
+  const [escolhendo, definirEscolhendo] = useState(false)
+  if (escolhendo) {
+    return (
+      <PainelDeEncaminhamento
+        chaveRegistro={item.ocorrencia.chaveRegistro}
+        nota={item.nota}
+        contribuicaoId={item.contribuicaoId}
+        aoFechar={() => definirEscolhendo(false)}
+        aoConcluir={(novo) => void navegar(`/painel/encaminhamentos/${novo.id}`)}
+      />
+    )
+  }
+  return (
+    <Cartao titulo="O órgão devolveu a ocorrência">
+      <p>
+        {item.nomeDoOrgao} informou que a ocorrência não é com ele. Escolha outro órgão: quem
+        acompanha o pedido é avisado do novo destino.
+      </p>
+      <div className={estilos.acoes}>
+        <Botao onClick={() => definirEscolhendo(true)}>Encaminhar para outro órgão</Botao>
+      </div>
+    </Cartao>
   )
 }
 
@@ -139,13 +180,15 @@ function AcoesDoEncaminhamento({ item, aoAtualizar }: AcoesProps) {
       </Cartao>
     )
   }
+  if (podeEncaminharDeNovo(item.situacao)) {
+    return <OutroDestino item={item} />
+  }
   if (respostas.length === 0) {
     return (
       <Cartao titulo="Ciclo encerrado">
         <p>
-          {item.situacao === 'devolvido'
-            ? 'O órgão devolveu. A ocorrência pode seguir para outro órgão pela fila da tela Prioridade.'
-            : 'O órgão informou que resolveu. Quem fez o pedido vê essa etapa pelo protocolo.'}
+          O órgão informou que resolveu. Quem fez o pedido e tem conta recebeu o aviso por e-mail;
+          quem não tem acompanha pelo protocolo.
         </p>
       </Cartao>
     )

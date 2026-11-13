@@ -17,6 +17,7 @@ import { KpiCard } from '../../components/KpiCard'
 import { LinkDeBotao } from '../../components/LinkDeBotao'
 import { mensagemDeFalha } from '../../components/mensagemDeFalha'
 import { useTituloDaPagina } from '../../components/useTituloDaPagina'
+import { EtapasDoEncaminhamento } from '../pedidos/CartaoDoAndamento'
 import { IconeDoTema, SeloDaSituacao } from './CartaoDeOcorrencia'
 import estilos from './Cidade.module.css'
 import meus from './MeusRelatos.module.css'
@@ -84,6 +85,7 @@ function CartaoDoMeuRelato({ relato, hoje }: { relato: MeuRelato; hoje: Date }) 
         ) : null}
         <Etapas relato={relato} />
         <p className={meus.explicacao}>{EXPLICACOES_DAS_SITUACOES[relato.situacao]}</p>
+        {relato.encaminhamento && <EtapasDoEncaminhamento item={relato.encaminhamento} />}
       </div>
     </article>
   )

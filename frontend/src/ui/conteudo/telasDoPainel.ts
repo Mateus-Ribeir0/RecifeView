@@ -1,6 +1,7 @@
 import type { NomeDoIcone } from '../components/Icone'
 
 export type FiltroDaTela = 'periodo' | 'rpa' | 'bairro' | 'categoria'
+export type PendenciaDaTela = 'encaminhamentos' | 'contribuicoes'
 
 export interface TelaDoPainel {
   nome: string
@@ -8,6 +9,7 @@ export interface TelaDoPainel {
   mostra: string
   icone: NomeDoIcone
   filtros: readonly FiltroDaTela[]
+  pendencia?: PendenciaDaTela
 }
 
 export interface GrupoDeTelas {
@@ -89,6 +91,7 @@ export const GRUPOS_DE_TELAS: readonly GrupoDeTelas[] = [
         mostra: 'Para qual órgão cada ocorrência foi e se ele já respondeu.',
         icone: 'seta',
         filtros: SEM_FILTROS,
+        pendencia: 'encaminhamentos',
       },
     ],
   },
@@ -98,9 +101,10 @@ export const GRUPOS_DE_TELAS: readonly GrupoDeTelas[] = [
       {
         nome: 'Contribuições',
         caminho: '/painel/contribuicoes',
-        mostra: 'Relatos do formulário público: pente fino e pacote para a base.',
+        mostra: 'Relatos do formulário público: pente fino, pacote e encaminhamento.',
         icone: 'relato',
         filtros: SEM_FILTROS,
+        pendencia: 'contribuicoes',
       },
       {
         nome: 'Importações',

@@ -10,6 +10,7 @@ export const GESTORA: Usuario = {
   perfil: 'GESTOR',
   deveTrocarSenha: false,
   bairroOficial: null,
+  recebeAvisos: true,
 }
 
 export const CIDADA: Usuario = {
@@ -19,6 +20,7 @@ export const CIDADA: Usuario = {
   perfil: 'CIDADAO',
   deveTrocarSenha: false,
   bairroOficial: 'AFOGADOS',
+  recebeAvisos: true,
 }
 
 export function criarServicoFalso(
@@ -34,6 +36,7 @@ export function criarServicoFalso(
     pedirNovaSenha: vi.fn().mockResolvedValue('Se o e-mail tiver conta, enviamos um código.'),
     criarNovaSenha: vi.fn().mockResolvedValue(undefined),
     atualizarConta: vi.fn().mockResolvedValue(CIDADA),
+    definirAvisos: vi.fn().mockResolvedValue({ ...CIDADA, recebeAvisos: false }),
     excluirConta: vi.fn().mockResolvedValue(undefined),
     ...substituicoes,
   }

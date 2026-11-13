@@ -3,6 +3,7 @@ import type {
   EncaminhamentoParaOOrgao,
   FiltroDeEncaminhamentos,
   OrgaoDoCatalogo,
+  PendenciasDoPainel,
   PedidoDeEncaminhamento,
   PreparoDoEncaminhamento,
   QuadroDeEncaminhamentos,
@@ -17,6 +18,7 @@ export interface ServicoDeEncaminhamentos {
   consultar(id: number): Promise<Encaminhamento>
   registrarRetorno(id: number, resposta: RespostaAoEncaminhamento): Promise<Encaminhamento>
   reenviar(id: number): Promise<Encaminhamento>
+  pendencias(): Promise<PendenciasDoPainel>
 }
 
 export interface ServicoDeRetornoDoOrgao {

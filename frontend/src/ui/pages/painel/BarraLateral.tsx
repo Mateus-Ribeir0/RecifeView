@@ -1,10 +1,36 @@
-import { NavLink } from 'react-router'
+import { NavLink, useLocation } from 'react-router'
 
 import { useCatalogo } from '../../../application/consultas/usePainel'
-import { formatarNumero } from '../../../domain/formatacao'
+import { usePendenciasDoPainel } from '../../../application/encaminhamentos/useEncaminhamentos'
+import type { PendenciasDoPainel } from '../../../domain/encaminhamentos'
+import { contar, formatarNumero } from '../../../domain/formatacao'
 import { Icone } from '../../components/Icone'
-import { GRUPOS_DE_TELAS, ROTA_RAIZ_DO_PAINEL } from '../../conteudo/telasDoPainel'
+import {
+  GRUPOS_DE_TELAS,
+  ROTA_RAIZ_DO_PAINEL,
+  type PendenciaDaTela,
+} from '../../conteudo/telasDoPainel'
 import estilos from './BarraLateral.module.css'
+
+function contarPendencias(pendencias: PendenciasDoPainel, tela: PendenciaDaTela): number {
+  return tela === 'encaminhamentos' ? pendencias.pedemAcao : pendencias.duplasNoPenteFino
+}
+
+const DESCRICAO_DA_PENDENCIA: Readonly<Record<PendenciaDaTela, [string, string]>> = {
+  encaminhamentos: ['encaminhamento pede ação', 'encaminhamentos pedem ação'],
+  contribuicoes: ['dupla espera o pente fino', 'duplas esperam o pente fino'],
+}
+
+function Contador({ quantidade, tela }: { quantidade: number; tela: PendenciaDaTela }) {
+  if (quantidade === 0) return null
+  const [singular, plural] = DESCRICAO_DA_PENDENCIA[tela]
+  return (
+    <span className={`${estilos.contador} numero`} title={contar(quantidade, singular, plural)}>
+      {formatarNumero(quantidade)}
+      <span className="visualmente-oculto">{`, ${contar(quantidade, singular, plural)}`}</span>
+    </span>
+  )
+}
 
 interface Propriedades {
   recolhida: boolean
@@ -24,6 +50,8 @@ function ResumoDaBase() {
 }
 
 export function BarraLateral({ recolhida, aoNavegar }: Propriedades) {
+  const { pathname } = useLocation()
+  const { dados: pendencias } = usePendenciasDoPainel(pathname)
   return (
     <nav
       aria-label="Telas do painel"
@@ -45,6 +73,12 @@ export function BarraLateral({ recolhida, aoNavegar }: Propriedades) {
                 >
                   <Icone nome={tela.icone} />
                   <span className={estilos.nome}>{tela.nome}</span>
+                  {pendencias && tela.pendencia && (
+                    <Contador
+                      quantidade={contarPendencias(pendencias, tela.pendencia)}
+                      tela={tela.pendencia}
+                    />
+                  )}
                 </NavLink>
               </li>
             ))}

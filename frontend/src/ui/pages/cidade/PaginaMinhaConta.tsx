@@ -58,6 +58,42 @@ function ExcluirConta() {
   )
 }
 
+function AvisosPorEmail({ recebeAvisos }: { recebeAvisos: boolean }) {
+  const { definirAvisos } = useSessao()
+  const [falha, definirFalha] = useState<unknown>(null)
+  const [salvando, definirSalvando] = useState(false)
+
+  async function mudar(recebe: boolean) {
+    definirSalvando(true)
+    definirFalha(null)
+    try {
+      await definirAvisos(recebe)
+    } catch (motivo) {
+      definirFalha(motivo)
+    } finally {
+      definirSalvando(false)
+    }
+  }
+
+  return (
+    <section className={estilos.secaoDaConta}>
+      <h2>Avisos por e-mail</h2>
+      <label className={estilos.marcacaoDaConta}>
+        <input
+          type="checkbox"
+          checked={recebeAvisos}
+          disabled={salvando}
+          onChange={(evento) => void mudar(evento.target.checked)}
+        />
+        Avisar por e-mail quando um pedido que guardei ou um relato que enviei for encaminhado,
+        recebido, resolvido ou devolvido por um órgão
+      </label>
+      <p>O aviso traz só a etapa e o órgão, nunca o endereço nem o que você escreveu.</p>
+      {falha ? <Aviso tipo="erro">{mensagemDeFalha(falha)}</Aviso> : null}
+    </section>
+  )
+}
+
 export function PaginaMinhaConta() {
   useTituloDaPagina('Minha conta')
   const { estado, atualizarConta } = useSessao()
@@ -131,6 +167,7 @@ export function PaginaMinhaConta() {
           <Botao type="submit">Salvar</Botao>
         </div>
       </form>
+      <AvisosPorEmail recebeAvisos={usuario.recebeAvisos} />
       <section className={estilos.secaoDaConta}>
         <h2>Senha</h2>
         <p>

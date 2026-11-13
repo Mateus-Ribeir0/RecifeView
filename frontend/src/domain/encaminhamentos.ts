@@ -37,6 +37,7 @@ export interface OcorrenciaEncaminhavel {
   situacao: string | null
   orgao: string | null
   protocolo: string | null
+  referenciaDeLocal: string | null
 }
 
 export interface EventoDoEncaminhamento {
@@ -65,6 +66,8 @@ export interface Encaminhamento {
   justificativa: string | null
   automatico: boolean
   protocoloDoOrgao: string | null
+  lembreteEnviadoEm: string | null
+  contribuicaoId: string | null
   eventos: readonly EventoDoEncaminhamento[]
 }
 
@@ -118,7 +121,16 @@ export interface FiltroDeEncaminhamentos {
   situacao: SituacaoDoEncaminhamento | null
   orgao: Orgao | null
   soAtrasados: boolean
+  pedemAcao: boolean
   deslocamento: number
+}
+
+export interface PendenciasDoPainel {
+  devolvidos: number
+  falhas: number
+  prazoVencido: number
+  pedemAcao: number
+  duplasNoPenteFino: number
 }
 
 export interface PedidoDeEncaminhamento {
@@ -126,6 +138,7 @@ export interface PedidoDeEncaminhamento {
   orgao: Orgao
   justificativa: string
   nota: number | null
+  contribuicaoId: string | null
 }
 
 export interface RespostaAoEncaminhamento {
@@ -152,6 +165,7 @@ export const FILTRO_INICIAL_DE_ENCAMINHAMENTOS: FiltroDeEncaminhamentos = {
   situacao: null,
   orgao: null,
   soAtrasados: false,
+  pedemAcao: false,
   deslocamento: 0,
 }
 
@@ -166,9 +180,9 @@ export const ROTULOS_DAS_SITUACOES: Readonly<Record<SituacaoDoEncaminhamento, st
 export const ROTULOS_DAS_ETAPAS: Readonly<Record<SituacaoDoEncaminhamento, string>> = {
   enviado: 'Enviado',
   falhou: 'Falha no envio',
-  recebido: 'Recebido pelo órgão',
+  recebido: 'Recebido',
   resolvido: 'Resolvido',
-  devolvido: 'Devolvido pelo órgão',
+  devolvido: 'Devolvido',
 }
 
 export const ROTULOS_DAS_RESPOSTAS: Readonly<Record<RespostaPossivel, string>> = {
@@ -211,6 +225,10 @@ export function respostasPossiveis(
   situacao: SituacaoDoEncaminhamento,
 ): readonly RespostaPossivel[] {
   return RESPOSTAS_POR_SITUACAO[situacao]
+}
+
+export function podeEncaminharDeNovo(situacao: SituacaoDoEncaminhamento): boolean {
+  return situacao === 'devolvido'
 }
 
 export function podeReenviar(encaminhamento: Encaminhamento): boolean {

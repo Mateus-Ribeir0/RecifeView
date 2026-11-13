@@ -8,6 +8,7 @@ export interface Usuario {
   perfil: Perfil
   deveTrocarSenha: boolean
   bairroOficial: string | null
+  recebeAvisos: boolean
 }
 
 const ROTULOS_DE_PERFIL: Record<Perfil, string> = {

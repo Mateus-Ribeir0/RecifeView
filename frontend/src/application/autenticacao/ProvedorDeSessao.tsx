@@ -84,6 +84,15 @@ export function ProvedorDeSessao({ servico, children }: Propriedades) {
     [servico],
   )
 
+  const definirAvisos = useCallback(
+    async (recebeAvisos: boolean) => {
+      const usuario = await servico.definirAvisos(recebeAvisos)
+      definirEstado({ situacao: 'autenticada', usuario })
+      return usuario
+    },
+    [servico],
+  )
+
   const excluirConta = useCallback(
     async (senha: string) => {
       await servico.excluirConta(senha)
@@ -100,11 +109,22 @@ export function ProvedorDeSessao({ servico, children }: Propriedades) {
       trocarSenha,
       criarConta,
       atualizarConta,
+      definirAvisos,
       excluirConta,
       pedirNovaSenha: (email: string) => servico.pedirNovaSenha(email),
       criarNovaSenha: (pedido: NovaSenhaComCodigo) => servico.criarNovaSenha(pedido),
     }),
-    [servico, estado, entrar, sair, trocarSenha, criarConta, atualizarConta, excluirConta],
+    [
+      servico,
+      estado,
+      entrar,
+      sair,
+      trocarSenha,
+      criarConta,
+      atualizarConta,
+      definirAvisos,
+      excluirConta,
+    ],
   )
 
   return <ContextoDaSessao value={sessao}>{children}</ContextoDaSessao>

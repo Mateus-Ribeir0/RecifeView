@@ -62,6 +62,7 @@ describe('painel de encaminhamento', () => {
       orgao: 'EMLURB',
       justificativa: 'Ponto crônico',
       nota: 8.4,
+      contribuicaoId: null,
     })
     expect(aoConcluir).toHaveBeenCalledWith(ENCAMINHAMENTO)
   })

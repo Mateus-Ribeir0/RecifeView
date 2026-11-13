@@ -41,5 +41,6 @@ export interface ServicoDeAutenticacao {
   pedirNovaSenha(email: string): Promise<string>
   criarNovaSenha(pedido: NovaSenhaComCodigo): Promise<void>
   atualizarConta(dados: DadosDaConta): Promise<Usuario>
+  definirAvisos(recebeAvisos: boolean): Promise<Usuario>
   excluirConta(senha: string): Promise<void>
 }
