@@ -3,6 +3,7 @@
 | Documento | Leia quando |
 |---|---|
 | [contexto.md](contexto.md) | Chegar ao projeto, ou precisar de prazos, entregas e achados da EDA |
+| [fluxos.md](fluxos.md) | Entender o que cada pessoa consegue fazer na plataforma, de ponta a ponta, com diagramas |
 | [arquitetura.md](arquitetura.md) | Mexer em qualquer container ou na comunicação entre eles |
 | [clean-architecture.md](clean-architecture.md) | Criar qualquer arquivo de código e decidir em que camada ele mora |
 | [stack.md](stack.md) | Instalar, trocar ou atualizar uma ferramenta |

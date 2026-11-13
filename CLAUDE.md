@@ -13,6 +13,7 @@ O produto é um painel analítico para **gestores públicos**. A pergunta que el
 | Preciso de... | Abra |
 |---|---|
 | Problema, equipe, prazos, entregas, achados da EDA | [docs/contexto.md](docs/contexto.md) |
+| O que cada pessoa faz na plataforma, fluxo por fluxo, com diagramas | [docs/fluxos.md](docs/fluxos.md) |
 | Containers, fluxo de dados, rotas, telas | [docs/arquitetura.md](docs/arquitetura.md) |
 | Camadas e pastas dentro de cada container (Clean Architecture) | [docs/clean-architecture.md](docs/clean-architecture.md) |
 | Tecnologias, versões e o que está decidido ou só proposto | [docs/stack.md](docs/stack.md) |

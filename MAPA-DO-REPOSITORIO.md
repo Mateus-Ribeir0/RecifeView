@@ -47,6 +47,7 @@ Uma tarefa típica de código passa por eles nesta ordem:
 |---|---|---|
 | [docs/README.md](docs/README.md) | Índice da pasta, com "leia quando" | Leva direto ao documento certo |
 | [docs/contexto.md](docs/contexto.md) | Problema, equipe, cronograma, entregáveis de AVD, achados da EDA, pendências | Liga o código às entregas e ao que a N3 pediu para o painel |
+| [docs/fluxos.md](docs/fluxos.md) | Os fluxos completos da plataforma com diagramas: acesso, consulta pelo protocolo, relato e pente fino, importação, prioridade, encaminhamento, retorno do órgão, avisos, área do cidadão e comandos | Mostra quem age, o que o sistema faz e quem fica sabendo em cada etapa, para apresentar o produto e para não quebrar um fluxo ao mexer nele |
 | [docs/arquitetura.md](docs/arquitetura.md) | C4 nos níveis 1 a 3: containers, telas e rotas, Processor, camadas de dados, segurança | Define o que cada container faz e como eles conversam |
 | [docs/clean-architecture.md](docs/clean-architecture.md) | Camadas e pastas dentro de cada container, regra da dependência, portas, testes por camada | Diz onde cada arquivo de código mora e para que lado ele pode importar |
 | [docs/stack.md](docs/stack.md) | Ferramentas com status (definido, do C3 ou proposta) e política de versões | Evita instalar o que o grupo ainda não aprovou |
