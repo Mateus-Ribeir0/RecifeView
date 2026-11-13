@@ -78,7 +78,7 @@ def montar_mensagem(
     corpo = "\n".join(
         [
             f"A gestão encaminhou ao órgão {nome_do_orgao(encaminhamento.orgao)} uma ocorrência"
-            " priorizada no RecifeView.",
+            " acompanhada no RecifeView.",
             "",
             *_linhas_da_ocorrencia(encaminhamento),
             "",
