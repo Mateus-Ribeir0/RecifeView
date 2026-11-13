@@ -10,6 +10,7 @@ interface UsuarioJson {
   perfil: Perfil
   deve_trocar_senha: boolean
   bairro_oficial: string | null
+  recebe_avisos?: boolean
 }
 
 interface PedidoRecebidoJson {
@@ -31,6 +32,7 @@ const CAMINHOS = {
   recuperar: '/contas/recuperar-senha',
   novaSenha: '/contas/nova-senha',
   minhaConta: '/contas/eu',
+  avisosDaConta: '/contas/eu/avisos',
   excluir: '/contas/eu/excluir',
 } as const
 
@@ -42,6 +44,7 @@ function paraUsuario(json: UsuarioJson): Usuario {
     perfil: json.perfil,
     deveTrocarSenha: json.deve_trocar_senha,
     bairroOficial: json.bairro_oficial ?? null,
+    recebeAvisos: json.recebe_avisos ?? true,
   }
 }
 
@@ -121,6 +124,14 @@ export function criarServicoDeAutenticacao(cliente: ClienteHttp): ServicoDeAuten
       const usuario = await cliente.enviar<UsuarioJson>(CAMINHOS.minhaConta, {
         metodo: 'PUT',
         corpo: { nome, bairro_oficial: bairroOficial },
+        autenticada: true,
+      })
+      return paraUsuario(usuario)
+    },
+    async definirAvisos(recebeAvisos) {
+      const usuario = await cliente.enviar<UsuarioJson>(CAMINHOS.avisosDaConta, {
+        metodo: 'PUT',
+        corpo: { recebe_avisos: recebeAvisos },
         autenticada: true,
       })
       return paraUsuario(usuario)

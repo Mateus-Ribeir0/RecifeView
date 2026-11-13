@@ -7,6 +7,7 @@ import type {
   EncaminhamentoParaOOrgao,
   FiltroDeEncaminhamentos,
   OrgaoDoCatalogo,
+  PendenciasDoPainel,
   PreparoDoEncaminhamento,
   QuadroDeEncaminhamentos,
   RespostaAoEncaminhamento,
@@ -25,6 +26,7 @@ function paramsDoFiltro(filtro: FiltroDeEncaminhamentos): URLSearchParams {
   if (filtro.situacao) params.set('situacao', filtro.situacao)
   if (filtro.orgao) params.set('orgao', filtro.orgao)
   if (filtro.soAtrasados) params.set('so_atrasados', 'true')
+  if (filtro.pedemAcao) params.set('pedem_acao', 'true')
   return params
 }
 
@@ -54,6 +56,7 @@ export function criarServicoDeEncaminhamentos(cliente: ClienteHttp): ServicoDeEn
           orgao: pedido.orgao,
           justificativa: pedido.justificativa.trim() || null,
           nota: pedido.nota,
+          contribuicao_id: pedido.contribuicaoId,
         },
       }),
     listar: (filtro) => enviar<QuadroDeEncaminhamentos>(`${BASE}?${paramsDoFiltro(filtro)}`),
@@ -64,6 +67,7 @@ export function criarServicoDeEncaminhamentos(cliente: ClienteHttp): ServicoDeEn
         corpo: respostaEmJson(resposta),
       }),
     reenviar: (id) => enviar<Encaminhamento>(`${BASE}/${id}/reenvio`, { metodo: 'POST' }),
+    pendencias: () => enviar<PendenciasDoPainel>('/avisos/painel'),
   }
 }
 

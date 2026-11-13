@@ -167,3 +167,10 @@
   font-size: 13px;
   color: var(--cor-texto-secundario);
 }
+
+.encaminhamento {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+}

@@ -1,3 +1,4 @@
+import type { EncaminhamentoNaFila } from './encaminhamentos'
 export type RetornoAnterior = 'nao_registrou' | 'registrou_sem_retorno' | 'registrou_com_retorno'
 export type ResultadoDoEnvio = 'nova' | 'somada' | 'em_conferencia'
 export type DecisaoDoPar = 'mesma' | 'diferente'
@@ -61,6 +62,8 @@ export interface OcorrenciaDoPainel {
   relatos: number
   semRetorno: number
   situacao: SituacaoDaOcorrencia
+  chaveRegistro: string | null
+  encaminhamento: EncaminhamentoNaFila | null
 }
 
 export interface PaginaDeOcorrencias {

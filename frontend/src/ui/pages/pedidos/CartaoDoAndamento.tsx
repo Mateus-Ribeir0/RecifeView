@@ -5,7 +5,7 @@ import type { AndamentoDoPedido, EncaminhamentoPublico } from '../../../domain/p
 import { SeloDoEncaminhamento } from '../encaminhamentos/SeloDoEncaminhamento'
 import estilos from './Pedidos.module.css'
 
-function Encaminhamento({ item }: { item: EncaminhamentoPublico }) {
+export function EtapasDoEncaminhamento({ item }: { item: EncaminhamentoPublico }) {
   return (
     <div className={estilos.encaminhamento}>
       <p>
@@ -61,7 +61,9 @@ export function CartaoDoAndamento({ andamento }: { andamento: AndamentoDoPedido 
         )}
       </dl>
       {andamento.encaminhamentos.length > 0 ? (
-        andamento.encaminhamentos.map((item) => <Encaminhamento key={item.codigo} item={item} />)
+        andamento.encaminhamentos.map((item) => (
+          <EtapasDoEncaminhamento key={item.codigo} item={item} />
+        ))
       ) : (
         <p className={estilos.nota}>
           A gestão ainda não encaminhou este pedido a outro órgão pelo RecifeView.

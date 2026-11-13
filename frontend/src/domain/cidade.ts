@@ -1,3 +1,4 @@
+import type { EncaminhamentoPublico } from './pedidos'
 import { formatarNumero } from './formatacao'
 
 export type SituacaoPublica = 'recebido' | 'em_analise' | 'no_painel' | 'coberto_por_pedido_oficial'
@@ -29,6 +30,7 @@ export interface MeuRelato {
   somado: boolean
   relatos: number
   situacao: SituacaoPublica
+  encaminhamento: EncaminhamentoPublico | null
 }
 
 export type EstadoDaEtapa = 'feita' | 'atual' | 'pendente'

@@ -445,3 +445,14 @@
     transition: none;
   }
 }
+
+.marcacaoDaConta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  font-weight: 600;
+}
+
+.marcacaoDaConta input {
+  margin-top: 4px;
+}

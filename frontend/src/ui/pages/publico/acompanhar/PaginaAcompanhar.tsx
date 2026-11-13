@@ -151,8 +151,9 @@ export function PaginaAcompanhar() {
         <aside className={estilos.lateral} aria-label="Acompanhar com uma conta">
           <h2>Acompanha mais de um pedido?</h2>
           <p>
-            Com uma conta, você guarda até 20 protocolos em Meus pedidos e vê o andamento de todos
-            juntos, sem digitar de novo.
+            Com uma conta, você guarda até 20 protocolos em Meus pedidos, vê o andamento de todos
+            juntos e recebe um aviso por e-mail quando o pedido for encaminhado, recebido ou
+            resolvido por um órgão.
           </p>
           <p>
             <Link to="/cadastrar">Criar conta</Link> ou <Link to="/entrar">entrar</Link>.

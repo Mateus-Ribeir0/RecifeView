@@ -5,6 +5,7 @@ import type {
   EncaminhamentoParaOOrgao,
   FiltroDeEncaminhamentos,
   OrgaoDoCatalogo,
+  PendenciasDoPainel,
   PreparoDoEncaminhamento,
   QuadroDeEncaminhamentos,
 } from '../../domain/encaminhamentos'
@@ -15,10 +16,10 @@ export function useQuadroDeEncaminhamentos(
   filtro: FiltroDeEncaminhamentos,
 ): Carregamento<QuadroDeEncaminhamentos> {
   const servico = useServicoDeEncaminhamentos()
-  const { situacao, orgao, soAtrasados, deslocamento } = filtro
+  const { situacao, orgao, soAtrasados, pedemAcao, deslocamento } = filtro
   const buscar = useCallback(
-    () => servico.listar({ situacao, orgao, soAtrasados, deslocamento }),
-    [servico, situacao, orgao, soAtrasados, deslocamento],
+    () => servico.listar({ situacao, orgao, soAtrasados, pedemAcao, deslocamento }),
+    [servico, situacao, orgao, soAtrasados, pedemAcao, deslocamento],
   )
   return useCarregamento(JSON.stringify(filtro), buscar)
 }
@@ -47,4 +48,11 @@ export function useOrgaos(): Carregamento<readonly OrgaoDoCatalogo[]> {
   const servico = useServicoDeEncaminhamentos()
   const buscar = useCallback(() => servico.orgaos(), [servico])
   return useCarregamento('orgaos', buscar)
+}
+
+/** Recarrega a cada troca de tela: o contador do menu acompanha o que a gestão acabou de fazer. */
+export function usePendenciasDoPainel(rota: string): Carregamento<PendenciasDoPainel> {
+  const servico = useServicoDeEncaminhamentos()
+  const buscar = useCallback(() => servico.pendencias(), [servico])
+  return useCarregamento(`pendencias:${rota}`, buscar)
 }
