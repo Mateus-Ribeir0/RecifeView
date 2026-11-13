@@ -182,7 +182,7 @@ O mockup 04 da pasta `MockupsDashboard` serve de referência de estrutura. Os n�
 └──────┴───────────────────────────────────────────────────────┘
 ```
 
-- A barra lateral (fundo `azul-claro`) tem ícone e rótulo. O botão de menu do cabeçalho alterna entre aberta (`--largura-da-lateral`) e recolhida só com ícones (`--largura-da-lateral-recolhida`), e a escolha fica salva. Abaixo de 1040px, ela vira gaveta, com o fundo escurecido e um X para fechar. A decisão está na [ADR 0008](adr/0008-navegacao-lateral-com-filtros.md) (proposta).
+- A barra lateral (fundo `azul-claro`) tem ícone e rótulo. Telas com pendência mostram um contador à direita do rótulo, em `alerta-fundo` com `alerta-texto` (Encaminhamentos: o que pede ação; Contribuições: duplas do pente fino). O contador some quando é zero e tem texto para leitor de tela ("3 encaminhamentos pedem ação"). O botão de menu do cabeçalho alterna entre aberta (`--largura-da-lateral`) e recolhida só com ícones (`--largura-da-lateral-recolhida`), e a escolha fica salva. Abaixo de 1040px, ela vira gaveta, com o fundo escurecido e um X para fechar. A decisão está na [ADR 0008](adr/0008-navegacao-lateral-com-filtros.md) (proposta).
 - A linha de filtros fica fixa acima do conteúdo e mostra só os filtros que a tela aplica. Filtro em uso fica em `azul-claro`, com o valor escrito, e aparece "Limpar". Telas sem filtros não têm a linha.
 - Texto corrido não fica na tela: o cabeçalho tem uma frase, o detalhe vai em "Sobre esta tela" e a explicação de cada gráfico vai em "Como ler", que abre sob demanda. A nota de fonte, período e n continua sempre visível.
 - Telas com assuntos diferentes se dividem em abas, em vez de crescer para baixo.
