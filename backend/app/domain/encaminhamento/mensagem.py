@@ -39,6 +39,7 @@ def _dados(encaminhamento: Encaminhamento, link_de_retorno: str) -> dict[str, ob
         "servico": ocorrencia.servico,
         "bairro_oficial": ocorrencia.bairro_oficial,
         "rpa": ocorrencia.rpa,
+        "local_aproximado": ocorrencia.referencia_de_local,
         "situacao_na_fonte": ocorrencia.situacao,
         "nota": encaminhamento.nota,
         "justificativa": encaminhamento.justificativa,
@@ -59,6 +60,11 @@ def _linhas_da_ocorrencia(encaminhamento: Encaminhamento) -> list[str]:
         f"Tema: {ocorrencia.categoria or NAO_INFORMADO}",
         f"Serviço: {ocorrencia.servico or NAO_INFORMADO}",
         f"Bairro: {bairro}{rpa}",
+        *(
+            [f"Local aproximado: {ocorrencia.referencia_de_local}"]
+            if ocorrencia.referencia_de_local
+            else []
+        ),
         f"Situação na fonte: {ocorrencia.situacao or NAO_INFORMADO}",
         f"Nota de prioridade: {_nota(encaminhamento.nota)}",
         f"Justificativa da gestão: {encaminhamento.justificativa or NAO_INFORMADO}",
@@ -90,4 +96,23 @@ def montar_mensagem(
         assunto=f"Ocorrência encaminhada {encaminhamento.codigo}",
         corpo=corpo,
         dados=_dados(encaminhamento, link_de_retorno),
+    )
+
+
+def montar_lembrete(
+    encaminhamento: Encaminhamento, link_de_retorno: str, link_vale_ate: date
+) -> MensagemAoOrgao:
+    """Sai quando o prazo vence sem resposta final. O link novo substitui o da primeira mensagem."""
+    original = montar_mensagem(encaminhamento, link_de_retorno, link_vale_ate)
+    abertura = (
+        f"Lembrete: o prazo de {_data(encaminhamento.prazo_de_resposta)} para resolver ou devolver"
+        f" a ocorrência {encaminhamento.codigo} venceu e ainda não há resposta final do órgão."
+        " Este link substitui o da mensagem anterior."
+    )
+    return MensagemAoOrgao(
+        orgao=original.orgao,
+        codigo=original.codigo,
+        assunto=f"Lembrete: prazo vencido da ocorrência {encaminhamento.codigo}",
+        corpo=f"{abertura}\n\n{original.corpo}",
+        dados={**original.dados, "lembrete": True},
     )

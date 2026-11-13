@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.api.dependencias import (
     CidadaoAtualDep,
+    RepositorioDeEncaminhamentosDep,
     SegurancaDep,
     ServicosDeContribuicoesDep,
     ServicosDePedidosDep,
@@ -51,10 +52,14 @@ def listar_ocorrencias(
     description="A situação de um relato somado é a da ocorrência que o recebeu.",
 )
 def listar_meus_relatos(
-    cidadao: CidadaoAtualDep, servicos: ServicosDeContribuicoesDep
+    cidadao: CidadaoAtualDep,
+    servicos: ServicosDeContribuicoesDep,
+    encaminhamentos: RepositorioDeEncaminhamentosDep,
+    seguranca: SegurancaDep,
 ) -> list[MeuRelatoResposta]:
-    caso = ListarMeusRelatos(servicos.contribuicoes)
-    return [MeuRelatoResposta.model_validate(item) for item in caso.executar(cidadao)]
+    caso = ListarMeusRelatos(servicos.contribuicoes, encaminhamentos)
+    hoje = seguranca.relogio.agora().date()
+    return [MeuRelatoResposta.de_relato(item, hoje) for item in caso.executar(cidadao)]
 
 
 @roteador.get(

@@ -160,6 +160,7 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `uv run recifeview importar --arquivo ... --data-do-retrato AAAA-MM-DD` | Importa um arquivo pelo terminal. Troque `--arquivo` por `--endereco URL` ou por `--banco NOME --consulta SQL` para as outras origens |
 | `uv run recifeview carregar-logradouros --arquivo ...` | Soma as vias de um arquivo público do 156 à lista do formulário |
 | `uv run recifeview encaminhar-prioritarias --fonte 156 --nota-minima 7 --limite 20` | Encaminha ao órgão sugerido as ocorrências de nota alta sem encaminhamento aberto. Feito para o agendador (cron ou EventBridge) |
+| `uv run recifeview lembrar-orgaos` | Manda um lembrete, com link novo, ao órgão de cada encaminhamento com prazo vencido sem resposta final. Um lembrete por encaminhamento. Feito para o agendador, uma vez por dia |
 | `uv run recifeview --help` | Administração de contas e importação |
 
 ## Encaminhar ao órgão
@@ -193,6 +194,16 @@ Corpo enviado ao webhook (e guardado no arquivo local, em `dados`):
 }
 ```
 
+### Quem é avisado
+
+Os avisos saem pela mesma via dos e-mails de conta (SMTP, ou arquivos em `API_PASTA_DOS_EMAILS` sem SMTP). A falha de um aviso fica no log e não desfaz a mudança.
+
+| Quando | Quem recebe |
+|---|---|
+| O órgão responde pelo link | A pessoa da gestão que encaminhou |
+| O encaminhamento é enviado, recebido, resolvido ou devolvido | O cidadão com conta que guardou o protocolo em "Meus pedidos" ou que enviou relato somado à ocorrência, se não desligou os avisos |
+| O prazo vence sem resposta final | O órgão, pelo comando `recifeview lembrar-orgaos` |
+
 O órgão responde abrindo o link ou, se tiver sistema, com `POST /api/v1/retornos` e `{"token": "<token do link>", "situacao": "resolvido", "protocolo_do_orgao": "...", "observacao": "..."}`. Se o canal falhar, o encaminhamento fica como `falhou` e o painel oferece o reenvio.
 
 ## Rotas
@@ -210,9 +221,10 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `POST /contas/recuperar-senha` | Envia um código para nova senha (só contas de cidadão) |
 | `POST /contas/nova-senha` | Troca a senha com o código e derruba as sessões |
 | `PUT /contas/eu` | Atualiza nome e bairro |
+| `PUT /contas/eu/avisos` | Liga ou desliga os avisos por e-mail do andamento de pedidos, relatos e encaminhamentos |
 | `POST /contas/eu/excluir` | Exclui a conta de cidadão, com a senha |
 | `GET /cidade/ocorrencias` | Relatos dos últimos 90 dias, com rua só da lista oficial e número em faixa de centena |
-| `GET /cidade/meus-relatos` | Os relatos que a própria pessoa enviou com a conta aberta, com endereço e situação. A de um relato somado é a da ocorrência que o recebeu |
+| `GET /cidade/meus-relatos` | Os relatos que a própria pessoa enviou com a conta aberta, com endereço e situação. A de um relato somado é a da ocorrência que o recebeu. Se a ocorrência foi encaminhada, traz o órgão e as etapas |
 | `GET /cidade/pedidos` | Os protocolos que a pessoa guardou, com o andamento e o encaminhamento de cada um |
 | `POST /cidade/pedidos` | Guarda um protocolo para acompanhar (até 20 por conta) |
 | `DELETE /cidade/pedidos/{id}` | Deixa de acompanhar um protocolo |
@@ -250,14 +262,15 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `GET /contribuicoes/logradouros?bairro=...` | Vias conhecidas de um bairro. Público |
 | `POST /contribuicoes` | Recebe um relato e diz se ficou novo, somado ou em conferência. Público, com limite de envios. Com token de conta de cidadão, o relato fica ligado a ela para aparecer em "Meus relatos" |
 | `GET /contribuicoes/resumo` | Números da fila de relatos |
-| `GET /contribuicoes/ocorrencias` | Ocorrências consolidadas, com endereço, para a gestão |
+| `GET /contribuicoes/ocorrencias` | Ocorrências consolidadas, com endereço, para a gestão. A que já está na base traz a `chave_registro` para encaminhar e o último encaminhamento |
 | `GET /contribuicoes/pares` | Relatos parecidos que esperam decisão |
 | `PUT /contribuicoes/pares/{id}` | Decide se a dupla é a mesma ocorrência |
 | `POST /contribuicoes/pacotes` | Gera o pacote e abre a importação. Recusa se houver dupla sem decisão |
-| `GET /encaminhamentos` | Resumo (abertos, atrasados, por situação, mediana até resolver) e lista. Filtros `situacao`, `orgao`, `so_atrasados` |
+| `GET /encaminhamentos` | Resumo (abertos, atrasados, por situação, mediana até resolver) e lista. Filtros `situacao`, `orgao`, `so_atrasados` e `pedem_acao` (devolução sem novo destino, falha de envio ou prazo vencido, no último encaminhamento de cada ocorrência) |
 | `GET /encaminhamentos/orgaos` | Órgãos que recebem encaminhamentos e o canal configurado de cada um |
 | `GET /encaminhamentos/ocorrencias/{chave_registro}` | Prepara o encaminhamento: a ocorrência, a sugestão de destino com a distribuição do tema e o histórico |
-| `POST /encaminhamentos` | Encaminha a ocorrência ao órgão escolhido e manda a mensagem pelo canal dele |
+| `POST /encaminhamentos` | Encaminha a ocorrência ao órgão escolhido e manda a mensagem pelo canal dele. Para uma ocorrência do formulário, aceita `contribuicao_id`: a mensagem leva a rua oficial e a faixa de numeração do relato |
+| `GET /avisos/painel` | Contadores do menu: devoluções sem novo destino, falhas, prazos vencidos e duplas esperando o pente fino |
 | `GET /encaminhamentos/{id}` | Detalhe com os eventos do ciclo |
 | `POST /encaminhamentos/{id}/retorno` | A gestão registra o que o órgão respondeu por outro meio |
 | `POST /encaminhamentos/{id}/reenvio` | Reenvia depois de uma falha do canal, com link novo |
@@ -298,7 +311,7 @@ Nenhuma rota devolve o texto da SEDEC, `id_local`, coordenada nem o hash da senh
 
 As migrações ficam nesta pasta, para que o esquema tenha um dono só. Convenções de nomes em [docs/padroes-de-codigo.md](../docs/padroes-de-codigo.md#banco-de-dados-postgresql).
 
-- Schema `app`: `usuario` (com `email_confirmado_em` e `bairro_oficial`), `codigo_de_conta` (só o hash do código), `sessao`, `evento_de_acesso`, `importacao`, `consulta_auditada`, `contribuicao` (a quarentena do formulário), `par_de_contribuicoes` (as duplas do pente fino, com a decisão de cada uma), `encaminhamento` (cópia do que foi mandado ao órgão, o hash do token do link e a situação), `evento_de_encaminhamento` (cada mudança do ciclo, com autor) e `pedido_acompanhado` (protocolos que um cidadão guardou).
+- Schema `app`: `usuario` (com `email_confirmado_em`, `bairro_oficial` e `recebe_avisos`), `codigo_de_conta` (só o hash do código), `sessao`, `evento_de_acesso`, `importacao`, `consulta_auditada`, `contribuicao` (a quarentena do formulário), `par_de_contribuicoes` (as duplas do pente fino, com a decisão de cada uma), `encaminhamento` (cópia do que foi mandado ao órgão, o hash do token do link, a situação, a data do lembrete e, quando veio do formulário, o relato e o local aproximado), `evento_de_encaminhamento` (cada mudança do ciclo, com autor) e `pedido_acompanhado` (protocolos que um cidadão guardou).
 - Schema `ouro`: `dim_bairro`, `dim_logradouro`, `fato_demanda` (com o `protocolo` quando a fonte o publica), `fato_demanda_substituida` (versão anterior das linhas atualizadas, para desfazer) e as views materializadas `mv_*`, que reproduzem as tabelas do protótipo em Streamlit ([ADR 0006](../docs/adr/0006-modelo-analitico-no-postgresql.md)).
 
 As views são atualizadas depois de cada importação, com o painel no ar.

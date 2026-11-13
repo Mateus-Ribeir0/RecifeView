@@ -46,6 +46,7 @@ def _preencher(modelo: UsuarioModelo, usuario: Usuario) -> None:
     modelo.tentativas_falhas = usuario.tentativas_falhas
     modelo.bloqueado_ate = usuario.bloqueado_ate
     modelo.bairro_oficial = usuario.bairro_oficial
+    modelo.recebe_avisos = usuario.recebe_avisos
 
 
 def _para_dominio(modelo: UsuarioModelo) -> Usuario:
@@ -60,4 +61,5 @@ def _para_dominio(modelo: UsuarioModelo) -> Usuario:
         tentativas_falhas=modelo.tentativas_falhas,
         bloqueado_ate=modelo.bloqueado_ate,
         bairro_oficial=modelo.bairro_oficial,
+        recebe_avisos=modelo.recebe_avisos,
     )

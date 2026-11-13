@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from app.api.schemas.pedidos import EncaminhamentoPublicoResposta
+from app.application.casos_de_uso.cidade.meus_relatos import MeuRelato
 from app.domain.cidade import SituacaoPublica
 
 
@@ -41,6 +43,16 @@ class MeuRelatoResposta(BaseModel):
     somado: bool
     relatos: int
     situacao: SituacaoPublica
+    encaminhamento: EncaminhamentoPublicoResposta | None = None
+
+    @classmethod
+    def de_relato(cls, relato: MeuRelato, hoje: date) -> "MeuRelatoResposta":
+        encaminhamento = (
+            EncaminhamentoPublicoResposta.de_encaminhamento(relato.encaminhamento, hoje)
+            if relato.encaminhamento
+            else None
+        )
+        return cls.model_validate(relato).model_copy(update={"encaminhamento": encaminhamento})
 
 
 class ComparacaoResposta(BaseModel):

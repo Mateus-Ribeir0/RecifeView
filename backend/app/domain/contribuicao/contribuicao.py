@@ -13,6 +13,7 @@ TAMANHO_MINIMO_DA_VIA = 3
 TAMANHO_MAXIMO_DO_NUMERO = 10
 TAMANHO_MAXIMO_DO_DETALHE = 280
 DIAS_DE_GUARDA_DO_ENDERECO = 90
+SITUACAO_NA_BASE = "na_base"
 
 PADRAO_CPF_SEM_PONTUACAO = re.compile(r"(?<!\d)\d{11}(?!\d)")
 PADRAO_TELEFONE_SOLTO = re.compile(r"(?<!\d)(?:\d{2}[\s.-]?)?9?\d{4}[\s.-]\d{4}(?!\d)")

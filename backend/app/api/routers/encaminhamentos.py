@@ -80,10 +80,18 @@ def listar(
     situacao: SituacaoDoEncaminhamento | None = None,
     orgao: Orgao | None = None,
     so_atrasados: bool = False,
+    pedem_acao: bool = False,
     limite: Limite = 50,
     deslocamento: Deslocamento = 0,
 ) -> QuadroResposta:
-    filtro = FiltroDeEncaminhamentos(situacao, orgao, so_atrasados, limite, deslocamento)
+    filtro = FiltroDeEncaminhamentos(
+        situacao=situacao,
+        orgao=orgao,
+        so_atrasados=so_atrasados,
+        so_os_que_pedem_acao=pedem_acao,
+        limite=limite,
+        deslocamento=deslocamento,
+    )
     return QuadroResposta.de_quadro(ListarEncaminhamentos(servicos).executar(filtro))
 
 
@@ -125,7 +133,12 @@ def encaminhar(
     entrada: EncaminharEntrada, gestor: GestorAtualDep, servicos: ServicosDeEncaminhamentoDep
 ) -> EncaminhamentoResposta:
     pedido = PedidoDeEncaminhamento(
-        entrada.chave_registro, entrada.orgao, gestor.id, entrada.justificativa, entrada.nota
+        chave_registro=entrada.chave_registro,
+        orgao=entrada.orgao,
+        criado_por=gestor.id,
+        justificativa=entrada.justificativa,
+        nota=entrada.nota,
+        contribuicao_id=entrada.contribuicao_id,
     )
     encaminhamento = EncaminharOcorrencia(servicos).executar(pedido)
     return EncaminhamentoResposta.de_encaminhamento(encaminhamento, _hoje(servicos))

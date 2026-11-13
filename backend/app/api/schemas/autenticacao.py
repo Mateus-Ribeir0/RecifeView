@@ -29,6 +29,7 @@ class UsuarioResposta(BaseModel):
     perfil: Perfil
     deve_trocar_senha: bool
     bairro_oficial: str | None
+    recebe_avisos: bool
 
     @classmethod
     def de_usuario(cls, usuario: Usuario) -> Self:
@@ -39,6 +40,7 @@ class UsuarioResposta(BaseModel):
             perfil=usuario.perfil,
             deve_trocar_senha=usuario.deve_trocar_senha,
             bairro_oficial=usuario.bairro_oficial,
+            recebe_avisos=usuario.recebe_avisos,
         )
 
 

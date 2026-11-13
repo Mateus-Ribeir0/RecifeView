@@ -78,7 +78,9 @@ class RegistrarRetornoPeloLink:
         quem = QuemResponde(AutorDoEvento.ORGAO)
         mudanca = _mudanca_validada(self.servicos, encaminhamento, resposta, quem)
         self.servicos.encaminhamentos.mudar_situacao(encaminhamento.id, mudanca)
-        return self.servicos.obter(encaminhamento.id)
+        respondido = self.servicos.obter(encaminhamento.id)
+        self.servicos.avisos.avisar(respondido, AutorDoEvento.ORGAO)
+        return respondido
 
 
 @dataclass(frozen=True)
@@ -92,7 +94,9 @@ class RegistrarRetornoPelaGestao:
         quem = QuemResponde(AutorDoEvento.GESTAO, usuario_id)
         mudanca = _mudanca_validada(self.servicos, encaminhamento, resposta, quem)
         self.servicos.encaminhamentos.mudar_situacao(encaminhamento_id, mudanca)
-        return self.servicos.obter(encaminhamento_id)
+        registrado = self.servicos.obter(encaminhamento_id)
+        self.servicos.avisos.avisar(registrado, AutorDoEvento.GESTAO)
+        return registrado
 
 
 @dataclass(frozen=True)

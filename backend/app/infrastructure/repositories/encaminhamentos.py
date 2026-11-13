@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 from datetime import date, datetime
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import Row, text
 from sqlalchemy.orm import Session
@@ -11,6 +12,7 @@ from app.application.portas.encaminhamentos import (
     MudancaDeSituacao,
     NovoEncaminhamento,
     PaginaDeEncaminhamentos,
+    PendenciasDosEncaminhamentos,
     ResumoDosEncaminhamentos,
     TokenDeRetorno,
 )
@@ -22,6 +24,7 @@ from app.domain.encaminhamento.encaminhamento import (
     EventoDoEncaminhamento,
     OcorrenciaEncaminhavel,
     SituacaoDoEncaminhamento,
+    descrever_local_aproximado,
 )
 from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.encaminhamento.sugestao import CitacoesDoTema
@@ -30,7 +33,8 @@ COLUNAS = """
     e.id, e.chave_registro, e.fonte, e.data_abertura, e.categoria, e.servico, e.bairro_oficial,
     e.rpa, e.situacao_na_fonte, e.orgao_na_fonte, e.protocolo_de_origem, e.orgao,
     e.orgao_sugerido, e.canal, e.situacao, e.criado_em, e.prazo_de_resposta, e.atualizado_em,
-    e.nota, e.justificativa, e.automatico, e.protocolo_do_orgao
+    e.nota, e.justificativa, e.automatico, e.protocolo_do_orgao, e.contribuicao_id,
+    e.referencia_de_local, e.lembrete_enviado_em
 """
 OCORRENCIA = """
 SELECT
@@ -47,12 +51,12 @@ INSERT INTO app.encaminhamento (
     chave_registro, fonte, data_abertura, categoria, servico, bairro_oficial, rpa,
     situacao_na_fonte, orgao_na_fonte, protocolo_de_origem, nota, orgao, orgao_sugerido, canal,
     situacao, justificativa, automatico, criado_por, criado_em, prazo_de_resposta, hash_do_token,
-    token_expira_em, atualizado_em
+    token_expira_em, atualizado_em, contribuicao_id, referencia_de_local
 ) VALUES (
     :chave_registro, :fonte, :data_abertura, :categoria, :servico, :bairro_oficial, :rpa,
     :situacao_na_fonte, :orgao_na_fonte, :protocolo_de_origem, :nota, :orgao, :orgao_sugerido,
     :canal, :situacao, :justificativa, :automatico, :criado_por, :criado_em, :prazo_de_resposta,
-    :hash_do_token, :token_expira_em, :criado_em
+    :hash_do_token, :token_expira_em, :criado_em, :contribuicao_id, :referencia_de_local
 )
 RETURNING id
 """
@@ -100,6 +104,47 @@ JOIN app.evento_de_encaminhamento ev ON ev.encaminhamento_id = e.id
 WHERE ev.situacao = 'resolvido'
 """
 POR_ID = f"SELECT {COLUNAS} FROM app.encaminhamento e WHERE e.id = :id"
+ULTIMO_DE_CADA_OCORRENCIA = """
+SELECT DISTINCT ON (chave_registro) id, situacao, prazo_de_resposta
+FROM app.encaminhamento
+ORDER BY chave_registro, criado_em DESC, id DESC
+"""
+PEDEM_ACAO = f"""
+SELECT id FROM ({ULTIMO_DE_CADA_OCORRENCIA}) u
+WHERE u.situacao IN ('devolvido', 'falhou')
+    OR (u.situacao = ANY(:abertas) AND u.prazo_de_resposta < :hoje)
+"""
+PENDENCIAS = f"""
+SELECT
+    count(*) FILTER (WHERE situacao = 'devolvido')::int,
+    count(*) FILTER (WHERE situacao = 'falhou')::int,
+    count(*) FILTER (WHERE situacao = ANY(:abertas) AND prazo_de_resposta < :hoje)::int
+FROM ({ULTIMO_DE_CADA_OCORRENCIA}) u
+"""
+LOCAL_DO_RELATO = """
+SELECT l.logradouro, c.numero
+FROM app.contribuicao c
+LEFT JOIN ouro.dim_logradouro l
+    ON l.bairro_oficial = c.bairro_oficial AND l.logradouro = c.logradouro
+WHERE c.id = :id
+"""
+VENCIDOS_SEM_LEMBRETE = f"""
+SELECT {COLUNAS} FROM app.encaminhamento e
+WHERE e.situacao = ANY(:abertas) AND e.prazo_de_resposta < :hoje AND e.lembrete_enviado_em IS NULL
+ORDER BY e.prazo_de_resposta, e.id
+"""
+REGISTRAR_LEMBRETE = """
+UPDATE app.encaminhamento
+SET hash_do_token = :hash_do_token, token_expira_em = :token_expira_em,
+    lembrete_enviado_em = :agora
+WHERE id = :encaminhamento_id
+"""
+ULTIMOS_POR_RELATO = f"""
+SELECT DISTINCT ON (e.contribuicao_id) {COLUNAS}
+FROM app.encaminhamento e
+WHERE e.contribuicao_id = ANY(:ids)
+ORDER BY e.contribuicao_id, e.criado_em DESC, e.id DESC
+"""
 ABERTAS = [situacao.value for situacao in SITUACOES_ABERTAS]
 
 
@@ -122,6 +167,7 @@ def _encaminhamento(linha: Row[Any]) -> Encaminhamento:
             situacao=dados["situacao_na_fonte"],
             orgao=dados["orgao_na_fonte"],
             protocolo=dados["protocolo_de_origem"],
+            referencia_de_local=dados["referencia_de_local"],
         ),
         orgao=Orgao(dados["orgao"]),
         orgao_sugerido=_orgao_ou_nada(dados["orgao_sugerido"]),
@@ -134,6 +180,8 @@ def _encaminhamento(linha: Row[Any]) -> Encaminhamento:
         justificativa=dados["justificativa"],
         automatico=dados["automatico"],
         protocolo_do_orgao=dados["protocolo_do_orgao"],
+        contribuicao_id=dados["contribuicao_id"],
+        lembrete_enviado_em=dados["lembrete_enviado_em"],
     )
 
 
@@ -162,6 +210,8 @@ def _parametros_do_novo(novo: NovoEncaminhamento) -> dict[str, object]:
         "prazo_de_resposta": novo.prazo_de_resposta,
         "hash_do_token": novo.token.hash,
         "token_expira_em": novo.token.expira_em,
+        "contribuicao_id": novo.contribuicao_id,
+        "referencia_de_local": ocorrencia.referencia_de_local,
     }
 
 
@@ -176,6 +226,8 @@ def _onde(filtro: FiltroDeEncaminhamentos, hoje: date) -> tuple[str, dict[str, o
         parametros["orgao"] = filtro.orgao.value
     if filtro.so_atrasados:
         condicoes.append("e.situacao = ANY(:abertas) AND e.prazo_de_resposta < :hoje")
+    if filtro.so_os_que_pedem_acao:
+        condicoes.append(f"e.id IN ({PEDEM_ACAO})")
     onde = f"WHERE {' AND '.join(condicoes)}" if condicoes else ""
     return onde, parametros
 
@@ -275,6 +327,38 @@ class EncaminhamentoRepositorySql:
             por_situacao=contagem,
             mediana_de_dias_ate_resolver=float(mediana) if mediana is not None else None,
         )
+
+    def contar_pendencias(self, hoje: date) -> PendenciasDosEncaminhamentos:
+        parametros = {"abertas": ABERTAS, "hoje": hoje}
+        devolvidos, falhas, vencidos = self._sessao.execute(text(PENDENCIAS), parametros).one()
+        return PendenciasDosEncaminhamentos(devolvidos, falhas, vencidos)
+
+    def local_aproximado_do_relato(self, contribuicao_id: UUID) -> str | None:
+        linha = self._sessao.execute(text(LOCAL_DO_RELATO), {"id": contribuicao_id}).first()
+        return descrever_local_aproximado(*linha) if linha else None
+
+    def vencidos_sem_lembrete(self, hoje: date) -> list[Encaminhamento]:
+        parametros = {"abertas": ABERTAS, "hoje": hoje}
+        linhas = self._sessao.execute(text(VENCIDOS_SEM_LEMBRETE), parametros)
+        return [_encaminhamento(linha) for linha in linhas]
+
+    def registrar_lembrete(
+        self, encaminhamento_id: int, token: TokenDeRetorno, agora: datetime
+    ) -> None:
+        parametros = {
+            "encaminhamento_id": encaminhamento_id,
+            "hash_do_token": token.hash,
+            "token_expira_em": token.expira_em,
+            "agora": agora,
+        }
+        self._sessao.execute(text(REGISTRAR_LEMBRETE), parametros)
+
+    def ultimos_por_relato(self, ids: Sequence[UUID]) -> dict[UUID, Encaminhamento]:
+        if not ids:
+            return {}
+        linhas = self._sessao.execute(text(ULTIMOS_POR_RELATO), {"ids": list(ids)})
+        encaminhamentos = self._com_eventos([_encaminhamento(linha) for linha in linhas])
+        return {item.contribuicao_id: item for item in encaminhamentos if item.contribuicao_id}
 
     def ultimos_por_chave(self, chaves: Sequence[int]) -> dict[int, Encaminhamento]:
         linhas = self._sessao.execute(text(ULTIMOS_POR_CHAVE), {"chaves": list(chaves)})

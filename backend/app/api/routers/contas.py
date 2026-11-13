@@ -13,6 +13,7 @@ from app.api.dependencias import (
 from app.api.schemas.autenticacao import AcessoResposta, UsuarioResposta
 from app.api.schemas.contas import (
     AtualizacaoDaContaEntrada,
+    AvisosDaContaEntrada,
     EmailEntrada,
     ExclusaoDaContaEntrada,
     NovaContaEntrada,
@@ -23,6 +24,7 @@ from app.api.schemas.erros import ErroResposta
 from app.application.casos_de_uso.contas.criar_conta import CriarConta, NovaConta
 from app.application.casos_de_uso.contas.minha_conta import (
     AtualizarMinhaConta,
+    DefinirAvisos,
     ExcluirMinhaConta,
 )
 from app.application.casos_de_uso.contas.recuperar_senha import (
@@ -102,6 +104,19 @@ def atualizar(
         usuario, dados.nome, dados.bairro_oficial
     )
     return UsuarioResposta.de_usuario(atualizado)
+
+
+@roteador.put(
+    "/eu/avisos",
+    summary="Liga ou desliga os avisos por e-mail",
+    description="Avisos do andamento dos pedidos guardados, dos relatos e dos encaminhamentos.",
+)
+def definir_avisos(
+    dados: AvisosDaContaEntrada, usuario: UsuarioAtualDep, servicos: ServicosDeContaDep
+) -> UsuarioResposta:
+    return UsuarioResposta.de_usuario(
+        DefinirAvisos(servicos).executar(usuario, dados.recebe_avisos)
+    )
 
 
 @roteador.post(

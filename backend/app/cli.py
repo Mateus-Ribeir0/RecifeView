@@ -9,12 +9,14 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.casos_de_uso.cadastrar_usuario import CadastrarUsuario
 from app.application.casos_de_uso.contribuicoes.carregar_logradouros import CarregarLogradouros
+from app.application.casos_de_uso.encaminhamentos.avisos import AvisosDoCiclo
 from app.application.casos_de_uso.encaminhamentos.encaminhar_prioritarias import (
     LIMITE_PADRAO_POR_EXECUCAO,
     EncaminharPrioritarias,
     MotivoParaPular,
     PedidoAutomatico,
 )
+from app.application.casos_de_uso.encaminhamentos.lembrete import LembrarOrgaos
 from app.application.casos_de_uso.encaminhamentos.servicos import ServicosDeEncaminhamento
 from app.application.casos_de_uso.importacoes.importar_pelo_terminal import (
     ImportacaoPendente,
@@ -37,6 +39,7 @@ from app.infrastructure.auth.senhas import HashDeSenhaArgon2
 from app.infrastructure.auth.tokens import EmissorDeTokenJwt
 from app.infrastructure.db.conexao import criar_fabrica_de_sessoes
 from app.infrastructure.email.montagem import montar_envio_de_email
+from app.infrastructure.encaminhamento.avisos import AvisosPorEmail
 from app.infrastructure.encaminhamento.despacho import montar_despacho
 from app.infrastructure.importacao.leitores import LeitorDeArquivos
 from app.infrastructure.importacao.montagem import (
@@ -46,6 +49,7 @@ from app.infrastructure.importacao.montagem import (
 )
 from app.infrastructure.relogio import RelogioDoSistema
 from app.infrastructure.repositories.acessos import RegistroDeAcessosSql
+from app.infrastructure.repositories.avisos import DestinatariosDosAvisosSql
 from app.infrastructure.repositories.contribuicoes import ReferenciaDoFormularioSql
 from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
 from app.infrastructure.repositories.prioridade import PrioridadeRepositorySql
@@ -72,6 +76,8 @@ def main(argumentos: Sequence[str] | None = None) -> int:
         return _carregar_logradouros(comando, fabrica)
     if comando.comando == "encaminhar-prioritarias":
         return _encaminhar_prioritarias(comando, configuracao, fabrica)
+    if comando.comando == "lembrar-orgaos":
+        return _lembrar_orgaos(configuracao, fabrica)
     try:
         with fabrica.begin() as sessao:
             if comando.comando == "cadastrar-usuario":
@@ -134,6 +140,11 @@ def _ler_comando(argumentos: Sequence[str] | None) -> argparse.Namespace:
     )
     automatico.add_argument("--nota-minima", type=float, default=NOTA_ALTA)
     automatico.add_argument("--limite", type=int, default=LIMITE_PADRAO_POR_EXECUCAO)
+
+    comandos.add_parser(
+        "lembrar-orgaos",
+        help="Lembra o órgão dos encaminhamentos com prazo vencido (para o agendador)",
+    )
     return leitor.parse_args(argumentos)
 
 
@@ -188,17 +199,26 @@ def _carregar_logradouros(comando: argparse.Namespace, fabrica: sessionmaker[Ses
     return 0
 
 
+def _servicos_de_encaminhamento(
+    sessao: Session, configuracao: Configuracao
+) -> ServicosDeEncaminhamento:
+    emails = montar_envio_de_email(configuracao)
+    avisos = AvisosDoCiclo(
+        DestinatariosDosAvisosSql(sessao), AvisosPorEmail(emails), configuracao.endereco_do_site
+    )
+    return ServicosDeEncaminhamento(
+        EncaminhamentoRepositorySql(sessao),
+        montar_despacho(configuracao, emails),
+        RelogioDoSistema(),
+        avisos,
+    )
+
+
 def _encaminhar_prioritarias(
     comando: argparse.Namespace, configuracao: Configuracao, fabrica: sessionmaker[Session]
 ) -> int:
-    despacho = montar_despacho(configuracao, montar_envio_de_email(configuracao))
     with fabrica.begin() as sessao:
-        servicos = ServicosDeEncaminhamento(
-            EncaminhamentoRepositorySql(sessao),
-            despacho,
-            RelogioDoSistema(),
-            configuracao.endereco_do_site,
-        )
+        servicos = _servicos_de_encaminhamento(sessao, configuracao)
         caso = EncaminharPrioritarias(servicos, PrioridadeRepositorySql(sessao))
         pedido = PedidoAutomatico(FonteDaFila(comando.fonte), comando.nota_minima, comando.limite)
         resultado = caso.executar(pedido)
@@ -206,6 +226,13 @@ def _encaminhar_prioritarias(
     print(f"Encaminhadas: {len(resultado.encaminhadas)} (falhas no canal: {resultado.falhas})")
     print(f"Já tinham encaminhamento aberto: {resultado.puladas[MotivoParaPular.JA_ENCAMINHADA]}")
     print(f"Sem órgão sugerido: {resultado.puladas[MotivoParaPular.SEM_SUGESTAO]}")
+    return 0
+
+
+def _lembrar_orgaos(configuracao: Configuracao, fabrica: sessionmaker[Session]) -> int:
+    with fabrica.begin() as sessao:
+        resultado = LembrarOrgaos(_servicos_de_encaminhamento(sessao, configuracao)).executar()
+    print(f"Lembretes enviados: {resultado.enviados} (falhas no canal: {resultado.falhas})")
     return 0
 
 

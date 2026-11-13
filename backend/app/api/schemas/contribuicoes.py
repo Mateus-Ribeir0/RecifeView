@@ -3,6 +3,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.api.schemas.comum import ChaveDoRegistro
+from app.api.schemas.prioridade import EncaminhamentoNaFilaResposta
+from app.application.casos_de_uso.contribuicoes.ocorrencias import PaginaDoFormulario
 from app.domain.contribuicao.contribuicao import (
     TAMANHO_MAXIMO_DA_VIA,
     TAMANHO_MAXIMO_DO_DETALHE,
@@ -99,6 +102,8 @@ class OcorrenciaResposta(BaseModel):
     relatos: int
     sem_retorno: int
     situacao: str
+    chave_registro: ChaveDoRegistro | None = None
+    encaminhamento: EncaminhamentoNaFilaResposta | None = None
 
 
 class PaginaDeOcorrenciasResposta(BaseModel):
@@ -106,6 +111,23 @@ class PaginaDeOcorrenciasResposta(BaseModel):
 
     itens: list[OcorrenciaResposta]
     total: int
+
+    @classmethod
+    def de_pagina(cls, pagina: PaginaDoFormulario) -> "PaginaDeOcorrenciasResposta":
+        itens = [
+            OcorrenciaResposta.model_validate(item.ocorrencia).model_copy(
+                update={
+                    "chave_registro": item.chave_registro,
+                    "encaminhamento": (
+                        EncaminhamentoNaFilaResposta.de_encaminhamento(item.encaminhamento)
+                        if item.encaminhamento
+                        else None
+                    ),
+                }
+            )
+            for item in pagina.itens
+        ]
+        return cls(itens=itens, total=pagina.total)
 
 
 class LadoDoParResposta(BaseModel):

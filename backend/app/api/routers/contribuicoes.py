@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, Request, status
 
 from app.api.dependencias import (
     GestorAtualDep,
+    RepositorioDeEncaminhamentosDep,
     ServicosDeContribuicoesDep,
     UsuarioSeEntrouDep,
     auditar_consulta,
@@ -23,6 +24,7 @@ from app.api.schemas.erros import ErroResposta
 from app.api.schemas.importacoes import ImportacaoResumoResposta
 from app.application.casos_de_uso.contribuicoes.decidir_par import DecidirPar
 from app.application.casos_de_uso.contribuicoes.gerar_pacote import GerarPacote
+from app.application.casos_de_uso.contribuicoes.ocorrencias import ListarOcorrenciasDoFormulario
 from app.application.casos_de_uso.contribuicoes.receber_contribuicao import ReceberContribuicao
 from app.domain.contribuicao.catalogo import TEMAS_DO_FORMULARIO
 from app.domain.contribuicao.contribuicao import ResultadoDoEnvio
@@ -102,11 +104,12 @@ def resumir(
 def listar_ocorrencias(
     _: GestorAtualDep,
     servicos: ServicosDeContribuicoesDep,
+    encaminhamentos: RepositorioDeEncaminhamentosDep,
     limite: Limite = 50,
     deslocamento: Deslocamento = 0,
 ) -> PaginaDeOcorrenciasResposta:
-    pagina = servicos.contribuicoes.listar_ocorrencias(limite, deslocamento)
-    return PaginaDeOcorrenciasResposta.model_validate(pagina)
+    caso = ListarOcorrenciasDoFormulario(servicos.contribuicoes, encaminhamentos)
+    return PaginaDeOcorrenciasResposta.de_pagina(caso.executar(limite, deslocamento))
 
 
 @roteador.get(

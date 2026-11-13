@@ -2,7 +2,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from enum import StrEnum
+from uuid import UUID
 
+from app.domain.cidade import faixa_de_numeracao
 from app.domain.contribuicao.contribuicao import tem_dado_pessoal
 from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.erros import EncaminhamentoInvalido, TransicaoInvalida
@@ -67,6 +69,7 @@ class OcorrenciaEncaminhavel:
     situacao: str | None = None
     orgao: str | None = None
     protocolo: str | None = None
+    referencia_de_local: str | None = None
 
 
 @dataclass(frozen=True)
@@ -94,6 +97,8 @@ class Encaminhamento:
     automatico: bool = False
     protocolo_do_orgao: str | None = None
     eventos: tuple[EventoDoEncaminhamento, ...] = ()
+    contribuicao_id: UUID | None = None
+    lembrete_enviado_em: datetime | None = None
 
     @property
     def codigo(self) -> str:
@@ -105,6 +110,10 @@ class Encaminhamento:
 
     def esta_atrasado(self, hoje: date) -> bool:
         return self.esta_aberto and hoje > self.prazo_de_resposta
+
+    @property
+    def ultima_observacao(self) -> str | None:
+        return next((e.observacao for e in reversed(self.eventos) if e.observacao), None)
 
 
 def calcular_prazo_de_resposta(enviado_em: date) -> date:
@@ -129,3 +138,11 @@ def limpar_texto_curto(campo: str, texto: str | None, tamanho_maximo: int) -> st
     if tem_dado_pessoal(limpo):
         raise EncaminhamentoInvalido(campo, AVISO_DE_DADO_PESSOAL)
     return limpo
+
+
+def descrever_local_aproximado(via_reconhecida: str | None, numero: str | None) -> str | None:
+    """Rua da lista oficial e faixa de numeração: o que outras contas de cidadão já veem."""
+    if via_reconhecida is None:
+        return None
+    faixa = faixa_de_numeracao(numero)
+    return f"{via_reconhecida}, {faixa}" if faixa else via_reconhecida

@@ -13,6 +13,7 @@ from sqlalchemy import (
     String,
     Text,
     func,
+    true,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -33,6 +34,7 @@ class UsuarioModelo(Base):
     tentativas_falhas: Mapped[int]
     bloqueado_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     bairro_oficial: Mapped[str | None] = mapped_column(Text)
+    recebe_avisos: Mapped[bool] = mapped_column(default=True, server_default=true())
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     atualizado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

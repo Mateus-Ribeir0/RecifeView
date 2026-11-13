@@ -112,6 +112,7 @@ class RelatoDoCidadao:
     relatos: int
     situacao: str
     tem_dupla_aberta: bool
+    ocorrencia_id: UUID
 
 
 @dataclass(frozen=True)

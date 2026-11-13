@@ -6,6 +6,7 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.application.casos_de_uso.encaminhamentos.avisos import AvisosDoCiclo
 from app.application.casos_de_uso.encaminhamentos.encaminhar import (
     EncaminharOcorrencia,
     PedidoDeEncaminhamento,
@@ -25,9 +26,10 @@ from app.domain.encaminhamento.encaminhamento import (
 from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.encaminhamento.sugestao import MotivoDaSugestao
 from app.domain.erros import LinkDeRetornoInvalido
+from app.infrastructure.repositories.avisos import DestinatariosDosAvisosSql
 from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
 from tests.fakes import RelogioFixo
-from tests.fakes_encaminhamento import ENDERECO_DO_SITE, DespachoEmMemoria
+from tests.fakes_encaminhamento import ENDERECO_DO_SITE, DespachoEmMemoria, EntregaEmMemoria
 from tests.integracao.test_importacao_e_painel import URL_DO_BANCO_DE_TESTE, preparar_esquema
 
 pytestmark = pytest.mark.skipif(
@@ -101,9 +103,8 @@ def fabrica(monkeypatch: pytest.MonkeyPatch) -> Iterator[sessionmaker[Session]]:
 def servicos_de(
     sessao: Session, despacho: DespachoEmMemoria, relogio: RelogioFixo
 ) -> ServicosDeEncaminhamento:
-    return ServicosDeEncaminhamento(
-        EncaminhamentoRepositorySql(sessao), despacho, relogio, ENDERECO_DO_SITE
-    )
+    avisos = AvisosDoCiclo(DestinatariosDosAvisosSql(sessao), EntregaEmMemoria(), ENDERECO_DO_SITE)
+    return ServicosDeEncaminhamento(EncaminhamentoRepositorySql(sessao), despacho, relogio, avisos)
 
 
 def test_sugestao_usa_as_indicacoes_do_tema_e_o_orgao_do_registro(

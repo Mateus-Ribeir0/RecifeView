@@ -1,7 +1,9 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime
+from uuid import UUID
 
+from app.application.casos_de_uso.encaminhamentos.avisos import AvisosDoCiclo
 from app.application.casos_de_uso.encaminhamentos.servicos import ServicosDeEncaminhamento
 from app.application.portas.encaminhamentos import (
     EnvioAoOrgaoFalhou,
@@ -9,10 +11,12 @@ from app.application.portas.encaminhamentos import (
     MudancaDeSituacao,
     NovoEncaminhamento,
     PaginaDeEncaminhamentos,
+    PendenciasDosEncaminhamentos,
     ResumoDosEncaminhamentos,
     TokenDeRetorno,
 )
 from app.domain.ahp import IndicadoresDoBairro
+from app.domain.encaminhamento.avisos import Aviso
 from app.domain.encaminhamento.encaminhamento import (
     AutorDoEvento,
     CanalDeEnvio,
@@ -59,6 +63,7 @@ class EncaminhamentosEmMemoria:
         self.ocorrencias = {ocorrencia.chave_registro: ocorrencia for ocorrencia in ocorrencias}
         self.citacoes: dict[str, CitacoesDoTema] = {}
         self.guardados: dict[int, Guardado] = {}
+        self.locais_dos_relatos: dict[UUID, str] = {}
 
     def ocorrencia(self, chave_registro: int) -> OcorrenciaEncaminhavel | None:
         return self.ocorrencias.get(chave_registro)
@@ -89,6 +94,7 @@ class EncaminhamentosEmMemoria:
             nota=novo.nota,
             justificativa=novo.justificativa,
             automatico=novo.automatico,
+            contribuicao_id=novo.contribuicao_id,
             eventos=(
                 EventoDoEncaminhamento(SituacaoDoEncaminhamento.ENVIADO, autor, novo.criado_em),
             ),
@@ -137,6 +143,40 @@ class EncaminhamentosEmMemoria:
 
     def resumir(self, hoje: date) -> ResumoDosEncaminhamentos:
         return ResumoDosEncaminhamentos(total=len(self.guardados))
+
+    def contar_pendencias(self, hoje: date) -> PendenciasDosEncaminhamentos:
+        ultimos = list(self.ultimos_por_chave(list(self.ocorrencias)).values())
+        return PendenciasDosEncaminhamentos(
+            devolvidos=sum(1 for item in ultimos if item.situacao.value == "devolvido"),
+            falhas=sum(1 for item in ultimos if item.situacao.value == "falhou"),
+            prazo_vencido=sum(1 for item in ultimos if item.esta_atrasado(hoje)),
+        )
+
+    def local_aproximado_do_relato(self, contribuicao_id: UUID) -> str | None:
+        return self.locais_dos_relatos.get(contribuicao_id)
+
+    def vencidos_sem_lembrete(self, hoje: date) -> list[Encaminhamento]:
+        return [
+            guardado.encaminhamento
+            for guardado in self.guardados.values()
+            if guardado.encaminhamento.esta_atrasado(hoje)
+            and guardado.encaminhamento.lembrete_enviado_em is None
+        ]
+
+    def registrar_lembrete(
+        self, encaminhamento_id: int, token: TokenDeRetorno, agora: datetime
+    ) -> None:
+        guardado = self.guardados[encaminhamento_id]
+        guardado.token = token
+        guardado.encaminhamento = replace(guardado.encaminhamento, lembrete_enviado_em=agora)
+
+    def ultimos_por_relato(self, ids: Sequence[UUID]) -> dict[UUID, Encaminhamento]:
+        encaminhados = (guardado.encaminhamento for guardado in self.guardados.values())
+        return {
+            item.contribuicao_id: item
+            for item in encaminhados
+            if item.contribuicao_id is not None and item.contribuicao_id in ids
+        }
 
     def ultimos_por_chave(self, chaves: Sequence[int]) -> dict[int, Encaminhamento]:
         return {
@@ -190,11 +230,49 @@ class PrioridadeFalsa:
         return len(self.ocorrencias)
 
 
+@dataclass
+class DestinatariosEmMemoria:
+    quem_encaminhou: str | None = None
+    quem_acompanha: list[str] = field(default_factory=list)
+
+    def email_de_quem_encaminhou(self, encaminhamento_id: int) -> str | None:
+        return self.quem_encaminhou
+
+    def emails_de_quem_acompanha(self, encaminhamento: Encaminhamento) -> list[str]:
+        return list(self.quem_acompanha)
+
+
+@dataclass
+class EntregaEmMemoria:
+    entregues: list[tuple[str, Aviso]] = field(default_factory=list)
+
+    def entregar(self, para: str, aviso: Aviso) -> None:
+        self.entregues.append((para, aviso))
+
+    def para(self, email: str) -> list[Aviso]:
+        return [aviso for destino, aviso in self.entregues if destino == email]
+
+
+@dataclass
+class Ambiente:
+    """As portas falsas juntas, para o teste conferir o que cada parte recebeu."""
+
+    repositorio: EncaminhamentosEmMemoria
+    despacho: DespachoEmMemoria = field(default_factory=DespachoEmMemoria)
+    relogio: RelogioFixo = field(default_factory=RelogioFixo)
+    destinatarios: DestinatariosEmMemoria = field(default_factory=DestinatariosEmMemoria)
+    entrega: EntregaEmMemoria = field(default_factory=EntregaEmMemoria)
+
+    def servicos(self) -> ServicosDeEncaminhamento:
+        avisos = AvisosDoCiclo(self.destinatarios, self.entrega, ENDERECO_DO_SITE)
+        return ServicosDeEncaminhamento(self.repositorio, self.despacho, self.relogio, avisos)
+
+
 def criar_servicos_de_encaminhamento(
     repositorio: EncaminhamentosEmMemoria,
     despacho: DespachoEmMemoria | None = None,
     relogio: RelogioFixo | None = None,
 ) -> ServicosDeEncaminhamento:
-    return ServicosDeEncaminhamento(
-        repositorio, despacho or DespachoEmMemoria(), relogio or RelogioFixo(), ENDERECO_DO_SITE
-    )
+    return Ambiente(
+        repositorio, despacho or DespachoEmMemoria(), relogio or RelogioFixo()
+    ).servicos()

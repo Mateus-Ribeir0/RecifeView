@@ -2,6 +2,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.application.casos_de_uso.encaminhamentos.avisos import AvisosDoCiclo
 from app.application.portas.encaminhamentos import (
     DespachoAosOrgaos,
     EncaminhamentoRepository,
@@ -44,7 +45,7 @@ class ServicosDeEncaminhamento:
     encaminhamentos: EncaminhamentoRepository
     despacho: DespachoAosOrgaos
     relogio: Relogio
-    endereco_do_site: str
+    avisos: AvisosDoCiclo
 
     def obter(self, encaminhamento_id: int) -> Encaminhamento:
         encaminhamento = self.encaminhamentos.buscar(encaminhamento_id)
@@ -57,12 +58,16 @@ class ServicosDeEncaminhamento:
         citacoes = self.encaminhamentos.citacoes_do_tema(tema) if tema else None
         return sugerir_destino(ocorrencia.orgao, citacoes)
 
+    def link_de_retorno(self, token: TokenGerado) -> str:
+        return f"{self.avisos.endereco_do_site.rstrip('/')}{CAMINHO_DO_RETORNO}{token.valor}"
+
     def despachar(self, encaminhamento: Encaminhamento, token: TokenGerado) -> Encaminhamento:
         """A falha do canal não desfaz o encaminhamento: ele fica gravado para reenvio."""
-        link = f"{self.endereco_do_site.rstrip('/')}{CAMINHO_DO_RETORNO}{token.valor}"
         validade = token.guardado.expira_em.date()
         try:
-            self.despacho.enviar(montar_mensagem(encaminhamento, link, validade))
+            self.despacho.enviar(
+                montar_mensagem(encaminhamento, self.link_de_retorno(token), validade)
+            )
         except EnvioAoOrgaoFalhou:
             falha = MudancaDeSituacao(
                 SituacaoDoEncaminhamento.FALHOU,
@@ -71,4 +76,7 @@ class ServicosDeEncaminhamento:
                 observacao=CANAL_NAO_RESPONDEU,
             )
             self.encaminhamentos.mudar_situacao(encaminhamento.id, falha)
-        return self.obter(encaminhamento.id)
+            return self.obter(encaminhamento.id)
+        enviado = self.obter(encaminhamento.id)
+        self.avisos.avisar(enviado, AutorDoEvento.SISTEMA)
+        return enviado
