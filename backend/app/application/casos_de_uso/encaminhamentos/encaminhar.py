@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from uuid import UUID
 
 from app.application.casos_de_uso.encaminhamentos.servicos import (
@@ -6,6 +6,7 @@ from app.application.casos_de_uso.encaminhamentos.servicos import (
     gerar_token_de_retorno,
 )
 from app.application.portas.encaminhamentos import NovoEncaminhamento
+from app.domain.contribuicao.conferencia import chave_da_contribuicao
 from app.domain.encaminhamento.encaminhamento import (
     TAMANHO_MAXIMO_DA_OBSERVACAO,
     CanalDeEnvio,
@@ -17,7 +18,11 @@ from app.domain.encaminhamento.encaminhamento import (
 )
 from app.domain.encaminhamento.orgaos import CATALOGO_DE_ORGAOS, Orgao
 from app.domain.encaminhamento.sugestao import SugestaoDeDestino
-from app.domain.erros import OcorrenciaJaEncaminhada, OcorrenciaNaoEncontrada
+from app.domain.erros import (
+    EncaminhamentoInvalido,
+    OcorrenciaJaEncaminhada,
+    OcorrenciaNaoEncontrada,
+)
 
 
 @dataclass(frozen=True)
@@ -60,6 +65,7 @@ class PedidoDeEncaminhamento:
     justificativa: str | None = None
     nota: float | None = None
     automatico: bool = False
+    contribuicao_id: UUID | None = None
 
 
 @dataclass(frozen=True)
@@ -77,7 +83,7 @@ class EncaminharOcorrencia:
         token = gerar_token_de_retorno(agora)
         criado = self.servicos.encaminhamentos.criar(
             NovoEncaminhamento(
-                ocorrencia=preparo.ocorrencia,
+                ocorrencia=self._com_local_do_relato(preparo.ocorrencia, pedido),
                 orgao=pedido.orgao,
                 orgao_sugerido=preparo.sugestao.orgao,
                 canal=preparo.canais[pedido.orgao],
@@ -88,6 +94,18 @@ class EncaminharOcorrencia:
                 nota=pedido.nota,
                 justificativa=justificativa,
                 automatico=pedido.automatico,
+                contribuicao_id=pedido.contribuicao_id,
             )
         )
         return self.servicos.despachar(criado, token)
+
+    def _com_local_do_relato(
+        self, ocorrencia: OcorrenciaEncaminhavel, pedido: PedidoDeEncaminhamento
+    ) -> OcorrenciaEncaminhavel:
+        """Relato do formulário: a mensagem leva a rua oficial e a faixa, nunca o número."""
+        if pedido.contribuicao_id is None:
+            return ocorrencia
+        if chave_da_contribuicao(pedido.contribuicao_id) != ocorrencia.chave_registro:
+            raise EncaminhamentoInvalido("contribuicao_id", "O relato não é desta ocorrência.")
+        local = self.servicos.encaminhamentos.local_aproximado_do_relato(pedido.contribuicao_id)
+        return replace(ocorrencia, referencia_de_local=local)

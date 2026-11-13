@@ -209,7 +209,8 @@ SELECT
     EXISTS (
         SELECT 1 FROM app.par_de_contribuicoes p
         WHERE p.decisao IS NULL AND ocorrencia.id IN (p.primeira_id, p.segunda_id)
-    )
+    ),
+    ocorrencia.id
 FROM situacoes meu
 JOIN situacoes ocorrencia ON ocorrencia.id = coalesce(meu.principal_id, meu.id)
 JOIN ouro.dim_bairro b ON b.bairro_oficial = meu.bairro_oficial

@@ -32,6 +32,7 @@ class Usuario:
     tentativas_falhas: int = 0
     bloqueado_ate: datetime | None = None
     bairro_oficial: str | None = None
+    recebe_avisos: bool = True
 
     @property
     def e_da_gestao(self) -> bool:
@@ -63,6 +64,13 @@ class Usuario:
     def com_dados_pessoais(self, nome: str, bairro_oficial: str | None) -> Self:
         return replace(self, nome=nome, bairro_oficial=bairro_oficial)
 
+    def com_avisos(self, recebe_avisos: bool) -> Self:
+        return replace(self, recebe_avisos=recebe_avisos)
+
+    @property
+    def pode_receber_avisos(self) -> bool:
+        return self.ativo and self.recebe_avisos
+
     def excluido(self, email_anonimo: Email, hash_inutil: str) -> Self:
         """Mantém a linha para a auditoria, sem nada que identifique a pessoa."""
         return replace(
@@ -72,6 +80,7 @@ class Usuario:
             hash_da_senha=hash_inutil,
             ativo=False,
             bairro_oficial=None,
+            recebe_avisos=False,
         )
 
     def com_senha_temporaria(self, hash_da_senha: str) -> Self:

@@ -27,6 +27,18 @@ class AtualizarMinhaConta:
 
 
 @dataclass(frozen=True)
+class DefinirAvisos:
+    """Avisos por e-mail do andamento de pedidos, relatos e encaminhamentos (ADR 0011)."""
+
+    servicos: ServicosDeConta
+
+    def executar(self, usuario: Usuario, recebe_avisos: bool) -> Usuario:
+        atualizado = usuario.com_avisos(recebe_avisos)
+        self.servicos.usuarios.atualizar(atualizado)
+        return atualizado
+
+
+@dataclass(frozen=True)
 class ExcluirMinhaConta:
     """Apaga o que identifica a pessoa e mantém a linha, porque a auditoria aponta para ela.
 

@@ -13,6 +13,7 @@ from app.domain.territorio import VolumeDoBairro
 from app.domain.usuario import Perfil
 from app.domain.visao_geral import PercentisDePrazo
 from tests.fakes import INICIO_DOS_TESTES, RelogioFixo, criar_usuario
+from tests.fakes_encaminhamento import EncaminhamentosEmMemoria
 from tests.fakes_importacao import ContribuicoesEmMemoria
 
 
@@ -125,6 +126,7 @@ def relato_meu(**mudancas: object) -> RelatoDoCidadao:
         "situacao": "aberta",
         "tem_dupla_aberta": False,
     }
+    dados["ocorrencia_id"] = dados["id"]
     return RelatoDoCidadao(**(dados | mudancas))  # type: ignore[arg-type]
 
 
@@ -134,7 +136,9 @@ def test_meus_relatos_mostram_o_endereco_inteiro_e_a_situacao() -> None:
     no_painel = relato_meu(situacao="na_base", somado=True, relatos=4)
     contribuicoes = ContribuicoesEmMemoria(do_cidadao={cidadao.id: [em_analise, no_painel]})
 
-    primeiro, segundo = ListarMeusRelatos(contribuicoes).executar(cidadao)
+    primeiro, segundo = ListarMeusRelatos(contribuicoes, EncaminhamentosEmMemoria()).executar(
+        cidadao
+    )
 
     assert primeiro.endereco == "RUA DA ESPERANCA, 128"
     assert primeiro.servico == "Buraco na rua"
@@ -148,7 +152,7 @@ def test_relato_com_endereco_apagado_fica_sem_endereco() -> None:
     apagado = relato_meu(logradouro=None, numero=None, detalhe=None, endereco_apagado=True)
     contribuicoes = ContribuicoesEmMemoria(do_cidadao={cidadao.id: [apagado]})
 
-    (relato,) = ListarMeusRelatos(contribuicoes).executar(cidadao)
+    (relato,) = ListarMeusRelatos(contribuicoes, EncaminhamentosEmMemoria()).executar(cidadao)
 
     assert relato.endereco is None
     assert relato.endereco_apagado
@@ -159,4 +163,4 @@ def test_quem_nao_relatou_nao_ve_relato_de_ninguem() -> None:
     outra = criar_usuario(perfil=Perfil.CIDADAO)
     contribuicoes = ContribuicoesEmMemoria(do_cidadao={dona.id: [relato_meu()]})
 
-    assert ListarMeusRelatos(contribuicoes).executar(outra) == []
+    assert ListarMeusRelatos(contribuicoes, EncaminhamentosEmMemoria()).executar(outra) == []

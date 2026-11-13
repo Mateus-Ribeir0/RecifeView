@@ -11,6 +11,7 @@ from app.api.dependencias import Seguranca
 from app.api.erros import registrar_tratadores_de_erro
 from app.api.routers import (
     autenticacao,
+    avisos,
     cidade,
     contas,
     contribuicoes,
@@ -28,6 +29,7 @@ from app.infrastructure.auth.tokens import EmissorDeTokenJwt
 from app.infrastructure.contribuicoes.limite_em_memoria import LimiteEmMemoria
 from app.infrastructure.db.conexao import criar_fabrica_de_sessoes
 from app.infrastructure.email.montagem import montar_envio_de_email
+from app.infrastructure.encaminhamento.avisos import AvisosPorEmail
 from app.infrastructure.encaminhamento.despacho import montar_despacho
 from app.infrastructure.importacao.fila_em_processo import FilaEmProcesso
 from app.infrastructure.importacao.montagem import (
@@ -85,6 +87,7 @@ def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
         RelogioDoSistema(), CONSULTAS_PUBLICAS_POR_JANELA
     )
     app.state.despacho_aos_orgaos = montar_despacho(configuracao, app.state.caixa_de_emails)
+    app.state.entrega_de_avisos = AvisosPorEmail(app.state.caixa_de_emails)
     app.state.servicos_de_importacao = montar_servicos_de_importacao(
         configuracao, app.state.fabrica_de_sessoes, FilaEmProcesso()
     )
@@ -105,6 +108,7 @@ def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
     app.include_router(encaminhamentos.roteador, prefix=PREFIXO_DA_API)
     app.include_router(encaminhamentos.retornos, prefix=PREFIXO_DA_API)
     app.include_router(publico.roteador, prefix=PREFIXO_DA_API)
+    app.include_router(avisos.roteador, prefix=PREFIXO_DA_API)
     for roteador in painel.ROTEADORES:
         app.include_router(roteador, prefix=PREFIXO_DA_API)
     return app

@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Protocol
 from uuid import UUID
 
+from app.domain.encaminhamento.avisos import Aviso
 from app.domain.encaminhamento.encaminhamento import (
     AutorDoEvento,
     CanalDeEnvio,
@@ -35,6 +36,7 @@ class NovoEncaminhamento:
     nota: float | None = None
     justificativa: str | None = None
     automatico: bool = False
+    contribuicao_id: UUID | None = None
 
 
 @dataclass(frozen=True)
@@ -52,6 +54,7 @@ class FiltroDeEncaminhamentos:
     situacao: SituacaoDoEncaminhamento | None = None
     orgao: Orgao | None = None
     so_atrasados: bool = False
+    so_os_que_pedem_acao: bool = False
     limite: int = 50
     deslocamento: int = 0
 
@@ -69,6 +72,19 @@ class ResumoDosEncaminhamentos:
     atrasados: int = 0
     por_situacao: dict[SituacaoDoEncaminhamento, int] = field(default_factory=dict)
     mediana_de_dias_ate_resolver: float | None = None
+
+
+@dataclass(frozen=True)
+class PendenciasDosEncaminhamentos:
+    """Conta só o último encaminhamento de cada ocorrência: o que já seguiu adiante não pesa."""
+
+    devolvidos: int = 0
+    falhas: int = 0
+    prazo_vencido: int = 0
+
+    @property
+    def pedem_acao(self) -> int:
+        return self.devolvidos + self.falhas + self.prazo_vencido
 
 
 class EncaminhamentoRepository(Protocol):
@@ -94,9 +110,33 @@ class EncaminhamentoRepository(Protocol):
 
     def resumir(self, hoje: date) -> ResumoDosEncaminhamentos: ...
 
+    def contar_pendencias(self, hoje: date) -> PendenciasDosEncaminhamentos: ...
+
+    def local_aproximado_do_relato(self, contribuicao_id: UUID) -> str | None: ...
+
+    def vencidos_sem_lembrete(self, hoje: date) -> list[Encaminhamento]: ...
+
+    def registrar_lembrete(
+        self, encaminhamento_id: int, token: TokenDeRetorno, agora: datetime
+    ) -> None: ...
+
 
 class EncaminhamentosDasOcorrencias(Protocol):
     def ultimos_por_chave(self, chaves: Sequence[int]) -> dict[int, Encaminhamento]: ...
+
+
+class EncaminhamentosDosRelatos(Protocol):
+    def ultimos_por_relato(self, ids: Sequence[UUID]) -> dict[UUID, Encaminhamento]: ...
+
+
+class DestinatariosDosAvisos(Protocol):
+    def email_de_quem_encaminhou(self, encaminhamento_id: int) -> str | None: ...
+
+    def emails_de_quem_acompanha(self, encaminhamento: Encaminhamento) -> list[str]: ...
+
+
+class EntregaDeAvisos(Protocol):
+    def entregar(self, para: str, aviso: Aviso) -> None: ...
 
 
 class EnvioAoOrgaoFalhou(Exception):

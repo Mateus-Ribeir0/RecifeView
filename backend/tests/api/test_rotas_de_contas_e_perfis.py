@@ -76,6 +76,7 @@ ROTAS_DA_GESTAO = [
     ("get", "/encaminhamentos/1"),
     ("post", "/encaminhamentos/1/retorno"),
     ("post", "/encaminhamentos/1/reenvio"),
+    ("get", "/avisos/painel"),
 ]
 
 
@@ -333,3 +334,17 @@ def test_cidadao_exclui_a_propria_conta(cliente: TestClient, ambiente: Ambiente)
 
     assert resposta.status_code == 204
     assert ambiente.usuarios.buscar_por_email(Email(EMAIL_DO_CIDADAO)) is None
+
+
+def test_cidadao_desliga_os_avisos_por_email(cliente: TestClient, ambiente: Ambiente) -> None:
+    cabecalho = {"Authorization": f"Bearer {token_de(cliente, ambiente.cidadao)}"}
+
+    resposta = cliente.put(
+        f"{BASE}/contas/eu/avisos", json={"recebe_avisos": False}, headers=cabecalho
+    )
+
+    assert resposta.status_code == 200
+    assert resposta.json()["recebe_avisos"] is False
+    salvo = ambiente.usuarios.buscar_por_id(ambiente.cidadao.id)
+    assert salvo is not None
+    assert not salvo.recebe_avisos

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.application.casos_de_uso.contas.servicos import ServicosDeConta
 from app.application.casos_de_uso.contribuicoes.servicos import ServicosDeContribuicoes
+from app.application.casos_de_uso.encaminhamentos.avisos import AvisosDoCiclo
 from app.application.casos_de_uso.encaminhamentos.servicos import ServicosDeEncaminhamento
 from app.application.casos_de_uso.entrar import Entrar
 from app.application.casos_de_uso.identificar_usuario import IdentificarUsuario
@@ -24,6 +25,7 @@ from app.application.portas.contribuicoes import LimiteDeEnvios
 from app.application.portas.encaminhamentos import (
     DespachoAosOrgaos,
     EncaminhamentosDasOcorrencias,
+    EntregaDeAvisos,
 )
 from app.application.portas.importacoes import OrigensDeDados
 from app.application.portas.painel import (
@@ -49,6 +51,7 @@ from app.domain.erros import AcessoNegado, ErroDeDominio, SessaoInvalida, Tentat
 from app.domain.filtros import ANO_FINAL_PADRAO, ANO_INICIAL_PADRAO, Filtros
 from app.domain.usuario import Usuario
 from app.infrastructure.repositories.acessos import RegistroDeAcessosSql
+from app.infrastructure.repositories.avisos import DestinatariosDosAvisosSql
 from app.infrastructure.repositories.catalogos import (
     CatalogoRepositorySql,
     ReferenciaRepositorySql,
@@ -359,12 +362,16 @@ def obter_servicos_de_encaminhamento(
 ) -> ServicosDeEncaminhamento:
     configuracao: Configuracao = request.app.state.configuracao
     despacho: DespachoAosOrgaos = request.app.state.despacho_aos_orgaos
+    entrega: EntregaDeAvisos = request.app.state.entrega_de_avisos
     seguranca: Seguranca = request.app.state.seguranca
+    avisos = AvisosDoCiclo(
+        DestinatariosDosAvisosSql(sessao), entrega, configuracao.endereco_do_site
+    )
     return ServicosDeEncaminhamento(
         encaminhamentos=EncaminhamentoRepositorySql(sessao),
         despacho=despacho,
         relogio=seguranca.relogio,
-        endereco_do_site=configuracao.endereco_do_site,
+        avisos=avisos,
     )
 
 
@@ -397,3 +404,14 @@ def obter_origens_de_dados(request: Request) -> OrigensDeDados:
 
 
 OrigensDeDadosDep = Annotated[OrigensDeDados, Depends(obter_origens_de_dados)]
+
+
+def obter_repositorio_de_encaminhamentos(
+    sessao: Annotated[Session, Depends(abrir_transacao)],
+) -> EncaminhamentoRepositorySql:
+    return EncaminhamentoRepositorySql(sessao)
+
+
+RepositorioDeEncaminhamentosDep = Annotated[
+    EncaminhamentoRepositorySql, Depends(obter_repositorio_de_encaminhamentos)
+]

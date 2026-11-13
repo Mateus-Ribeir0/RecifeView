@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -41,6 +42,7 @@ class OcorrenciaEncaminhavelResposta(Esquema):
     situacao: str | None
     orgao: str | None
     protocolo: str | None
+    referencia_de_local: str | None
 
 
 class EventoResposta(Esquema):
@@ -69,6 +71,7 @@ class EncaminhamentoResposta(BaseModel):
     justificativa: str | None
     automatico: bool
     protocolo_do_orgao: str | None
+    lembrete_enviado_em: datetime | None
     eventos: list[EventoResposta]
 
     @classmethod
@@ -93,6 +96,7 @@ class EncaminhamentoResposta(BaseModel):
             justificativa=item.justificativa,
             automatico=item.automatico,
             protocolo_do_orgao=item.protocolo_do_orgao,
+            lembrete_enviado_em=item.lembrete_enviado_em,
             eventos=[EventoResposta.model_validate(evento) for evento in item.eventos],
         )
 
@@ -168,6 +172,7 @@ class EncaminharEntrada(BaseModel):
     orgao: Orgao
     justificativa: str | None = Field(default=None, max_length=TAMANHO_MAXIMO_DA_OBSERVACAO)
     nota: float | None = Field(default=None, ge=0, le=NOTA_MAXIMA)
+    contribuicao_id: UUID | None = None
 
 
 class RespostaDoOrgaoEntrada(BaseModel):
@@ -259,3 +264,11 @@ class EncaminhamentoParaOOrgaoResposta(BaseModel):
             ],
             eventos=[EventoParaOOrgaoResposta.model_validate(evento) for evento in item.eventos],
         )
+
+
+class PendenciasResposta(BaseModel):
+    devolvidos: int
+    falhas: int
+    prazo_vencido: int
+    pedem_acao: int
+    duplas_no_pente_fino: int

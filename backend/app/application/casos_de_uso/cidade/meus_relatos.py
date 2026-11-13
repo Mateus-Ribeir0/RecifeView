@@ -4,8 +4,10 @@ from uuid import UUID
 
 from app.application.casos_de_uso.cidade.ocorrencias import TEMA_POR_SERVICO
 from app.application.portas.contribuicoes import ContribuicaoRepository, RelatoDoCidadao
+from app.application.portas.encaminhamentos import EncaminhamentosDosRelatos
 from app.domain.cidade import SituacaoPublica, situacao_publica
 from app.domain.contribuicao.catalogo import SERVICOS_POR_CODIGO
+from app.domain.encaminhamento.encaminhamento import Encaminhamento
 from app.domain.usuario import Usuario
 
 
@@ -22,6 +24,7 @@ class MeuRelato:
     somado: bool
     relatos: int
     situacao: SituacaoPublica
+    encaminhamento: Encaminhamento | None = None
 
 
 def _endereco(linha: RelatoDoCidadao) -> str | None:
@@ -30,7 +33,7 @@ def _endereco(linha: RelatoDoCidadao) -> str | None:
     return f"{linha.logradouro}, {linha.numero}" if linha.numero else linha.logradouro
 
 
-def _acompanhar(linha: RelatoDoCidadao) -> MeuRelato:
+def _acompanhar(linha: RelatoDoCidadao, encaminhamento: Encaminhamento | None) -> MeuRelato:
     servico = SERVICOS_POR_CODIGO.get(linha.servico_codigo)
     tema = TEMA_POR_SERVICO.get(linha.servico_codigo)
     return MeuRelato(
@@ -45,6 +48,7 @@ def _acompanhar(linha: RelatoDoCidadao) -> MeuRelato:
         somado=linha.somado,
         relatos=linha.relatos,
         situacao=situacao_publica(linha.situacao, linha.tem_dupla_aberta),
+        encaminhamento=encaminhamento,
     )
 
 
@@ -53,6 +57,11 @@ class ListarMeusRelatos:
     """Só quem enviou vê o próprio relato com endereço; a gestão não sabe quem relatou."""
 
     contribuicoes: ContribuicaoRepository
+    encaminhamentos: EncaminhamentosDosRelatos
 
     def executar(self, cidadao: Usuario) -> list[MeuRelato]:
-        return [_acompanhar(linha) for linha in self.contribuicoes.relatos_do_cidadao(cidadao.id)]
+        linhas = self.contribuicoes.relatos_do_cidadao(cidadao.id)
+        encaminhados = self.encaminhamentos.ultimos_por_relato(
+            [linha.ocorrencia_id for linha in linhas]
+        )
+        return [_acompanhar(linha, encaminhados.get(linha.ocorrencia_id)) for linha in linhas]

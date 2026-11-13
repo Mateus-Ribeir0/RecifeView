@@ -33,6 +33,10 @@ class AtualizacaoDaContaEntrada(BaseModel):
     bairro_oficial: str | None = Field(default=None, max_length=60)
 
 
+class AvisosDaContaEntrada(BaseModel):
+    recebe_avisos: bool
+
+
 class ExclusaoDaContaEntrada(BaseModel):
     senha: str = Senha
 
