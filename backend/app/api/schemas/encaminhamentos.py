@@ -72,6 +72,7 @@ class EncaminhamentoResposta(BaseModel):
     automatico: bool
     protocolo_do_orgao: str | None
     lembrete_enviado_em: datetime | None
+    contribuicao_id: UUID | None
     eventos: list[EventoResposta]
 
     @classmethod
@@ -97,6 +98,7 @@ class EncaminhamentoResposta(BaseModel):
             automatico=item.automatico,
             protocolo_do_orgao=item.protocolo_do_orgao,
             lembrete_enviado_em=item.lembrete_enviado_em,
+            contribuicao_id=item.contribuicao_id,
             eventos=[EventoResposta.model_validate(evento) for evento in item.eventos],
         )
 
