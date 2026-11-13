@@ -71,6 +71,8 @@ Com 0,65, variações de prefixo e título foram reconhecidas em 100% dos casos,
 
 **Revisão de 11/11/2026:** o retorno ao protótipo lembrou que o registro de denúncias é papel do Conecta Recife e da Central 156. O grupo decidiu manter o formulário como complemento, sem fazer dele o centro da página pública, que passa a priorizar a consulta pelo protocolo e os números da cidade ([ADR 0011](0011-encaminhamento-ao-orgao-e-retorno.md)).
 
+**Revisão de 13/11/2026:** a ocorrência do formulário que já entrou na base pode ser encaminhada a um órgão pela tela Contribuições. A mensagem leva só a rua da lista oficial e a faixa de numeração, nunca o número exato nem o texto ([ADR 0011](0011-encaminhamento-ao-orgao-e-retorno.md)).
+
 ## Consequências
 
 - Os pesos e o limite de 0,72 **não foram calibrados com dados rotulados**, porque ainda não existem. Cada decisão da gestão fica em `app.par_de_contribuicoes` e serve para essa calibração.

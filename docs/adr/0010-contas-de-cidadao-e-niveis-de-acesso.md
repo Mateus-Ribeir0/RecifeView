@@ -49,6 +49,8 @@ Perfil `CIDADAO` na tabela `app.usuario`, com guarda por perfil. Três níveis d
 
 **Mudança de 11/11/2026 ([ADR 0011](0011-encaminhamento-ao-orgao-e-retorno.md)):** depois do retorno dado ao protótipo, o foco da área do cidadão passa a ser o acesso à informação. Os indicadores do bairro saem da conta e ficam públicos, a consulta pelo protocolo não pede conta, e a conta ganha "Meus pedidos": a pessoa guarda até 20 protocolos de pedidos feitos no Conecta Recife, no 156 ou na Ouvidoria e acompanha o andamento, incluindo para qual órgão a ocorrência foi encaminhada e o que ele respondeu. Os protocolos guardados são apagados com a conta.
 
+**Avisos por e-mail (13/11/2026, [ADR 0011](0011-encaminhamento-ao-orgao-e-retorno.md)):** a conta de cidadão recebe e-mail quando um pedido guardado em "Meus pedidos" ou um relato enviado com a conta aberta muda de etapa no encaminhamento. O aviso vem ligado e se desliga em "Minha conta". O e-mail não leva endereço nem texto. Com isso, o e-mail da conta passa a servir também para esses avisos, além da recuperação de senha.
+
 ## Consequências
 
 - Toda rota nova da gestão precisa de `GestorAtualDep` ou de `exigir_gestao` no roteador. O teste `test_cidadao_recebe_403_em_toda_rota_da_gestao` lista as rotas e precisa crescer junto.
