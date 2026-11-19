@@ -34,11 +34,13 @@ export function faixasIguais(maximo: number): FaixaDeClasse[] {
   }))
 }
 
+/** Com menos de cinco faixas, as classes ficam no fim da escala, como as cores da legenda. */
 export function classeDoValor(
   valor: number | null | undefined,
   faixas: readonly FaixaDeClasse[],
 ): number | null {
   if (valor === null || valor === undefined || faixas.length === 0) return null
   const posicao = faixas.findIndex((faixa) => valor <= faixa.fim)
-  return (posicao === -1 ? faixas.length - 1 : posicao) + 1
+  const deslocamento = Math.max(QUANTIDADE_DE_CLASSES - faixas.length, 0)
+  return (posicao === -1 ? faixas.length - 1 : posicao) + 1 + deslocamento
 }

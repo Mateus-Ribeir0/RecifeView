@@ -97,6 +97,16 @@ describe('classes do mapa', () => {
     expect(faixasPorQuantis([0, 0, 0, 0, 0, 10]).length).toBeLessThan(5)
   })
 
+  it('com menos de cinco faixas, a classe acompanha a cor da legenda', () => {
+    const faixas = [
+      { inicio: 0, fim: 1 },
+      { inicio: 1, fim: 10 },
+    ]
+
+    expect(classeDoValor(0, faixas)).toBe(4)
+    expect(classeDoValor(10, faixas)).toBe(5)
+  })
+
   it('sem valor não tem classe', () => {
     expect(classeDoValor(null, faixasIguais(10))).toBeNull()
     expect(classeDoValor(3, [])).toBeNull()
