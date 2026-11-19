@@ -28,6 +28,7 @@ from app.domain.encaminhamento.sugestao import MotivoDaSugestao
 from app.domain.erros import LinkDeRetornoInvalido
 from app.infrastructure.repositories.avisos import DestinatariosDosAvisosSql
 from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
+from app.infrastructure.repositories.notificacoes import NotificacaoRepositorySql
 from tests.fakes import RelogioFixo
 from tests.fakes_encaminhamento import ENDERECO_DO_SITE, DespachoEmMemoria, EntregaEmMemoria
 from tests.integracao.test_importacao_e_painel import URL_DO_BANCO_DE_TESTE, preparar_esquema
@@ -103,7 +104,12 @@ def fabrica(monkeypatch: pytest.MonkeyPatch) -> Iterator[sessionmaker[Session]]:
 def servicos_de(
     sessao: Session, despacho: DespachoEmMemoria, relogio: RelogioFixo
 ) -> ServicosDeEncaminhamento:
-    avisos = AvisosDoCiclo(DestinatariosDosAvisosSql(sessao), EntregaEmMemoria(), ENDERECO_DO_SITE)
+    avisos = AvisosDoCiclo(
+        DestinatariosDosAvisosSql(sessao),
+        EntregaEmMemoria(),
+        NotificacaoRepositorySql(sessao),
+        ENDERECO_DO_SITE,
+    )
     return ServicosDeEncaminhamento(EncaminhamentoRepositorySql(sessao), despacho, relogio, avisos)
 
 

@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import replace
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
@@ -11,6 +11,7 @@ from app.application.portas.encaminhamentos import (
     FiltroDeEncaminhamentos,
     MudancaDeSituacao,
     NovoEncaminhamento,
+    OrdemDaLista,
     PaginaDeEncaminhamentos,
     PendenciasDosEncaminhamentos,
     ResumoDosEncaminhamentos,
@@ -26,6 +27,7 @@ from app.domain.encaminhamento.encaminhamento import (
     SituacaoDoEncaminhamento,
     descrever_local_aproximado,
 )
+from app.domain.encaminhamento.mesmo_problema import DIAS_DA_JANELA_DO_MESMO_PROBLEMA
 from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.encaminhamento.sugestao import CitacoesDoTema
 
@@ -34,12 +36,13 @@ COLUNAS = """
     e.rpa, e.situacao_na_fonte, e.orgao_na_fonte, e.protocolo_de_origem, e.orgao,
     e.orgao_sugerido, e.canal, e.situacao, e.criado_em, e.prazo_de_resposta, e.atualizado_em,
     e.nota, e.justificativa, e.automatico, e.protocolo_do_orgao, e.contribuicao_id,
-    e.referencia_de_local, e.lembrete_enviado_em
+    e.referencia_de_local, e.lembrete_enviado_em, e.servico_codigo, e.id_local, e.numero_informado
 """
 OCORRENCIA = """
 SELECT
     chave_registro, fonte, data_abertura, categoria, servico, bairro_oficial, rpa, situacao,
-    orgao, protocolo
+    orgao, protocolo, servico_codigo, id_local,
+    coalesce(numero_informado, false) AS numero_informado
 FROM ouro.fato_demanda
 WHERE chave_registro = :chave
 """
@@ -51,21 +54,24 @@ INSERT INTO app.encaminhamento (
     chave_registro, fonte, data_abertura, categoria, servico, bairro_oficial, rpa,
     situacao_na_fonte, orgao_na_fonte, protocolo_de_origem, nota, orgao, orgao_sugerido, canal,
     situacao, justificativa, automatico, criado_por, criado_em, prazo_de_resposta, hash_do_token,
-    token_expira_em, atualizado_em, contribuicao_id, referencia_de_local
+    token_expira_em, atualizado_em, contribuicao_id, referencia_de_local, servico_codigo,
+    id_local, numero_informado
 ) VALUES (
     :chave_registro, :fonte, :data_abertura, :categoria, :servico, :bairro_oficial, :rpa,
     :situacao_na_fonte, :orgao_na_fonte, :protocolo_de_origem, :nota, :orgao, :orgao_sugerido,
     :canal, :situacao, :justificativa, :automatico, :criado_por, :criado_em, :prazo_de_resposta,
-    :hash_do_token, :token_expira_em, :criado_em, :contribuicao_id, :referencia_de_local
+    :hash_do_token, :token_expira_em, :criado_em, :contribuicao_id, :referencia_de_local,
+    :servico_codigo, :id_local, :numero_informado
 )
 RETURNING id
 """
 INSERIR_EVENTO = """
 INSERT INTO app.evento_de_encaminhamento (
-    encaminhamento_id, situacao, autor, usuario_id, ocorrido_em, observacao, protocolo_do_orgao
+    encaminhamento_id, situacao, autor, usuario_id, ocorrido_em, observacao, protocolo_do_orgao,
+    resposta_ao_cidadao, previsao
 ) VALUES (
     :encaminhamento_id, :situacao, :autor, :usuario_id, :ocorrido_em, :observacao,
-    :protocolo_do_orgao
+    :protocolo_do_orgao, :resposta_ao_cidadao, :previsao
 )
 """
 MUDAR_SITUACAO = """
@@ -81,7 +87,9 @@ SET hash_do_token = :hash_do_token, token_expira_em = :token_expira_em, canal = 
 WHERE id = :encaminhamento_id
 """
 EVENTOS = """
-SELECT encaminhamento_id, situacao, autor, ocorrido_em, observacao, protocolo_do_orgao
+SELECT
+    encaminhamento_id, situacao, autor, ocorrido_em, observacao, protocolo_do_orgao,
+    resposta_ao_cidadao, previsao
 FROM app.evento_de_encaminhamento
 WHERE encaminhamento_id = ANY(:ids)
 ORDER BY ocorrido_em, id
@@ -145,7 +153,23 @@ FROM app.encaminhamento e
 WHERE e.contribuicao_id = ANY(:ids)
 ORDER BY e.contribuicao_id, e.criado_em DESC, e.id DESC
 """
+COMPARAVEIS = f"""
+SELECT {COLUNAS} FROM app.encaminhamento e
+WHERE e.bairro_oficial = ANY(:bairros) AND e.categoria = ANY(:categorias)
+    AND e.fonte = ANY(:fontes) AND e.data_abertura BETWEEN :desde AND :ate
+"""
+REGISTROS_DO_MESMO_LOCAL = """
+SELECT count(*)::int FROM ouro.fato_demanda
+WHERE fonte = :fonte AND id_local = :id_local AND categoria = :categoria
+    AND data_abertura BETWEEN :desde AND :ate AND chave_registro <> :chave
+"""
 ABERTAS = [situacao.value for situacao in SITUACOES_ABERTAS]
+ORDENS = {
+    OrdemDaLista.MAIS_RECENTES: "e.criado_em DESC, e.id DESC",
+    OrdemDaLista.PRAZO_MAIS_PROXIMO: "e.prazo_de_resposta, e.id",
+    OrdemDaLista.ATUALIZADOS_POR_ULTIMO: "e.atualizado_em DESC, e.id DESC",
+}
+JANELA_DO_MESMO_PROBLEMA = timedelta(days=DIAS_DA_JANELA_DO_MESMO_PROBLEMA)
 
 
 def _orgao_ou_nada(valor: str | None) -> Orgao | None:
@@ -168,6 +192,9 @@ def _encaminhamento(linha: Row[Any]) -> Encaminhamento:
             orgao=dados["orgao_na_fonte"],
             protocolo=dados["protocolo_de_origem"],
             referencia_de_local=dados["referencia_de_local"],
+            servico_codigo=dados["servico_codigo"],
+            id_local=dados["id_local"],
+            numero_informado=bool(dados["numero_informado"]),
         ),
         orgao=Orgao(dados["orgao"]),
         orgao_sugerido=_orgao_ou_nada(dados["orgao_sugerido"]),
@@ -212,6 +239,9 @@ def _parametros_do_novo(novo: NovoEncaminhamento) -> dict[str, object]:
         "token_expira_em": novo.token.expira_em,
         "contribuicao_id": novo.contribuicao_id,
         "referencia_de_local": ocorrencia.referencia_de_local,
+        "servico_codigo": ocorrencia.servico_codigo,
+        "id_local": ocorrencia.id_local,
+        "numero_informado": ocorrencia.numero_informado,
     }
 
 
@@ -228,6 +258,15 @@ def _onde(filtro: FiltroDeEncaminhamentos, hoje: date) -> tuple[str, dict[str, o
         condicoes.append("e.situacao = ANY(:abertas) AND e.prazo_de_resposta < :hoje")
     if filtro.so_os_que_pedem_acao:
         condicoes.append(f"e.id IN ({PEDEM_ACAO})")
+    if filtro.situacoes:
+        condicoes.append("e.situacao = ANY(:situacoes)")
+        parametros["situacoes"] = [situacao.value for situacao in filtro.situacoes]
+    if filtro.bairro is not None:
+        condicoes.append("e.bairro_oficial = :bairro")
+        parametros["bairro"] = filtro.bairro
+    if filtro.categoria is not None:
+        condicoes.append("e.categoria = :categoria")
+        parametros["categoria"] = filtro.categoria
     onde = f"WHERE {' AND '.join(condicoes)}" if condicoes else ""
     return onde, parametros
 
@@ -238,7 +277,7 @@ class EncaminhamentoRepositorySql:
 
     def ocorrencia(self, chave_registro: int) -> OcorrenciaEncaminhavel | None:
         linha = self._sessao.execute(text(OCORRENCIA), {"chave": chave_registro}).first()
-        return OcorrenciaEncaminhavel(*linha) if linha else None
+        return OcorrenciaEncaminhavel(**linha._mapping) if linha else None
 
     def citacoes_do_tema(self, tema: str) -> CitacoesDoTema:
         linhas = self._sessao.execute(text(CITACOES_DO_TEMA), {"tema": tema}).all()
@@ -304,13 +343,14 @@ class EncaminhamentoRepositorySql:
         SELECT {COLUNAS}, count(*) OVER () AS total
         FROM app.encaminhamento e
         {onde}
-        ORDER BY e.criado_em DESC, e.id DESC
+        ORDER BY {ORDENS[filtro.ordem]}
         LIMIT :limite OFFSET :deslocamento
         """
         parametros |= {"limite": filtro.limite, "deslocamento": filtro.deslocamento}
         linhas = self._sessao.execute(text(consulta), parametros).all()
         total = linhas[0]._mapping["total"] if linhas else 0
-        return PaginaDeEncaminhamentos([_encaminhamento(linha) for linha in linhas], total)
+        itens = self._com_eventos([_encaminhamento(linha) for linha in linhas])
+        return PaginaDeEncaminhamentos(itens, total)
 
     def resumir(self, hoje: date) -> ResumoDosEncaminhamentos:
         contagem = {
@@ -367,6 +407,34 @@ class EncaminhamentoRepositorySql:
             for encaminhamento in map(_encaminhamento, linhas)
         }
 
+    def comparaveis(self, ocorrencias: Sequence[OcorrenciaEncaminhavel]) -> list[Encaminhamento]:
+        com_data = [item for item in ocorrencias if item.data_abertura and item.bairro_oficial]
+        if not com_data:
+            return []
+        datas = [item.data_abertura for item in com_data if item.data_abertura]
+        parametros = {
+            "bairros": sorted({item.bairro_oficial for item in com_data if item.bairro_oficial}),
+            "categorias": sorted({item.categoria for item in com_data if item.categoria}),
+            "fontes": sorted({item.fonte for item in com_data}),
+            "desde": min(datas) - JANELA_DO_MESMO_PROBLEMA,
+            "ate": max(datas) + JANELA_DO_MESMO_PROBLEMA,
+        }
+        linhas = self._sessao.execute(text(COMPARAVEIS), parametros)
+        return [_encaminhamento(linha) for linha in linhas]
+
+    def registros_do_mesmo_local(self, ocorrencia: OcorrenciaEncaminhavel) -> int:
+        if not (ocorrencia.id_local and ocorrencia.data_abertura and ocorrencia.categoria):
+            return 0
+        parametros = {
+            "fonte": ocorrencia.fonte,
+            "id_local": ocorrencia.id_local,
+            "categoria": ocorrencia.categoria,
+            "desde": ocorrencia.data_abertura - JANELA_DO_MESMO_PROBLEMA,
+            "ate": ocorrencia.data_abertura + JANELA_DO_MESMO_PROBLEMA,
+            "chave": ocorrencia.chave_registro,
+        }
+        return int(self._sessao.execute(text(REGISTROS_DO_MESMO_LOCAL), parametros).scalar_one())
+
     def _inserir_evento(self, encaminhamento_id: int, mudanca: MudancaDeSituacao) -> None:
         parametros = {
             "encaminhamento_id": encaminhamento_id,
@@ -376,6 +444,8 @@ class EncaminhamentoRepositorySql:
             "ocorrido_em": mudanca.ocorrido_em,
             "observacao": mudanca.observacao,
             "protocolo_do_orgao": mudanca.protocolo_do_orgao,
+            "resposta_ao_cidadao": mudanca.resposta_ao_cidadao,
+            "previsao": mudanca.previsao,
         }
         self._sessao.execute(text(INSERIR_EVENTO), parametros)
 
@@ -385,14 +455,16 @@ class EncaminhamentoRepositorySql:
         ids = [encaminhamento.id for encaminhamento in encaminhamentos]
         eventos: dict[int, list[EventoDoEncaminhamento]] = {}
         for linha in self._sessao.execute(text(EVENTOS), {"ids": ids}):
-            encaminhamento_id, situacao, autor, ocorrido_em, observacao, protocolo = linha
-            eventos.setdefault(encaminhamento_id, []).append(
+            dados = linha._mapping
+            eventos.setdefault(dados["encaminhamento_id"], []).append(
                 EventoDoEncaminhamento(
-                    SituacaoDoEncaminhamento(situacao),
-                    AutorDoEvento(autor),
-                    ocorrido_em,
-                    observacao,
-                    protocolo,
+                    situacao=SituacaoDoEncaminhamento(dados["situacao"]),
+                    autor=AutorDoEvento(dados["autor"]),
+                    ocorrido_em=dados["ocorrido_em"],
+                    observacao=dados["observacao"],
+                    protocolo_do_orgao=dados["protocolo_do_orgao"],
+                    resposta_ao_cidadao=dados["resposta_ao_cidadao"],
+                    previsao=dados["previsao"],
                 )
             )
         return [

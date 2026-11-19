@@ -5,9 +5,11 @@ from typing import Self
 from uuid import UUID
 
 from app.domain.email import Email
+from app.domain.encaminhamento.orgaos import Orgao
 
 TENTATIVAS_ANTES_DO_BLOQUEIO = 5
 NOME_DA_CONTA_EXCLUIDA = "Conta excluída"
+DOMINIO_DAS_CONTAS_EXCLUIDAS = "contas-excluidas.invalid"
 DURACAO_DO_BLOQUEIO = timedelta(minutes=15)
 
 
@@ -15,6 +17,7 @@ class Perfil(StrEnum):
     GESTOR = "GESTOR"
     ADMINISTRADOR = "ADMINISTRADOR"
     CIDADAO = "CIDADAO"
+    CORPORATIVO = "CORPORATIVO"
 
 
 PERFIS_DA_GESTAO = frozenset({Perfil.GESTOR, Perfil.ADMINISTRADOR})
@@ -33,10 +36,27 @@ class Usuario:
     bloqueado_ate: datetime | None = None
     bairro_oficial: str | None = None
     recebe_avisos: bool = True
+    orgao: Orgao | None = None
 
     @property
     def e_da_gestao(self) -> bool:
         return self.perfil in PERFIS_DA_GESTAO
+
+    @property
+    def e_da_administracao(self) -> bool:
+        return self.perfil is Perfil.ADMINISTRADOR
+
+    @property
+    def e_cidadao(self) -> bool:
+        return self.perfil is Perfil.CIDADAO
+
+    @property
+    def e_corporativo(self) -> bool:
+        return self.perfil is Perfil.CORPORATIVO and self.orgao is not None
+
+    @property
+    def foi_excluido(self) -> bool:
+        return str(self.email).endswith(f"@{DOMINIO_DAS_CONTAS_EXCLUIDAS}")
 
     def fim_do_bloqueio(self, agora: datetime) -> datetime | None:
         if self.bloqueado_ate is not None and agora < self.bloqueado_ate:
@@ -67,6 +87,18 @@ class Usuario:
     def com_avisos(self, recebe_avisos: bool) -> Self:
         return replace(self, recebe_avisos=recebe_avisos)
 
+    def com_dados_do_acesso(self, nome: str, orgao: Orgao) -> Self:
+        return replace(self, nome=nome, orgao=orgao)
+
+    def com_perfil(self, perfil: Perfil) -> Self:
+        return replace(self, perfil=perfil)
+
+    def desativado(self) -> Self:
+        return replace(self, ativo=False)
+
+    def reativado(self) -> Self:
+        return replace(self, ativo=True, tentativas_falhas=0, bloqueado_ate=None)
+
     @property
     def pode_receber_avisos(self) -> bool:
         return self.ativo and self.recebe_avisos
@@ -91,3 +123,7 @@ class Usuario:
             tentativas_falhas=0,
             bloqueado_ate=None,
         )
+
+
+def email_da_conta_excluida(usuario_id: UUID) -> Email:
+    return Email(f"conta-{usuario_id.hex}@{DOMINIO_DAS_CONTAS_EXCLUIDAS}")

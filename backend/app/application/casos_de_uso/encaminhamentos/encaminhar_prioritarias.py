@@ -22,6 +22,7 @@ SEMENTE_SEM_SORTEIO = 0
 class MotivoParaPular(StrEnum):
     JA_ENCAMINHADA = "ja_encaminhada"
     SEM_SUGESTAO = "sem_sugestao"
+    MESMO_PROBLEMA_ABERTO = "mesmo_problema_aberto"
 
 
 @dataclass(frozen=True)
@@ -86,6 +87,8 @@ class EncaminharPrioritarias:
         preparo = PrepararEncaminhamento(self.servicos).executar(candidata.chave_registro)
         if not preparo.pode_encaminhar:
             return MotivoParaPular.JA_ENCAMINHADA
+        if preparo.mesmo_problema_aberto:
+            return MotivoParaPular.MESMO_PROBLEMA_ABERTO
         if preparo.sugestao.orgao is None:
             return MotivoParaPular.SEM_SUGESTAO
         pedido = PedidoDeEncaminhamento(

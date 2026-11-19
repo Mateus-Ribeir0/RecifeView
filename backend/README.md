@@ -74,12 +74,15 @@ O comando aceita `--arquivo` mais de uma vez e guarda só o nome da via e o bair
 
 ## Contas de acesso
 
-Existem dois tipos de conta ([ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)):
+Existem três tipos de conta ([ADR 0010](../docs/adr/0010-contas-de-cidadao-e-niveis-de-acesso.md) e [ADR 0013](../docs/adr/0013-acesso-corporativo-dos-orgaos.md)):
 
-- **Gestão** (`GESTOR` e `ADMINISTRADOR`): criadas pela administração, pela linha de comando abaixo. Veem o painel, o pente fino e a importação.
-- **Cidadão** (`CIDADAO`): criadas pela própria pessoa em `/cadastrar`, sem confirmação por e-mail: o cadastro já abre a sessão. Veem os relatos da cidade (sem número exato nem texto), os próprios relatos com a situação de cada um e os indicadores do bairro. Toda rota da gestão responde 403 para elas, e as rotas `/cidade` respondem 403 para a gestão.
+- **Gestão** (`GESTOR` e `ADMINISTRADOR`): criadas pela linha de comando abaixo. Veem o painel, o pente fino, a importação e os encaminhamentos. Só o `ADMINISTRADOR` cria, edita, desativa e exclui acessos corporativos; o `GESTOR` vê a lista.
+- **Corporativo** (`CORPORATIVO`): uma pessoa de um órgão (Emlurb, Compesa, Neoenergia e os demais do catálogo), criada pela administração na tela "Acessos corporativos". A conta nasce sem senha e recebe por e-mail um convite com o link `/convite/<token>`, de uso único e válido por 7 dias, em que a pessoa define a senha e já entra. Vê só os encaminhamentos feitos ao próprio órgão e responde a eles em `/corporativo`.
+- **Cidadão** (`CIDADAO`): criadas pela própria pessoa em `/cadastrar`, sem confirmação por e-mail: o cadastro já abre a sessão. Veem os relatos da cidade (sem número exato nem texto), os próprios relatos com a situação de cada um e os indicadores do bairro.
 
-O único e-mail que a API manda é o código de "Esqueci minha senha". Sem servidor SMTP configurado, ele não é enviado: fica num arquivo `.txt` na pasta de `API_PASTA_DOS_EMAILS` (padrão `../data/emails`, fora do git). Abra o arquivo mais recente para ver o código. Para o código chegar na caixa de entrada, configure o SMTP (seção abaixo).
+Cada perfil abre só a sua área: as rotas da gestão respondem 403 para o cidadão e o corporativo, as de `/corporativo` respondem 403 para a gestão e o cidadão, e as de `/cidade` exigem conta de cidadão.
+
+Sem servidor SMTP configurado, os e-mails da API (código de "Esqueci minha senha", convite do acesso corporativo e avisos do ciclo) não são enviados: viram arquivos `.txt` na pasta de `API_PASTA_DOS_EMAILS` (padrão `../data/emails`, fora do git). Abra o arquivo mais recente para ver o código ou o link do convite. Para os e-mails chegarem na caixa de entrada, configure o SMTP (seção abaixo).
 
 ### Enviar os e-mails de verdade (SMTP)
 
@@ -103,15 +106,17 @@ Outros provedores funcionam do mesmo jeito: Outlook (`smtp.office365.com`, 587, 
 
 > O `.env` não vai para o git. Nunca coloque a senha do SMTP em outro arquivo, em issue ou em mensagem do grupo.
 
-As contas da gestão nascem com uma senha temporária que precisa ser trocada no primeiro acesso.
+As contas criadas pela linha de comando nascem com uma senha temporária que precisa ser trocada no primeiro acesso.
 
 ```bash
 uv run recifeview cadastrar-usuario --email nome@recife.pe.gov.br --nome "Nome Completo"
 uv run recifeview cadastrar-usuario --email outra@recife.pe.gov.br --nome "Outra Pessoa" --perfil ADMINISTRADOR
+uv run recifeview cadastrar-usuario --email equipe@compesa.exemplo --nome "Equipe Compesa" --perfil CORPORATIVO --orgao COMPESA
+uv run recifeview mudar-perfil --email nome@recife.pe.gov.br --perfil ADMINISTRADOR
 uv run recifeview redefinir-senha --email nome@recife.pe.gov.br
 ```
 
-A senha temporária aparece uma única vez no terminal. Entregue por um canal seguro. `redefinir-senha` também desbloqueia a conta e derruba as sessões abertas.
+A senha temporária aparece uma única vez no terminal. Entregue por um canal seguro. `redefinir-senha` também desbloqueia a conta e derruba as sessões abertas. `mudar-perfil` só troca entre `GESTOR` e `ADMINISTRADOR`. A conta corporativa pela linha de comando serve ao ambiente local; em uso real, a administração cria pela tela, com convite.
 
 Para apresentações, o grupo combina uma conta de demonstração local, descrita no [README da raiz](../README.md#conta-de-demonstração). Ela segue o mesmo fluxo: é criada por este comando e recebe a senha combinada no primeiro acesso.
 
@@ -160,7 +165,8 @@ Todas ficam no `.env` (que não vai para o git). O modelo é o [.env.example](.e
 | `uv run recifeview importar --arquivo ... --data-do-retrato AAAA-MM-DD` | Importa um arquivo pelo terminal. Troque `--arquivo` por `--endereco URL` ou por `--banco NOME --consulta SQL` para as outras origens |
 | `uv run recifeview carregar-logradouros --arquivo ...` | Soma as vias de um arquivo público do 156 à lista do formulário |
 | `uv run recifeview encaminhar-prioritarias --fonte 156 --nota-minima 7 --limite 20` | Encaminha ao órgão sugerido as ocorrências de nota alta sem encaminhamento aberto. Feito para o agendador (cron ou EventBridge) |
-| `uv run recifeview lembrar-orgaos` | Manda um lembrete, com link novo, ao órgão de cada encaminhamento com prazo vencido sem resposta final. Um lembrete por encaminhamento. Feito para o agendador, uma vez por dia |
+| `uv run recifeview lembrar-orgaos` | Lembra o órgão de cada encaminhamento com prazo vencido sem resposta final: no sino das contas corporativas do órgão e, se ele tiver canal configurado, numa mensagem com link novo. Um lembrete por encaminhamento. Feito para o agendador, uma vez por dia |
+| `uv run recifeview mudar-perfil --email ... --perfil ADMINISTRADOR` | Troca o perfil de uma conta da gestão entre `GESTOR` e `ADMINISTRADOR` |
 | `uv run recifeview --help` | Administração de contas e importação |
 
 ## Encaminhar ao órgão
@@ -170,6 +176,7 @@ A tela de Prioridade sugere para qual órgão cada ocorrência vai, e a gestão 
 | Canal | Como configurar | O que acontece |
 |---|---|---|
 | `local` (padrão) | Nada | A mensagem vira um arquivo JSON em `API_PASTA_DOS_ENCAMINHAMENTOS` |
+| `plataforma` | Nada: vale para o órgão sem canal configurado que tem acesso corporativo ativo | Nenhuma mensagem externa: as pessoas do órgão recebem a ocorrência no sino e por e-mail e respondem em `/corporativo` |
 | `email` | `{"canal": "email", "destino": "endereco@orgao"}` | Sai pelo SMTP das contas (ou fica na caixa de e-mails local, sem SMTP) |
 | `webhook` | `{"canal": "webhook", "destino": "https://...", "token": "..."}` | `POST` do JSON abaixo no endereço, com `Authorization: Bearer <token>` quando houver token |
 
@@ -196,15 +203,16 @@ Corpo enviado ao webhook (e guardado no arquivo local, em `dados`):
 
 ### Quem é avisado
 
-Os avisos saem pela mesma via dos e-mails de conta (SMTP, ou arquivos em `API_PASTA_DOS_EMAILS` sem SMTP). A falha de um aviso fica no log e não desfaz a mudança.
+Cada aviso vira uma notificação no sino da plataforma (`app.notificacao`) e, para quem não desligou os avisos, um e-mail pela mesma via dos e-mails de conta (SMTP, ou arquivos em `API_PASTA_DOS_EMAILS` sem SMTP). A falha de um e-mail fica no log e não desfaz a mudança.
 
 | Quando | Quem recebe |
 |---|---|
-| O órgão responde pelo link | A pessoa da gestão que encaminhou |
-| O encaminhamento é enviado, recebido, resolvido ou devolvido | O cidadão com conta que guardou o protocolo em "Meus pedidos" ou que enviou relato somado à ocorrência, se não desligou os avisos |
-| O prazo vence sem resposta final | O órgão, pelo comando `recifeview lembrar-orgaos` |
+| O órgão responde (pela área corporativa ou pelo link) | A pessoa da gestão que encaminhou |
+| O encaminhamento é enviado, recebido, resolvido ou devolvido, ou o órgão atualiza o andamento | O cidadão com conta que guardou o protocolo em "Meus pedidos" ou que enviou relato somado à ocorrência, com a resposta ao cidadão e a previsão |
+| Uma ocorrência é encaminhada ao órgão | As contas corporativas ativas do órgão |
+| O prazo vence sem resposta final | As contas corporativas do órgão e, se houver, o canal configurado, pelo comando `recifeview lembrar-orgaos` |
 
-O órgão responde abrindo o link ou, se tiver sistema, com `POST /api/v1/retornos` e `{"token": "<token do link>", "situacao": "resolvido", "protocolo_do_orgao": "...", "observacao": "..."}`. Se o canal falhar, o encaminhamento fica como `falhou` e o painel oferece o reenvio.
+O órgão responde pela área corporativa, abrindo o link ou, se tiver sistema, com `POST /api/v1/retornos` e `{"token": "<token do link>", "situacao": "resolvido", "protocolo_do_orgao": "...", "observacao": "...", "resposta_ao_cidadao": "...", "previsao": "AAAA-MM-DD"}`. A observação é interna (gestão e órgão); a resposta ao cidadão é a única parte que chega a quem pediu. A previsão só vale com `recebido`, que pode ser repetido para atualizar o andamento. Se o canal falhar, o encaminhamento fica como `falhou` e o painel oferece o reenvio.
 
 ## Rotas
 
@@ -218,7 +226,7 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `POST /autenticacao/sair` | Encerra a sessão e apaga o cookie |
 | `GET /autenticacao/eu` | Devolve o usuário do token de acesso |
 | `POST /contas` | Cria uma conta de cidadão e já abre a sessão. E-mail que já tem conta volta como erro no campo `email` |
-| `POST /contas/recuperar-senha` | Envia um código para nova senha (só contas de cidadão) |
+| `POST /contas/recuperar-senha` | Envia um código para nova senha (contas de cidadão e corporativas) |
 | `POST /contas/nova-senha` | Troca a senha com o código e derruba as sessões |
 | `PUT /contas/eu` | Atualiza nome e bairro |
 | `PUT /contas/eu/avisos` | Liga ou desliga os avisos por e-mail do andamento de pedidos, relatos e encaminhamentos |
@@ -271,13 +279,29 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `GET /encaminhamentos/ocorrencias/{chave_registro}` | Prepara o encaminhamento: a ocorrência, a sugestão de destino com a distribuição do tema e o histórico |
 | `POST /encaminhamentos` | Encaminha a ocorrência ao órgão escolhido e manda a mensagem pelo canal dele. Para uma ocorrência do formulário, aceita `contribuicao_id`: a mensagem leva a rua oficial e a faixa de numeração do relato |
 | `GET /avisos/painel` | Contadores do menu: devoluções sem novo destino, falhas, prazos vencidos e duplas esperando o pente fino |
-| `GET /encaminhamentos/{id}` | Detalhe com os eventos do ciclo |
+| `GET /encaminhamentos/desempenho` | Compara os órgãos: encaminhados, abertos, vencidos, resolvidos no prazo, mediana até resolver, devolvidos, o que voltou a ser pedido em 30 dias, canal e acessos ativos; série de 12 semanas e grupos do mesmo problema |
+| `GET /encaminhamentos/{id}` | Detalhe com os eventos do ciclo, os encaminhamentos do mesmo problema e quantos registros da base têm o mesmo local e tema em 30 dias |
 | `POST /encaminhamentos/{id}/retorno` | A gestão registra o que o órgão respondeu por outro meio |
 | `POST /encaminhamentos/{id}/reenvio` | Reenvia depois de uma falha do canal, com link novo |
 | `POST /retornos/abrir` | O órgão vê o que recebeu. Público: o token do link vai no corpo |
-| `POST /retornos` | O órgão marca `recebido`, `resolvido` ou `devolvido`, com o protocolo dele. Público, para pessoa ou sistema |
+| `POST /retornos` | O órgão marca `recebido`, `resolvido` ou `devolvido`, com o protocolo dele, a resposta ao cidadão e a previsão. Público, para pessoa ou sistema |
+| `GET /acessos-corporativos` | Contas corporativas com o órgão e a situação (convite enviado, convite vencido, ativo, desativado). Gestão |
+| `POST /acessos-corporativos` | Cria o acesso de um órgão e manda o convite. Só `ADMINISTRADOR` |
+| `PUT /acessos-corporativos/{id}` | Corrige nome ou órgão. Só `ADMINISTRADOR` |
+| `POST /acessos-corporativos/{id}/convite` | Manda um convite novo, que invalida o anterior. Só `ADMINISTRADOR` |
+| `POST /acessos-corporativos/{id}/desativacao` e `/reativacao` | Desativa (derruba as sessões) ou reativa. Só `ADMINISTRADOR` |
+| `DELETE /acessos-corporativos/{id}` | Exclui o acesso: apaga nome e e-mail e mantém a auditoria. Só `ADMINISTRADOR` |
+| `POST /convites/abrir` | Mostra para quem é o convite. Público: o token vai no corpo |
+| `POST /convites/aceitar` | Define a senha do acesso corporativo e abre a sessão. Público |
+| `GET /corporativo/painel` | Visão geral do órgão: números do ciclo, abertas por bairro, 12 semanas, as mais urgentes, grupos do mesmo problema e pessoas com retorno |
+| `GET /corporativo/ocorrencias` | Fila do órgão por `aba` (`novas`, `em_atendimento`, `vencidas`, `resolvidas`, `devolvidas`, `todas`), com filtros `bairro` e `categoria`. Cada item traz o mesmo problema no órgão e fora dele e quantas pessoas acompanham, sem o protocolo |
+| `GET /corporativo/ocorrencias/{id}` | Detalhe de uma ocorrência do órgão, com o protocolo de origem, os eventos e o mesmo problema. De outro órgão, 404 |
+| `POST /corporativo/ocorrencias/{id}/resposta` | Em atendimento (com previsão), resolvida ou devolvida, com a resposta ao cidadão (obrigatória para resolver e devolver). `tambem` aplica a mesma resposta a até 20 ocorrências do mesmo problema, tudo ou nada |
+| `GET /corporativo/dados` | O que a base aberta registra com o nome do órgão, por ano e fonte, bairro, tema e situação. Filtros `ano_inicio` e `ano_fim` |
+| `GET /notificacoes` | As 30 notificações mais recentes da conta e quantas não foram lidas. Qualquer perfil |
+| `POST /notificacoes/{id}/leitura` e `POST /notificacoes/leitura` | Marca uma ou todas como lidas |
 
-O `POST /autenticacao/entrar` aceita `area` (`cidade` ou `gestao`): pela porta da gestão, conta de cidadão recebe 403. As rotas de `/contas` que mandam e-mail têm limite de 10 chamadas a cada 10 minutos por origem. As rotas de painel, importações, pente fino e encaminhamentos exigem conta da gestão. As rotas públicas de contribuições, de retorno do órgão e de `/publico` são as únicas de dados sem sessão: nenhuma delas devolve relato de outra pessoa, endereço ou texto; as de retorno só abrem com o token do link; e as de retorno e de `/publico` têm limite de 30 chamadas a cada 10 minutos por origem. Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
+O `POST /autenticacao/entrar` aceita `area` (`cidade`, `gestao` ou `corporativo`): pela porta da gestão, só entra conta da gestão, e pela corporativa, só conta corporativa; as outras recebem 403. As rotas de `/contas` que mandam e-mail têm limite de 10 chamadas a cada 10 minutos por origem. As rotas de painel, importações, pente fino, encaminhamentos e acessos corporativos exigem conta da gestão, e as de `/corporativo`, conta corporativa. As rotas públicas de contribuições, de retorno do órgão e de `/publico` são as únicas de dados sem sessão: nenhuma delas devolve relato de outra pessoa, endereço ou texto; as de retorno e de convite só abrem com o token do link; e as de retorno, de convite e de `/publico` têm limite de 30 chamadas a cada 10 minutos por origem. Os filtros das rotas de dados são `periodo_inicio` e `periodo_fim` (`AAAA-MM`, só o ano é usado), `rpa`, `bairro` e `categoria`. Toda rota de dados exige sessão e fica registrada em `app.consulta_auditada`.
 
 Como a autenticação funciona, e por que ela ainda é uma proposta, está na [ADR 0005](../docs/adr/0005-autenticacao-com-jwt-proprio.md).
 
@@ -290,10 +314,10 @@ app/
   domain/           usuario, sessao, senha, acesso, ahp, prioridade, filtros, uma regra por tela
     importacao/     campos, layouts, privacidade, normalizador, correções, pendências, chaves
     contribuicao/   catálogo, endereço canônico, semelhança, comparação e conferência entre canais
-    encaminhamento/ órgãos, sugestão de destino, ciclo do encaminhamento e mensagem ao órgão
+    encaminhamento/ órgãos, sugestão de destino, ciclo, mensagem, avisos, mesmo problema e desempenho
   application/      portas/, sessoes.py
     casos_de_uso/   acesso, importacoes/ (um caso de uso por passo), painel/ (um por tela), contribuicoes/,
-                    encaminhamentos/
+                    encaminhamentos/, acessos_corporativos/ (cadastro e convite), corporativo/ (área do órgão)
   infrastructure/   db/, repositories/, auth/, importacao/ (leitores, armazenamento, fila), contribuicoes/,
                     encaminhamento/ (caixa local, e-mail, webhook e o despacho por órgão)
   api/              routers/, schemas/, dependencias.py, erros.py, cookies.py
@@ -305,13 +329,13 @@ tests/              unidade/, api/, integracao/
 
 ## Regra de privacidade
 
-Nenhuma rota devolve o texto da SEDEC, `id_local`, coordenada nem o hash da senha, e endereço só aparece nas rotas de contribuições da gestão, para quem revisa o relato. Os schemas de resposta são explícitos justamente para que uma coluna nova no banco não vaze por acidente. Na importação, colunas com dado pessoal são reconhecidas pelo nome e pelo conteúdo, ficam bloqueadas e não têm os valores exibidos; arquivo com esse tipo de coluna é apagado depois da carga, e a API nunca devolve o original. A auditoria guarda o tipo do evento, o usuário e o horário, sem IP e sem o e-mail digitado. Ver [docs/dados.md](../docs/dados.md#privacidade-lgpd) e a [ADR 0007](../docs/adr/0007-importacao-de-arquivos-pelo-painel.md).
+Nenhuma rota devolve o texto da SEDEC, `id_local`, coordenada nem o hash da senha, e endereço só aparece nas rotas de contribuições da gestão, para quem revisa o relato. A área corporativa vê só o bairro, a RPA e, no relato do formulário, a rua oficial com a faixa de numeração; de quem acompanha o pedido, só a contagem; e o protocolo só no detalhe, como na mensagem ao órgão. Da ocorrência de outro órgão com o mesmo problema, o corporativo vê só o nome do órgão e a etapa. Os schemas de resposta são explícitos justamente para que uma coluna nova no banco não vaze por acidente. Na importação, colunas com dado pessoal são reconhecidas pelo nome e pelo conteúdo, ficam bloqueadas e não têm os valores exibidos; arquivo com esse tipo de coluna é apagado depois da carga, e a API nunca devolve o original. A auditoria guarda o tipo do evento, o usuário e o horário, sem IP e sem o e-mail digitado. Ver [docs/dados.md](../docs/dados.md#privacidade-lgpd) e a [ADR 0007](../docs/adr/0007-importacao-de-arquivos-pelo-painel.md).
 
 ## Banco de dados
 
 As migrações ficam nesta pasta, para que o esquema tenha um dono só. Convenções de nomes em [docs/padroes-de-codigo.md](../docs/padroes-de-codigo.md#banco-de-dados-postgresql).
 
-- Schema `app`: `usuario` (com `email_confirmado_em`, `bairro_oficial` e `recebe_avisos`), `codigo_de_conta` (só o hash do código), `sessao`, `evento_de_acesso`, `importacao`, `consulta_auditada`, `contribuicao` (a quarentena do formulário), `par_de_contribuicoes` (as duplas do pente fino, com a decisão de cada uma), `encaminhamento` (cópia do que foi mandado ao órgão, o hash do token do link, a situação, a data do lembrete e, quando veio do formulário, o relato e o local aproximado), `evento_de_encaminhamento` (cada mudança do ciclo, com autor) e `pedido_acompanhado` (protocolos que um cidadão guardou).
-- Schema `ouro`: `dim_bairro`, `dim_logradouro`, `fato_demanda` (com o `protocolo` quando a fonte o publica), `fato_demanda_substituida` (versão anterior das linhas atualizadas, para desfazer) e as views materializadas `mv_*`, que reproduzem as tabelas do protótipo em Streamlit ([ADR 0006](../docs/adr/0006-modelo-analitico-no-postgresql.md)).
+- Schema `app`: `usuario` (com `email_confirmado_em`, `bairro_oficial`, `recebe_avisos` e, na conta corporativa, `orgao`), `convite_de_acesso` (só o hash do token do convite, a validade e o uso), `notificacao` (o sino de cada conta, com a leitura), `codigo_de_conta` (só o hash do código), `sessao`, `evento_de_acesso`, `importacao`, `consulta_auditada`, `contribuicao` (a quarentena do formulário), `par_de_contribuicoes` (as duplas do pente fino, com a decisão de cada uma), `encaminhamento` (cópia do que foi mandado ao órgão, com o pseudônimo do local e o código do serviço para achar o mesmo problema, o hash do token do link, a situação, a data do lembrete e, quando veio do formulário, o relato e o local aproximado), `evento_de_encaminhamento` (cada mudança do ciclo, com autor, nota interna, resposta ao cidadão e previsão) e `pedido_acompanhado` (protocolos que um cidadão guardou).
+- Schema `ouro`: `dim_bairro`, `dim_logradouro`, `fato_demanda` (com o `protocolo` quando a fonte o publica), `fato_demanda_substituida` (versão anterior das linhas atualizadas, para desfazer) e as views materializadas `mv_*`, que reproduzem as tabelas do protótipo em Streamlit ([ADR 0006](../docs/adr/0006-modelo-analitico-no-postgresql.md)). A `mv_demanda_por_orgao` conta a base por fonte, ano, nome do órgão na fonte, bairro, tema e situação, sem as ações proativas da Defesa Civil, para a tela "Dados do órgão" ([ADR 0013](../docs/adr/0013-acesso-corporativo-dos-orgaos.md)).
 
 As views são atualizadas depois de cada importação, com o painel no ar.

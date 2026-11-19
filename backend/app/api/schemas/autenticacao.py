@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from app.application.sessoes import AcessoConcedido
 from app.domain.acesso import AreaDeAcesso
 from app.domain.email import TAMANHO_MAXIMO_DO_EMAIL
+from app.domain.encaminhamento.orgaos import Orgao, nome_do_orgao
 from app.domain.senha import TAMANHO_MAXIMO_DA_SENHA
 from app.domain.usuario import Perfil, Usuario
 
@@ -30,6 +31,8 @@ class UsuarioResposta(BaseModel):
     deve_trocar_senha: bool
     bairro_oficial: str | None
     recebe_avisos: bool
+    orgao: Orgao | None
+    nome_do_orgao: str | None
 
     @classmethod
     def de_usuario(cls, usuario: Usuario) -> Self:
@@ -41,6 +44,8 @@ class UsuarioResposta(BaseModel):
             deve_trocar_senha=usuario.deve_trocar_senha,
             bairro_oficial=usuario.bairro_oficial,
             recebe_avisos=usuario.recebe_avisos,
+            orgao=usuario.orgao,
+            nome_do_orgao=nome_do_orgao(usuario.orgao) if usuario.orgao else None,
         )
 
 

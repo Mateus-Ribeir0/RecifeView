@@ -11,6 +11,7 @@ from app.application.sessoes import GestaoDeSessoes, SessaoAberta
 from app.domain.acesso import AreaDeAcesso, EventoDeAcesso, TipoDeEventoDeAcesso
 from app.domain.email import Email
 from app.domain.erros import (
+    AreaCorporativaNegada,
     AreaDaGestaoNegada,
     ContaBloqueada,
     ContaInativa,
@@ -18,6 +19,13 @@ from app.domain.erros import (
     EmailInvalido,
 )
 from app.domain.usuario import Usuario
+
+
+def _exigir_a_area(usuario: Usuario, area: AreaDeAcesso) -> None:
+    if area is AreaDeAcesso.GESTAO and not usuario.e_da_gestao:
+        raise AreaDaGestaoNegada
+    if area is AreaDeAcesso.CORPORATIVO and not usuario.e_corporativo:
+        raise AreaCorporativaNegada
 
 
 @dataclass(frozen=True)
@@ -43,8 +51,7 @@ class Entrar:
             self._recusar(usuario, agora)
         if not usuario.ativo:
             raise ContaInativa
-        if area is AreaDeAcesso.GESTAO and not usuario.e_da_gestao:
-            raise AreaDaGestaoNegada
+        _exigir_a_area(usuario, area)
         return self._aceitar(usuario, agora)
 
     def _buscar_usuario(self, email: str) -> Usuario | None:

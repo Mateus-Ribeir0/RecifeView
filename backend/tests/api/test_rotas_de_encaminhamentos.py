@@ -110,7 +110,7 @@ def test_orgao_abre_e_responde_pelo_link_sem_sessao(
     assert aberto.json()["respostas_possiveis"] == ["recebido", "resolvido", "devolvido"]
     assert resposta.status_code == 200
     assert resposta.json()["situacao"] == "recebido"
-    assert resposta.json()["respostas_possiveis"] == ["resolvido", "devolvido"]
+    assert resposta.json()["respostas_possiveis"] == ["recebido", "resolvido", "devolvido"]
 
 
 def test_link_desconhecido_responde_404(cliente: TestClient) -> None:

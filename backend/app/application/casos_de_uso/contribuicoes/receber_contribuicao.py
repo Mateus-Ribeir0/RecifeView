@@ -46,8 +46,8 @@ def _avaliar(nova: Contribuicao, candidatas: list[Contribuicao]) -> Avaliacao:
 
 
 def _dono(quem_enviou: Usuario | None) -> UUID | None:
-    """Só a conta de cidadão acompanha os próprios relatos; o da gestão segue sem dono."""
-    if quem_enviou is None or quem_enviou.e_da_gestao:
+    """Só a conta de cidadão acompanha os próprios relatos; os outros perfis seguem sem dono."""
+    if quem_enviou is None or not quem_enviou.e_cidadao:
         return None
     return quem_enviou.id
 

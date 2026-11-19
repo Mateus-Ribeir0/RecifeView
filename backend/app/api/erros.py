@@ -8,7 +8,11 @@ from fastapi.responses import JSONResponse
 from app.api.schemas.erros import DetalheDoErro, ErroResposta
 from app.application.portas.contas import EnvioDeEmailFalhou
 from app.domain.erros import (
+    AcaoSoDaAdministracao,
+    AcessoCorporativoNaoEncontrado,
+    AcessoDesativado,
     AcessoNegado,
+    AreaCorporativaNegada,
     AreaDaGestaoNegada,
     ArquivoGrandeDemais,
     ArquivoIlegivel,
@@ -18,6 +22,8 @@ from app.domain.erros import (
     ContaBloqueada,
     ContaInativa,
     ContribuicaoInvalida,
+    ConviteInvalido,
+    ConviteJaAceito,
     CredenciaisInvalidas,
     DecisaoInvalida,
     DiaForaDaJanela,
@@ -32,6 +38,7 @@ from app.domain.erros import (
     ImportacaoNaoPodeSerDesfeita,
     LimiteDePedidosAtingido,
     LinkDeRetornoInvalido,
+    NotificacaoNaoEncontrada,
     OcorrenciaJaEncaminhada,
     OcorrenciaNaoEncontrada,
     OrigemIndisponivel,
@@ -227,6 +234,38 @@ RESPOSTAS_POR_ERRO: dict[type[ErroDeDominio], RespostaDeErro] = {
         status.HTTP_404_NOT_FOUND,
         "link_de_retorno_invalido",
         "Este link venceu ou não existe. Peça um novo à gestão que encaminhou a ocorrência.",
+    ),
+    AreaCorporativaNegada: RespostaDeErro(
+        status.HTTP_403_FORBIDDEN,
+        "area_corporativa_negada",
+        "Esta entrada é só para contas de órgãos criadas pela administração da Prefeitura.",
+    ),
+    AcaoSoDaAdministracao: RespostaDeErro(
+        status.HTTP_403_FORBIDDEN,
+        "so_da_administracao",
+        "Só o perfil Administração cria e altera acessos corporativos.",
+    ),
+    AcessoCorporativoNaoEncontrado: RespostaDeErro(
+        status.HTTP_404_NOT_FOUND, "acesso_nao_encontrado", "Acesso corporativo não encontrado."
+    ),
+    AcessoDesativado: RespostaDeErro(
+        status.HTTP_409_CONFLICT,
+        "acesso_desativado",
+        "Este acesso está desativado. Reative antes de mandar um convite novo.",
+    ),
+    ConviteInvalido: RespostaDeErro(
+        status.HTTP_404_NOT_FOUND,
+        "convite_invalido",
+        "Este convite venceu, já foi usado ou foi trocado por um mais novo. "
+        "Peça um convite novo à administração da Prefeitura.",
+    ),
+    ConviteJaAceito: RespostaDeErro(
+        status.HTTP_409_CONFLICT,
+        "convite_ja_aceito",
+        "Esta pessoa já definiu a senha. Se esqueceu, ela cria outra em Esqueci minha senha.",
+    ),
+    NotificacaoNaoEncontrada: RespostaDeErro(
+        status.HTTP_404_NOT_FOUND, "notificacao_nao_encontrada", "Notificação não encontrada."
     ),
 }
 

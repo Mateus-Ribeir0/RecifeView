@@ -59,6 +59,7 @@ from app.infrastructure.repositories.catalogos import (
 from app.infrastructure.repositories.codigos_de_conta import CodigoDeContaRepositorySql
 from app.infrastructure.repositories.consultas import RegistroDeConsultasSql
 from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
+from app.infrastructure.repositories.notificacoes import NotificacaoRepositorySql
 from app.infrastructure.repositories.pedidos import (
     ConsultaDePedidosSql,
     PedidoAcompanhadoRepositorySql,
@@ -295,13 +296,23 @@ GestorAtualDep = Annotated[Usuario, Depends(exigir_gestao)]
 
 
 def exigir_cidadao(usuario: UsuarioAtualDep) -> Usuario:
-    """A área do cidadão é só do cidadão: a conta da gestão trabalha no painel."""
-    if usuario.e_da_gestao:
+    """A área do cidadão é só do cidadão: a gestão trabalha no painel e o órgão na sua área."""
+    if not usuario.e_cidadao:
         raise AcessoNegado
     return usuario
 
 
 CidadaoAtualDep = Annotated[Usuario, Depends(exigir_cidadao)]
+
+
+def exigir_corporativo(usuario: UsuarioAtualDep) -> Usuario:
+    """A área corporativa é só da conta presa a um órgão, criada pela administração."""
+    if not usuario.e_corporativo:
+        raise AcessoNegado
+    return usuario
+
+
+CorporativoAtualDep = Annotated[Usuario, Depends(exigir_corporativo)]
 
 
 def obter_servicos_de_conta(
@@ -365,7 +376,10 @@ def obter_servicos_de_encaminhamento(
     entrega: EntregaDeAvisos = request.app.state.entrega_de_avisos
     seguranca: Seguranca = request.app.state.seguranca
     avisos = AvisosDoCiclo(
-        DestinatariosDosAvisosSql(sessao), entrega, configuracao.endereco_do_site
+        DestinatariosDosAvisosSql(sessao),
+        entrega,
+        NotificacaoRepositorySql(sessao),
+        configuracao.endereco_do_site,
     )
     return ServicosDeEncaminhamento(
         encaminhamentos=EncaminhamentoRepositorySql(sessao),

@@ -10,13 +10,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.dependencias import Seguranca
 from app.api.erros import registrar_tratadores_de_erro
 from app.api.routers import (
+    acessos_corporativos,
     autenticacao,
     avisos,
     cidade,
     contas,
     contribuicoes,
+    convites,
+    corporativo,
     encaminhamentos,
     importacoes,
+    notificacoes,
     painel,
     publico,
     saude,
@@ -109,6 +113,10 @@ def criar_aplicacao(configuracao: Configuracao | None = None) -> FastAPI:
     app.include_router(encaminhamentos.retornos, prefix=PREFIXO_DA_API)
     app.include_router(publico.roteador, prefix=PREFIXO_DA_API)
     app.include_router(avisos.roteador, prefix=PREFIXO_DA_API)
+    app.include_router(acessos_corporativos.roteador, prefix=PREFIXO_DA_API)
+    app.include_router(convites.roteador, prefix=PREFIXO_DA_API)
+    app.include_router(corporativo.roteador, prefix=PREFIXO_DA_API)
+    app.include_router(notificacoes.roteador, prefix=PREFIXO_DA_API)
     for roteador in painel.ROTEADORES:
         app.include_router(roteador, prefix=PREFIXO_DA_API)
     return app

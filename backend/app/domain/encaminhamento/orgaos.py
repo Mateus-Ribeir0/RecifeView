@@ -64,3 +64,7 @@ def orgao_da_fonte(nome: str | None) -> Orgao | None:
 
 def nome_do_orgao(orgao: Orgao) -> str:
     return DADOS_POR_ORGAO[orgao].nome
+
+
+def nomes_na_fonte(orgao: Orgao) -> list[str]:
+    return sorted(nome for nome, destino in NOMES_NA_FONTE.items() if destino is orgao)
