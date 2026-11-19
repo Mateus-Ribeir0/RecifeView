@@ -94,7 +94,6 @@ def test_nome_do_orgao_na_ouvidoria_e_na_camara_vira_o_mesmo_orgao() -> None:
     ("atual", "nova"),
     [
         (SituacaoDoEncaminhamento.RESOLVIDO, SituacaoDoEncaminhamento.RECEBIDO),
-        (SituacaoDoEncaminhamento.RECEBIDO, SituacaoDoEncaminhamento.RECEBIDO),
         (SituacaoDoEncaminhamento.ENVIADO, SituacaoDoEncaminhamento.FALHOU),
         (SituacaoDoEncaminhamento.DEVOLVIDO, SituacaoDoEncaminhamento.ENVIADO),
     ],
@@ -104,6 +103,10 @@ def test_ciclo_recusa_resposta_fora_de_ordem(
 ) -> None:
     with pytest.raises(TransicaoInvalida):
         exigir_transicao(atual, nova)
+
+
+def test_orgao_em_atendimento_pode_atualizar_o_andamento() -> None:
+    exigir_transicao(SituacaoDoEncaminhamento.RECEBIDO, SituacaoDoEncaminhamento.RECEBIDO)
 
 
 def test_falha_do_canal_pode_ser_reenviada() -> None:

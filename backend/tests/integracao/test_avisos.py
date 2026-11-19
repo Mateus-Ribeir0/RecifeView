@@ -24,6 +24,7 @@ from app.domain.encaminhamento.encaminhamento import (
 from app.domain.encaminhamento.orgaos import Orgao
 from app.infrastructure.repositories.avisos import DestinatariosDosAvisosSql
 from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
+from app.infrastructure.repositories.notificacoes import NotificacaoRepositorySql
 from tests.fakes import RelogioFixo
 from tests.fakes_encaminhamento import ENDERECO_DO_SITE, DespachoEmMemoria, EntregaEmMemoria
 from tests.integracao.test_importacao_e_painel import URL_DO_BANCO_DE_TESTE, preparar_esquema
@@ -100,7 +101,12 @@ class Partes:
         self.relogio = RelogioFixo(datetime.now(UTC))
 
     def servicos(self, sessao: Session) -> ServicosDeEncaminhamento:
-        avisos = AvisosDoCiclo(DestinatariosDosAvisosSql(sessao), self.entrega, ENDERECO_DO_SITE)
+        avisos = AvisosDoCiclo(
+            DestinatariosDosAvisosSql(sessao),
+            self.entrega,
+            NotificacaoRepositorySql(sessao),
+            ENDERECO_DO_SITE,
+        )
         repositorio = EncaminhamentoRepositorySql(sessao)
         return ServicosDeEncaminhamento(repositorio, self.despacho, self.relogio, avisos)
 

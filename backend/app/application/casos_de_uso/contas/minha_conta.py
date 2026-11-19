@@ -5,11 +5,9 @@ from dataclasses import dataclass
 from app.application.casos_de_uso.contas.servicos import ServicosDeConta
 from app.domain.acesso import EventoDeAcesso, TipoDeEventoDeAcesso
 from app.domain.conta import normalizar_nome
-from app.domain.email import Email
 from app.domain.erros import AcessoNegado, CadastroInvalido, SenhaAtualIncorreta
-from app.domain.usuario import Usuario
+from app.domain.usuario import Usuario, email_da_conta_excluida
 
-DOMINIO_DAS_CONTAS_EXCLUIDAS = "contas-excluidas.invalid"
 BYTES_DA_SENHA_INUTIL = 32
 
 
@@ -48,11 +46,11 @@ class ExcluirMinhaConta:
     servicos: ServicosDeConta
 
     def executar(self, usuario: Usuario, senha: str) -> None:
-        if usuario.e_da_gestao:
+        if not usuario.e_cidadao:
             raise AcessoNegado
         if not self.servicos.senhas.confere(senha, usuario.hash_da_senha):
             raise SenhaAtualIncorreta
-        email_anonimo = Email(f"conta-{usuario.id.hex}@{DOMINIO_DAS_CONTAS_EXCLUIDAS}")
+        email_anonimo = email_da_conta_excluida(usuario.id)
         hash_inutil = self.servicos.senhas.gerar(secrets.token_urlsafe(BYTES_DA_SENHA_INUTIL))
         self.servicos.usuarios.atualizar(usuario.excluido(email_anonimo, hash_inutil))
         self.servicos.pedidos.remover_todos(usuario.id)

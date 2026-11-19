@@ -7,7 +7,7 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.application.casos_de_uso.cadastrar_usuario import CadastrarUsuario
+from app.application.casos_de_uso.cadastrar_usuario import CadastrarUsuario, DadosDoCadastro
 from app.application.casos_de_uso.contribuicoes.carregar_logradouros import CarregarLogradouros
 from app.application.casos_de_uso.encaminhamentos.avisos import AvisosDoCiclo
 from app.application.casos_de_uso.encaminhamentos.encaminhar_prioritarias import (
@@ -22,10 +22,14 @@ from app.application.casos_de_uso.importacoes.importar_pelo_terminal import (
     ImportacaoPendente,
     ImportarPeloTerminal,
 )
+from app.application.casos_de_uso.mudar_perfil import MudarPerfil
 from app.application.casos_de_uso.redefinir_senha import RedefinirSenha
 from app.application.portas.importacoes import ArquivoRecebido, OrigensDeDados
 from app.application.sessoes import GestaoDeSessoes
+from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.erros import (
+    AcessoNegado,
+    CadastroInvalido,
     EmailInvalido,
     EmailJaCadastrado,
     ErroDeDominio,
@@ -52,6 +56,7 @@ from app.infrastructure.repositories.acessos import RegistroDeAcessosSql
 from app.infrastructure.repositories.avisos import DestinatariosDosAvisosSql
 from app.infrastructure.repositories.contribuicoes import ReferenciaDoFormularioSql
 from app.infrastructure.repositories.encaminhamentos import EncaminhamentoRepositorySql
+from app.infrastructure.repositories.notificacoes import NotificacaoRepositorySql
 from app.infrastructure.repositories.prioridade import PrioridadeRepositorySql
 from app.infrastructure.repositories.referencias import ReferenciasSql
 from app.infrastructure.repositories.sessoes import SessaoRepositorySql
@@ -63,6 +68,7 @@ MENSAGENS_DE_ERRO: dict[type[ErroDeDominio], str] = {
     EmailInvalido: "O e-mail informado não é válido.",
     EmailJaCadastrado: "Já existe uma conta com este e-mail.",
     UsuarioNaoEncontrado: "Não existe conta com este e-mail.",
+    AcessoNegado: "O perfil só troca entre GESTOR e ADMINISTRADOR, numa conta da gestão.",
 }
 
 
@@ -82,10 +88,12 @@ def main(argumentos: Sequence[str] | None = None) -> int:
         with fabrica.begin() as sessao:
             if comando.comando == "cadastrar-usuario":
                 _cadastrar_usuario(sessao, comando)
+            elif comando.comando == "mudar-perfil":
+                _mudar_perfil(sessao, comando)
             else:
                 _redefinir_senha(sessao, comando, configuracao)
     except ErroDeDominio as erro:
-        print(MENSAGENS_DE_ERRO.get(type(erro), "Operação recusada."), file=sys.stderr)
+        print(_mensagem_de_erro(erro), file=sys.stderr)
         return 1
     return 0
 
@@ -99,8 +107,21 @@ def _ler_comando(argumentos: Sequence[str] | None) -> argparse.Namespace:
     cadastro.add_argument("--nome", required=True)
     cadastro.add_argument(
         "--perfil",
-        choices=[perfil.value for perfil in Perfil if perfil in PERFIS_DA_GESTAO],
+        choices=[*sorted(perfil.value for perfil in PERFIS_DA_GESTAO), Perfil.CORPORATIVO.value],
         default=Perfil.GESTOR.value,
+    )
+    cadastro.add_argument(
+        "--orgao",
+        choices=[orgao.value for orgao in Orgao],
+        help="Órgão da conta, obrigatório com --perfil CORPORATIVO",
+    )
+
+    mudanca = comandos.add_parser(
+        "mudar-perfil", help="Troca GESTOR por ADMINISTRADOR ou o inverso"
+    )
+    mudanca.add_argument("--email", required=True)
+    mudanca.add_argument(
+        "--perfil", required=True, choices=sorted(perfil.value for perfil in PERFIS_DA_GESTAO)
     )
 
     redefinicao = comandos.add_parser("redefinir-senha", help="Gera uma nova senha temporária")
@@ -204,7 +225,10 @@ def _servicos_de_encaminhamento(
 ) -> ServicosDeEncaminhamento:
     emails = montar_envio_de_email(configuracao)
     avisos = AvisosDoCiclo(
-        DestinatariosDosAvisosSql(sessao), AvisosPorEmail(emails), configuracao.endereco_do_site
+        DestinatariosDosAvisosSql(sessao),
+        AvisosPorEmail(emails),
+        NotificacaoRepositorySql(sessao),
+        configuracao.endereco_do_site,
     )
     return ServicosDeEncaminhamento(
         EncaminhamentoRepositorySql(sessao),
@@ -226,6 +250,8 @@ def _encaminhar_prioritarias(
     print(f"Encaminhadas: {len(resultado.encaminhadas)} (falhas no canal: {resultado.falhas})")
     print(f"Já tinham encaminhamento aberto: {resultado.puladas[MotivoParaPular.JA_ENCAMINHADA]}")
     print(f"Sem órgão sugerido: {resultado.puladas[MotivoParaPular.SEM_SUGESTAO]}")
+    mesmo_problema = resultado.puladas[MotivoParaPular.MESMO_PROBLEMA_ABERTO]
+    print(f"Mesmo problema já encaminhado e aberto: {mesmo_problema}")
     return 0
 
 
@@ -236,12 +262,28 @@ def _lembrar_orgaos(configuracao: Configuracao, fabrica: sessionmaker[Session]) 
     return 0
 
 
+def _mensagem_de_erro(erro: ErroDeDominio) -> str:
+    if isinstance(erro, CadastroInvalido):
+        return erro.motivo
+    return MENSAGENS_DE_ERRO.get(type(erro), "Operação recusada.")
+
+
 def _cadastrar_usuario(sessao: Session, comando: argparse.Namespace) -> None:
     cadastro = CadastrarUsuario(UsuarioRepositorySql(sessao), HashDeSenhaArgon2())
-    resultado = cadastro.executar(comando.email, comando.nome, Perfil(comando.perfil))
+    orgao = Orgao(comando.orgao) if comando.orgao else None
+    dados = DadosDoCadastro(comando.email, comando.nome, Perfil(comando.perfil), orgao)
+    resultado = cadastro.executar(dados)
     usuario = resultado.usuario
     print(f"Conta criada: {usuario.nome} <{usuario.email}> ({usuario.perfil.value})")
     _mostrar_senha_temporaria(resultado.senha_temporaria)
+
+
+def _mudar_perfil(sessao: Session, comando: argparse.Namespace) -> None:
+    caso = MudarPerfil(
+        UsuarioRepositorySql(sessao), RegistroDeAcessosSql(sessao), RelogioDoSistema()
+    )
+    usuario = caso.executar(comando.email, Perfil(comando.perfil))
+    print(f"Perfil de {usuario.email}: {usuario.perfil.value}")
 
 
 def _redefinir_senha(

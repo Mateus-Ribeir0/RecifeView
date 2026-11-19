@@ -1,15 +1,17 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
-from datetime import date, datetime
-from uuid import UUID
+from datetime import date, datetime, timedelta
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from app.application.casos_de_uso.encaminhamentos.avisos import AvisosDoCiclo
 from app.application.casos_de_uso.encaminhamentos.servicos import ServicosDeEncaminhamento
 from app.application.portas.encaminhamentos import (
+    Destinatario,
     EnvioAoOrgaoFalhou,
     FiltroDeEncaminhamentos,
     MudancaDeSituacao,
     NovoEncaminhamento,
+    OrdemDaLista,
     PaginaDeEncaminhamentos,
     PendenciasDosEncaminhamentos,
     ResumoDosEncaminhamentos,
@@ -30,8 +32,9 @@ from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.encaminhamento.sugestao import CitacoesDoTema
 from app.domain.filtros import Filtros
 from app.domain.fontes import Fonte
+from app.domain.notificacao import CaixaDeNotificacoes, Notificacao, NovaNotificacao
 from app.domain.prioridade import FonteDaFila, Ocorrencia
-from tests.fakes import RelogioFixo
+from tests.fakes import INICIO_DOS_TESTES, RelogioFixo
 
 ENDERECO_DO_SITE = "https://recifeview.exemplo"
 
@@ -64,6 +67,7 @@ class EncaminhamentosEmMemoria:
         self.citacoes: dict[str, CitacoesDoTema] = {}
         self.guardados: dict[int, Guardado] = {}
         self.locais_dos_relatos: dict[UUID, str] = {}
+        self.registros_no_local: dict[int, int] = {}
 
     def ocorrencia(self, chave_registro: int) -> OcorrenciaEncaminhavel | None:
         return self.ocorrencias.get(chave_registro)
@@ -121,6 +125,8 @@ class EncaminhamentosEmMemoria:
             mudanca.ocorrido_em,
             mudanca.observacao,
             mudanca.protocolo_do_orgao,
+            mudanca.resposta_ao_cidadao,
+            mudanca.previsao,
         )
         guardado.encaminhamento = replace(
             atual,
@@ -138,8 +144,15 @@ class EncaminhamentosEmMemoria:
         guardado.encaminhamento = replace(guardado.encaminhamento, canal=canal)
 
     def listar(self, filtro: FiltroDeEncaminhamentos, hoje: date) -> PaginaDeEncaminhamentos:
-        itens = [guardado.encaminhamento for guardado in self.guardados.values()]
-        return PaginaDeEncaminhamentos(itens, len(itens))
+        itens = [
+            guardado.encaminhamento
+            for guardado in self.guardados.values()
+            if _passa_no_filtro(guardado.encaminhamento, filtro, hoje)
+        ]
+        if filtro.ordem is OrdemDaLista.PRAZO_MAIS_PROXIMO:
+            itens.sort(key=lambda item: (item.prazo_de_resposta, item.id))
+        pagina = itens[filtro.deslocamento : filtro.deslocamento + filtro.limite]
+        return PaginaDeEncaminhamentos(pagina, len(itens))
 
     def resumir(self, hoje: date) -> ResumoDosEncaminhamentos:
         return ResumoDosEncaminhamentos(total=len(self.guardados))
@@ -178,12 +191,33 @@ class EncaminhamentosEmMemoria:
             if item.contribuicao_id is not None and item.contribuicao_id in ids
         }
 
+    def comparaveis(self, ocorrencias: Sequence[OcorrenciaEncaminhavel]) -> list[Encaminhamento]:
+        return [guardado.encaminhamento for guardado in self.guardados.values()]
+
+    def registros_do_mesmo_local(self, ocorrencia: OcorrenciaEncaminhavel) -> int:
+        return self.registros_no_local.get(ocorrencia.chave_registro, 0)
+
     def ultimos_por_chave(self, chaves: Sequence[int]) -> dict[int, Encaminhamento]:
         return {
             guardado.encaminhamento.ocorrencia.chave_registro: guardado.encaminhamento
             for guardado in self.guardados.values()
             if guardado.encaminhamento.ocorrencia.chave_registro in chaves
         }
+
+
+def _passa_no_filtro(
+    encaminhamento: Encaminhamento, filtro: FiltroDeEncaminhamentos, hoje: date
+) -> bool:
+    if filtro.orgao is not None and encaminhamento.orgao is not filtro.orgao:
+        return False
+    if filtro.situacoes and encaminhamento.situacao not in filtro.situacoes:
+        return False
+    if filtro.so_atrasados and not encaminhamento.esta_atrasado(hoje):
+        return False
+    ocorrencia = encaminhamento.ocorrencia
+    if filtro.bairro is not None and ocorrencia.bairro_oficial != filtro.bairro:
+        return False
+    return filtro.categoria is None or ocorrencia.categoria == filtro.categoria
 
 
 @dataclass
@@ -230,16 +264,66 @@ class PrioridadeFalsa:
         return len(self.ocorrencias)
 
 
+def conta_do_email(email: str) -> UUID:
+    return uuid5(NAMESPACE_URL, email)
+
+
+def _destinatario(email: str) -> Destinatario:
+    return Destinatario(conta_do_email(email), email)
+
+
 @dataclass
 class DestinatariosEmMemoria:
     quem_encaminhou: str | None = None
     quem_acompanha: list[str] = field(default_factory=list)
+    do_orgao: dict[Orgao, list[str]] = field(default_factory=dict)
 
-    def email_de_quem_encaminhou(self, encaminhamento_id: int) -> str | None:
-        return self.quem_encaminhou
+    def gestor_que_encaminhou(self, encaminhamento_id: int) -> Destinatario | None:
+        return _destinatario(self.quem_encaminhou) if self.quem_encaminhou else None
 
-    def emails_de_quem_acompanha(self, encaminhamento: Encaminhamento) -> list[str]:
-        return list(self.quem_acompanha)
+    def cidadaos_que_acompanham(self, encaminhamento: Encaminhamento) -> list[Destinatario]:
+        return [_destinatario(email) for email in self.quem_acompanha]
+
+    def pessoas_do_orgao(self, orgao: Orgao) -> list[Destinatario]:
+        return [_destinatario(email) for email in self.do_orgao.get(orgao, [])]
+
+    def contar(self, encaminhamentos: Sequence[Encaminhamento]) -> dict[int, int]:
+        return {item.id: len(self.quem_acompanha) for item in encaminhamentos}
+
+
+@dataclass
+class NotificacoesEmMemoria:
+    criadas: list[NovaNotificacao] = field(default_factory=list)
+    lidas: set[int] = field(default_factory=set)
+
+    def criar(self, nova: NovaNotificacao) -> None:
+        self.criadas.append(nova)
+
+    def para(self, email: str) -> list[NovaNotificacao]:
+        conta = conta_do_email(email)
+        return [item for item in self.criadas if item.usuario_id == conta]
+
+    def caixa_do_usuario(self, usuario_id: UUID, limite: int) -> CaixaDeNotificacoes:
+        itens = [
+            Notificacao(
+                posicao,
+                item.titulo,
+                item.texto,
+                item.caminho,
+                INICIO_DOS_TESTES + timedelta(minutes=posicao),
+                INICIO_DOS_TESTES if posicao in self.lidas else None,
+            )
+            for posicao, item in enumerate(self.criadas, start=1)
+            if item.usuario_id == usuario_id
+        ]
+        recentes = list(reversed(itens))[:limite]
+        return CaixaDeNotificacoes(sum(1 for item in itens if not item.foi_lida), recentes)
+
+    def marcar_lida(self, usuario_id: UUID, notificacao_id: int, agora: datetime) -> None:
+        self.lidas.add(notificacao_id)
+
+    def marcar_todas_lidas(self, usuario_id: UUID, agora: datetime) -> None:
+        self.lidas.update(range(1, len(self.criadas) + 1))
 
 
 @dataclass
@@ -262,9 +346,12 @@ class Ambiente:
     relogio: RelogioFixo = field(default_factory=RelogioFixo)
     destinatarios: DestinatariosEmMemoria = field(default_factory=DestinatariosEmMemoria)
     entrega: EntregaEmMemoria = field(default_factory=EntregaEmMemoria)
+    notificacoes: NotificacoesEmMemoria = field(default_factory=NotificacoesEmMemoria)
 
     def servicos(self) -> ServicosDeEncaminhamento:
-        avisos = AvisosDoCiclo(self.destinatarios, self.entrega, ENDERECO_DO_SITE)
+        avisos = AvisosDoCiclo(
+            self.destinatarios, self.entrega, self.notificacoes, ENDERECO_DO_SITE
+        )
         return ServicosDeEncaminhamento(self.repositorio, self.despacho, self.relogio, avisos)
 
 

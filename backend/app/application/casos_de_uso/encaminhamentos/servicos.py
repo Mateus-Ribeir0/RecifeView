@@ -15,11 +15,13 @@ from app.application.sessoes import calcular_hash_do_token
 from app.domain.encaminhamento.encaminhamento import (
     VALIDADE_DO_LINK_DE_RETORNO,
     AutorDoEvento,
+    CanalDeEnvio,
     Encaminhamento,
     OcorrenciaEncaminhavel,
     SituacaoDoEncaminhamento,
 )
 from app.domain.encaminhamento.mensagem import montar_mensagem
+from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.encaminhamento.sugestao import SugestaoDeDestino, sugerir_destino, tema_na_camara
 from app.domain.erros import EncaminhamentoNaoEncontrado
 
@@ -61,8 +63,18 @@ class ServicosDeEncaminhamento:
     def link_de_retorno(self, token: TokenGerado) -> str:
         return f"{self.avisos.endereco_do_site.rstrip('/')}{CAMINHO_DO_RETORNO}{token.valor}"
 
+    def canal_para(self, orgao: Orgao) -> CanalDeEnvio:
+        """Sem canal configurado, o órgão com acesso ativo recebe pela plataforma (ADR 0013)."""
+        canal = self.despacho.canal_de(orgao)
+        if canal is CanalDeEnvio.LOCAL and self.avisos.destinatarios.pessoas_do_orgao(orgao):
+            return CanalDeEnvio.PLATAFORMA
+        return canal
+
     def despachar(self, encaminhamento: Encaminhamento, token: TokenGerado) -> Encaminhamento:
         """A falha do canal não desfaz o encaminhamento: ele fica gravado para reenvio."""
+        if encaminhamento.canal is CanalDeEnvio.PLATAFORMA:
+            self.avisos.avisar(encaminhamento, AutorDoEvento.SISTEMA)
+            return encaminhamento
         validade = token.guardado.expira_em.date()
         try:
             self.despacho.enviar(

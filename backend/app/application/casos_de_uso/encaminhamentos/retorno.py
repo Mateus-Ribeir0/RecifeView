@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 from uuid import UUID
 
 from app.application.casos_de_uso.encaminhamentos.servicos import (
@@ -10,10 +11,12 @@ from app.application.sessoes import calcular_hash_do_token
 from app.domain.encaminhamento.encaminhamento import (
     SITUACOES_DE_RETORNO,
     TAMANHO_MAXIMO_DA_OBSERVACAO,
+    TAMANHO_MAXIMO_DA_RESPOSTA_AO_CIDADAO,
     TAMANHO_MAXIMO_DO_PROTOCOLO_DO_ORGAO,
     AutorDoEvento,
     Encaminhamento,
     SituacaoDoEncaminhamento,
+    exigir_previsao_valida,
     exigir_transicao,
     limpar_texto_curto,
 )
@@ -25,6 +28,8 @@ class RespostaAoEncaminhamento:
     situacao: SituacaoDoEncaminhamento
     protocolo_do_orgao: str | None = None
     observacao: str | None = None
+    resposta_ao_cidadao: str | None = None
+    previsao: date | None = None
 
 
 @dataclass(frozen=True)
@@ -33,7 +38,7 @@ class QuemResponde:
     usuario_id: UUID | None = None
 
 
-def _mudanca_validada(
+def validar_resposta(
     servicos: ServicosDeEncaminhamento,
     encaminhamento: Encaminhamento,
     resposta: RespostaAoEncaminhamento,
@@ -42,10 +47,12 @@ def _mudanca_validada(
     if resposta.situacao not in SITUACOES_DE_RETORNO:
         raise TransicaoInvalida
     exigir_transicao(encaminhamento.situacao, resposta.situacao)
+    agora = servicos.relogio.agora()
+    exigir_previsao_valida(resposta.situacao, resposta.previsao, agora.date())
     return MudancaDeSituacao(
         situacao=resposta.situacao,
         autor=quem.autor,
-        ocorrido_em=servicos.relogio.agora(),
+        ocorrido_em=agora,
         usuario_id=quem.usuario_id,
         observacao=limpar_texto_curto(
             "observacao", resposta.observacao, TAMANHO_MAXIMO_DA_OBSERVACAO
@@ -53,6 +60,12 @@ def _mudanca_validada(
         protocolo_do_orgao=limpar_texto_curto(
             "protocolo_do_orgao", resposta.protocolo_do_orgao, TAMANHO_MAXIMO_DO_PROTOCOLO_DO_ORGAO
         ),
+        resposta_ao_cidadao=limpar_texto_curto(
+            "resposta_ao_cidadao",
+            resposta.resposta_ao_cidadao,
+            TAMANHO_MAXIMO_DA_RESPOSTA_AO_CIDADAO,
+        ),
+        previsao=resposta.previsao,
     )
 
 
@@ -76,7 +89,7 @@ class RegistrarRetornoPeloLink:
     def executar(self, token: str, resposta: RespostaAoEncaminhamento) -> Encaminhamento:
         encaminhamento = AbrirPeloLink(self.servicos).executar(token)
         quem = QuemResponde(AutorDoEvento.ORGAO)
-        mudanca = _mudanca_validada(self.servicos, encaminhamento, resposta, quem)
+        mudanca = validar_resposta(self.servicos, encaminhamento, resposta, quem)
         self.servicos.encaminhamentos.mudar_situacao(encaminhamento.id, mudanca)
         respondido = self.servicos.obter(encaminhamento.id)
         self.servicos.avisos.avisar(respondido, AutorDoEvento.ORGAO)
@@ -92,7 +105,7 @@ class RegistrarRetornoPelaGestao:
     ) -> Encaminhamento:
         encaminhamento = self.servicos.obter(encaminhamento_id)
         quem = QuemResponde(AutorDoEvento.GESTAO, usuario_id)
-        mudanca = _mudanca_validada(self.servicos, encaminhamento, resposta, quem)
+        mudanca = validar_resposta(self.servicos, encaminhamento, resposta, quem)
         self.servicos.encaminhamentos.mudar_situacao(encaminhamento_id, mudanca)
         registrado = self.servicos.obter(encaminhamento_id)
         self.servicos.avisos.avisar(registrado, AutorDoEvento.GESTAO)
@@ -110,7 +123,7 @@ class ReenviarEncaminhamento:
         exigir_transicao(encaminhamento.situacao, SituacaoDoEncaminhamento.ENVIADO)
         agora = self.servicos.relogio.agora()
         token = gerar_token_de_retorno(agora)
-        canal = self.servicos.despacho.canal_de(encaminhamento.orgao)
+        canal = self.servicos.canal_para(encaminhamento.orgao)
         self.servicos.encaminhamentos.preparar_reenvio(encaminhamento_id, token.guardado, canal)
         reenvio = MudancaDeSituacao(
             SituacaoDoEncaminhamento.ENVIADO, AutorDoEvento.GESTAO, agora, usuario_id

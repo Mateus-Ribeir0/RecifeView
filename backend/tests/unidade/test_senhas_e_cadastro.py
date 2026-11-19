@@ -1,12 +1,20 @@
 import pytest
 
-from app.application.casos_de_uso.cadastrar_usuario import CadastrarUsuario
+from app.application.casos_de_uso.cadastrar_usuario import CadastrarUsuario, DadosDoCadastro
+from app.application.casos_de_uso.mudar_perfil import MudarPerfil
 from app.application.casos_de_uso.redefinir_senha import RedefinirSenha
 from app.application.casos_de_uso.trocar_senha import TrocarSenha
 from app.application.sessoes import GestaoDeSessoes
 from app.domain.acesso import TipoDeEventoDeAcesso
 from app.domain.email import Email
-from app.domain.erros import EmailJaCadastrado, SenhaAtualIncorreta, SenhaFraca
+from app.domain.encaminhamento.orgaos import Orgao
+from app.domain.erros import (
+    AcessoNegado,
+    CadastroInvalido,
+    EmailJaCadastrado,
+    SenhaAtualIncorreta,
+    SenhaFraca,
+)
 from app.domain.senha import TAMANHO_MINIMO_DA_SENHA
 from app.domain.usuario import Perfil, Usuario
 from app.infrastructure.auth.senhas import HashDeSenhaArgon2
@@ -17,6 +25,7 @@ from tests.fakes import (
     RelogioFixo,
     SessoesEmMemoria,
     UsuariosEmMemoria,
+    criar_usuario,
 )
 
 
@@ -69,7 +78,7 @@ def test_troca_registra_evento(
 def test_cadastro_cria_conta_com_senha_temporaria_obrigatoria(senhas: HashDeSenhaDeTeste) -> None:
     usuarios = UsuariosEmMemoria()
     resultado = CadastrarUsuario(usuarios, senhas).executar(
-        "Nova.Gestora@Recife.pe.gov.br", " Nova Gestora ", Perfil.GESTOR
+        DadosDoCadastro("Nova.Gestora@Recife.pe.gov.br", " Nova Gestora ", Perfil.GESTOR)
     )
     criado = usuarios.buscar_por_email(Email("nova.gestora@recife.pe.gov.br"))
     assert criado is not None
@@ -84,7 +93,7 @@ def test_cadastro_recusa_email_repetido(
 ) -> None:
     with pytest.raises(EmailJaCadastrado):
         CadastrarUsuario(usuarios, senhas).executar(
-            "gestora@recife.pe.gov.br", "Outra", Perfil.GESTOR
+            DadosDoCadastro("gestora@recife.pe.gov.br", "Outra", Perfil.GESTOR)
         )
 
 
@@ -115,3 +124,45 @@ def test_argon2_confere_a_senha_certa_e_recusa_as_outras() -> None:
     assert argon2.confere("ponte-boa-vista-1840", hash_da_senha)
     assert not argon2.confere("outra-senha-qualquer", hash_da_senha)
     assert not argon2.confere("ponte-boa-vista-1840", "hash-corrompido")
+
+
+def test_cadastro_corporativo_exige_o_orgao(senhas: HashDeSenhaDeTeste) -> None:
+    usuarios = UsuariosEmMemoria()
+    sem_orgao = DadosDoCadastro("equipe@cttu.exemplo", "Equipe", Perfil.CORPORATIVO)
+
+    with pytest.raises(CadastroInvalido):
+        CadastrarUsuario(usuarios, senhas).executar(sem_orgao)
+    resultado = CadastrarUsuario(usuarios, senhas).executar(
+        DadosDoCadastro("equipe@cttu.exemplo", "Equipe", Perfil.CORPORATIVO, Orgao.CTTU)
+    )
+    assert resultado.usuario.e_corporativo
+    assert resultado.usuario.deve_trocar_senha
+
+
+def test_conta_da_gestao_nao_tem_orgao(senhas: HashDeSenhaDeTeste) -> None:
+    com_orgao = DadosDoCadastro("nova@recife.pe.gov.br", "Nova", Perfil.GESTOR, Orgao.CTTU)
+
+    with pytest.raises(CadastroInvalido):
+        CadastrarUsuario(UsuariosEmMemoria(), senhas).executar(com_orgao)
+
+
+def test_mudar_perfil_promove_a_gestora_e_fica_registrado(
+    usuarios: UsuariosEmMemoria, usuario: Usuario, acessos: AcessosEmMemoria, relogio: RelogioFixo
+) -> None:
+    alterado = MudarPerfil(usuarios, acessos, relogio).executar(
+        str(usuario.email), Perfil.ADMINISTRADOR
+    )
+
+    assert alterado.e_da_administracao
+    assert acessos.tipos() == [TipoDeEventoDeAcesso.CONTA_ALTERADA]
+
+
+def test_mudar_perfil_nao_transforma_cidadao_em_gestao(
+    acessos: AcessosEmMemoria, relogio: RelogioFixo
+) -> None:
+    cidadao = criar_usuario(email=Email("morador@exemplo.com"), perfil=Perfil.CIDADAO)
+
+    with pytest.raises(AcessoNegado):
+        MudarPerfil(UsuariosEmMemoria(cidadao), acessos, relogio).executar(
+            "morador@exemplo.com", Perfil.ADMINISTRADOR
+        )

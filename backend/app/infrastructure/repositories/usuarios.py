@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.domain.email import Email
+from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.erros import UsuarioNaoEncontrado
 from app.domain.usuario import Perfil, Usuario
 from app.infrastructure.db.modelos import UsuarioModelo
@@ -47,6 +48,7 @@ def _preencher(modelo: UsuarioModelo, usuario: Usuario) -> None:
     modelo.bloqueado_ate = usuario.bloqueado_ate
     modelo.bairro_oficial = usuario.bairro_oficial
     modelo.recebe_avisos = usuario.recebe_avisos
+    modelo.orgao = usuario.orgao.value if usuario.orgao else None
 
 
 def _para_dominio(modelo: UsuarioModelo) -> Usuario:
@@ -62,4 +64,5 @@ def _para_dominio(modelo: UsuarioModelo) -> Usuario:
         bloqueado_ate=modelo.bloqueado_ate,
         bairro_oficial=modelo.bairro_oficial,
         recebe_avisos=modelo.recebe_avisos,
+        orgao=Orgao(modelo.orgao) if modelo.orgao else None,
     )

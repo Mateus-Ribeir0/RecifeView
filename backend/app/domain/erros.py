@@ -176,3 +176,31 @@ class OrigemRecusada(ErroDeDominio):
 
 class OrigemIndisponivel(ErroDeDominio):
     pass
+
+
+class AreaCorporativaNegada(ErroDeDominio):
+    pass
+
+
+class AcaoSoDaAdministracao(ErroDeDominio):
+    pass
+
+
+class AcessoCorporativoNaoEncontrado(ErroDeDominio):
+    pass
+
+
+class ConviteInvalido(ErroDeDominio):
+    pass
+
+
+class ConviteJaAceito(ErroDeDominio):
+    pass
+
+
+class NotificacaoNaoEncontrada(ErroDeDominio):
+    pass
+
+
+class AcessoDesativado(ErroDeDominio):
+    pass

@@ -10,7 +10,10 @@ from app.api.dependencias import (
     exigir_gestao,
     limitar_consultas_publicas,
 )
+from app.api.dependencias_corporativas import CompararOrgaosDep
+from app.api.schemas.desempenho import DesempenhoResposta
 from app.api.schemas.encaminhamentos import (
+    DetalheDoEncaminhamentoResposta,
     EncaminhamentoParaOOrgaoResposta,
     EncaminhamentoResposta,
     EncaminharEntrada,
@@ -23,7 +26,10 @@ from app.api.schemas.encaminhamentos import (
     orgaos_com_canal,
 )
 from app.api.schemas.erros import ErroResposta
-from app.application.casos_de_uso.encaminhamentos.consultar import ListarEncaminhamentos
+from app.application.casos_de_uso.encaminhamentos.consultar import (
+    DetalharEncaminhamento,
+    ListarEncaminhamentos,
+)
 from app.application.casos_de_uso.encaminhamentos.encaminhar import (
     EncaminharOcorrencia,
     PedidoDeEncaminhamento,
@@ -70,7 +76,11 @@ def _hoje(servicos: ServicosDeEncaminhamento) -> date:
 
 def _resposta(entrada: RespostaDoOrgaoEntrada) -> RespostaAoEncaminhamento:
     return RespostaAoEncaminhamento(
-        entrada.situacao, entrada.protocolo_do_orgao, entrada.observacao
+        entrada.situacao,
+        entrada.protocolo_do_orgao,
+        entrada.observacao,
+        entrada.resposta_ao_cidadao,
+        entrada.previsao,
     )
 
 
@@ -97,7 +107,7 @@ def listar(
 
 @roteador.get("/orgaos", summary="Órgãos que recebem encaminhamentos e o canal de cada um")
 def listar_orgaos(servicos: ServicosDeEncaminhamentoDep) -> list[OrgaoResposta]:
-    canais = {dados.orgao: servicos.despacho.canal_de(dados.orgao) for dados in CATALOGO_DE_ORGAOS}
+    canais = {dados.orgao: servicos.canal_para(dados.orgao) for dados in CATALOGO_DE_ORGAOS}
     return orgaos_com_canal(canais)
 
 
@@ -144,12 +154,28 @@ def encaminhar(
     return EncaminhamentoResposta.de_encaminhamento(encaminhamento, _hoje(servicos))
 
 
-@roteador.get("/{encaminhamento_id}", summary="Detalhe e eventos", responses=NAO_ENCONTRADO)
+@roteador.get(
+    "/desempenho",
+    summary="Compara os órgãos: prazo, resolução, devolução e o que voltou a ser pedido",
+    description=(
+        "Uma resolução volta a ser pedida quando a base ganha, em até 30 dias depois dela, um "
+        "registro da mesma fonte, do mesmo local (id_local) e do mesmo tema."
+    ),
+)
+def desempenho(comparar: CompararOrgaosDep) -> DesempenhoResposta:
+    return DesempenhoResposta.de_desempenho(comparar.executar())
+
+
+@roteador.get(
+    "/{encaminhamento_id}",
+    summary="Detalhe, eventos e encaminhamentos do mesmo problema",
+    responses=NAO_ENCONTRADO,
+)
 def consultar(
     encaminhamento_id: int, servicos: ServicosDeEncaminhamentoDep
-) -> EncaminhamentoResposta:
-    encaminhamento = servicos.obter(encaminhamento_id)
-    return EncaminhamentoResposta.de_encaminhamento(encaminhamento, _hoje(servicos))
+) -> DetalheDoEncaminhamentoResposta:
+    detalhe = DetalharEncaminhamento(servicos).executar(encaminhamento_id)
+    return DetalheDoEncaminhamentoResposta.de_detalhe(detalhe, _hoje(servicos))
 
 
 @roteador.post(

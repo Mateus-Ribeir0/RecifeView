@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from enum import StrEnum
 from typing import Protocol
 from uuid import UUID
 
@@ -47,6 +48,14 @@ class MudancaDeSituacao:
     usuario_id: UUID | None = None
     observacao: str | None = None
     protocolo_do_orgao: str | None = None
+    resposta_ao_cidadao: str | None = None
+    previsao: date | None = None
+
+
+class OrdemDaLista(StrEnum):
+    MAIS_RECENTES = "mais_recentes"
+    PRAZO_MAIS_PROXIMO = "prazo_mais_proximo"
+    ATUALIZADOS_POR_ULTIMO = "atualizados_por_ultimo"
 
 
 @dataclass(frozen=True)
@@ -57,6 +66,10 @@ class FiltroDeEncaminhamentos:
     so_os_que_pedem_acao: bool = False
     limite: int = 50
     deslocamento: int = 0
+    situacoes: frozenset[SituacaoDoEncaminhamento] = frozenset()
+    bairro: str | None = None
+    categoria: str | None = None
+    ordem: OrdemDaLista = OrdemDaLista.MAIS_RECENTES
 
 
 @dataclass(frozen=True)
@@ -120,6 +133,12 @@ class EncaminhamentoRepository(Protocol):
         self, encaminhamento_id: int, token: TokenDeRetorno, agora: datetime
     ) -> None: ...
 
+    def comparaveis(
+        self, ocorrencias: Sequence[OcorrenciaEncaminhavel]
+    ) -> list[Encaminhamento]: ...
+
+    def registros_do_mesmo_local(self, ocorrencia: OcorrenciaEncaminhavel) -> int: ...
+
 
 class EncaminhamentosDasOcorrencias(Protocol):
     def ultimos_por_chave(self, chaves: Sequence[int]) -> dict[int, Encaminhamento]: ...
@@ -129,10 +148,23 @@ class EncaminhamentosDosRelatos(Protocol):
     def ultimos_por_relato(self, ids: Sequence[UUID]) -> dict[UUID, Encaminhamento]: ...
 
 
-class DestinatariosDosAvisos(Protocol):
-    def email_de_quem_encaminhou(self, encaminhamento_id: int) -> str | None: ...
+@dataclass(frozen=True)
+class Destinatario:
+    usuario_id: UUID
+    email: str
+    recebe_email: bool = True
 
-    def emails_de_quem_acompanha(self, encaminhamento: Encaminhamento) -> list[str]: ...
+
+class DestinatariosDosAvisos(Protocol):
+    def gestor_que_encaminhou(self, encaminhamento_id: int) -> Destinatario | None: ...
+
+    def cidadaos_que_acompanham(self, encaminhamento: Encaminhamento) -> list[Destinatario]: ...
+
+    def pessoas_do_orgao(self, orgao: Orgao) -> list[Destinatario]: ...
+
+
+class PessoasQueAcompanham(Protocol):
+    def contar(self, encaminhamentos: Sequence[Encaminhamento]) -> dict[int, int]: ...
 
 
 class EntregaDeAvisos(Protocol):

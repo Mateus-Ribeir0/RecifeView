@@ -16,6 +16,7 @@ from app.domain.encaminhamento.encaminhamento import (
     limpar_texto_curto,
     tem_encaminhamento_aberto,
 )
+from app.domain.encaminhamento.mesmo_problema import MesmoProblema, encontrar_mesmo_problema
 from app.domain.encaminhamento.orgaos import CATALOGO_DE_ORGAOS, Orgao
 from app.domain.encaminhamento.sugestao import SugestaoDeDestino
 from app.domain.erros import (
@@ -31,10 +32,16 @@ class OcorrenciaParaEncaminhar:
     sugestao: SugestaoDeDestino
     encaminhamentos: list[Encaminhamento]
     canais: dict[Orgao, CanalDeEnvio] = field(default_factory=dict)
+    mesmo_problema: list[MesmoProblema] = field(default_factory=list)
+    registros_do_mesmo_local: int = 0
 
     @property
     def pode_encaminhar(self) -> bool:
         return not tem_encaminhamento_aberto(self.encaminhamentos)
+
+    @property
+    def mesmo_problema_aberto(self) -> list[MesmoProblema]:
+        return [item for item in self.mesmo_problema if item.encaminhamento.esta_aberto]
 
 
 @dataclass(frozen=True)
@@ -46,14 +53,16 @@ class PrepararEncaminhamento:
         if ocorrencia is None:
             raise OcorrenciaNaoEncontrada
         canais = {
-            dados.orgao: self.servicos.despacho.canal_de(dados.orgao)
-            for dados in CATALOGO_DE_ORGAOS
+            dados.orgao: self.servicos.canal_para(dados.orgao) for dados in CATALOGO_DE_ORGAOS
         }
+        repositorio = self.servicos.encaminhamentos
         return OcorrenciaParaEncaminhar(
             ocorrencia,
             self.servicos.sugerir(ocorrencia),
-            self.servicos.encaminhamentos.da_ocorrencia(chave_registro),
+            repositorio.da_ocorrencia(chave_registro),
             canais,
+            encontrar_mesmo_problema(ocorrencia, repositorio.comparaveis([ocorrencia])),
+            repositorio.registros_do_mesmo_local(ocorrencia),
         )
 
 
