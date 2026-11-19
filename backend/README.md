@@ -236,7 +236,7 @@ Todas sob `/api/v1`. Os erros seguem o formato `{"erro": {"codigo", "mensagem", 
 | `GET /cidade/pedidos` | Os protocolos que a pessoa guardou, com o andamento e o encaminhamento de cada um |
 | `POST /cidade/pedidos` | Guarda um protocolo para acompanhar (até 20 por conta) |
 | `DELETE /cidade/pedidos/{id}` | Deixa de acompanhar um protocolo |
-| `POST /publico/pedidos/consultar` | Andamento de um pedido pelo protocolo, sem conta: situação na fonte e, se houver, o órgão para o qual foi encaminhado e a etapa. O protocolo vai no corpo |
+| `POST /publico/pedidos/consultar` | Andamento de um pedido pelo protocolo, sem conta: situação na fonte e, se houver, o órgão para o qual foi encaminhado, a etapa, a resposta do órgão ao cidadão e a previsão. O protocolo vai no corpo |
 | `GET /publico/bairros/{bairro}` | Indicadores do bairro comparados com o Recife, sem conta |
 | `POST /autenticacao/trocar-senha` | Troca a senha, derruba as outras sessões e abre uma nova |
 
