@@ -73,6 +73,7 @@ Uma tarefa típica de código passa por eles nesta ordem:
 | [docs/adr/0009-formulario-publico-e-pente-fino.md](docs/adr/0009-formulario-publico-e-pente-fino.md) | Proposta: formulário público em quarentena, pente fino entre canais, comparação com busca vetorial e medição do limite |
 | [docs/adr/0011-encaminhamento-ao-orgao-e-retorno.md](docs/adr/0011-encaminhamento-ao-orgao-e-retorno.md) | Proposta: sugestão do órgão de destino, envio por canal configurável, link de retorno do órgão, envio automático e consulta pelo protocolo |
 | [docs/adr/0012-origens-de-dados-alem-do-arquivo.md](docs/adr/0012-origens-de-dados-alem-do-arquivo.md) | Proposta: importação a partir de um endereço na internet e de um banco externo, com as mesmas regras do arquivo |
+| [docs/adr/0013-acesso-corporativo-dos-orgaos.md](docs/adr/0013-acesso-corporativo-dos-orgaos.md) | Proposta: perfil corporativo preso a um órgão e criado pela administração, convite por link, resposta ao cidadão, mesmo problema em toda a plataforma, notificações no sino e comparação entre órgãos |
 
 As ADRs alimentam a Documentação Final (N9), que pede o histórico de decisões.
 

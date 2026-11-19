@@ -33,6 +33,7 @@ Cada decisão técnica que muda a forma do sistema ganha um arquivo curto aqui: 
 | [0010](0010-contas-de-cidadao-e-niveis-de-acesso.md) | Contas de cidadão e três níveis de acesso | Proposta | 10/11/2026 |
 | [0011](0011-encaminhamento-ao-orgao-e-retorno.md) | Encaminhamento ao órgão responsável, retorno do órgão e consulta pelo protocolo | Proposta | 11/11/2026 |
 | [0012](0012-origens-de-dados-alem-do-arquivo.md) | Origens de dados além do arquivo: endereço na internet e banco externo | Proposta | 11/11/2026 |
+| [0013](0013-acesso-corporativo-dos-orgaos.md) | Acesso corporativo dos órgãos, mesmo problema em toda a plataforma e avisos dentro dela | Proposta | 19/11/2026 |
 
 ## Decisões em aberto
 
