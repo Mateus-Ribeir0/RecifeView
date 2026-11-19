@@ -6,6 +6,7 @@ VIEWS_NA_ORDEM = (
     "mv_referencia_por_fonte",
     "mv_prazo_tipico_156",
     "mv_demanda",
+    "mv_demanda_por_orgao",
     "mv_prazos_156",
     "mv_reincidencia_156",
     "mv_locais_cronicos_156",
