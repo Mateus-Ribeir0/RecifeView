@@ -35,6 +35,7 @@ class UsuarioModelo(Base):
     bloqueado_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     bairro_oficial: Mapped[str | None] = mapped_column(Text)
     recebe_avisos: Mapped[bool] = mapped_column(default=True, server_default=true())
+    orgao: Mapped[str | None] = mapped_column(String(30))
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     atualizado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
