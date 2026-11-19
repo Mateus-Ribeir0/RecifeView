@@ -21,10 +21,12 @@ class ProtocoloEntrada(BaseModel):
 class EtapaPublicaResposta(Esquema):
     situacao: SituacaoDoEncaminhamento
     ocorrido_em: datetime
+    resposta_ao_cidadao: str | None
+    previsao: date | None
 
 
 class EncaminhamentoPublicoResposta(BaseModel):
-    """Sem justificativa nem observação: o texto é da gestão e do órgão, não da pessoa."""
+    """Só a resposta escrita para o cidadão: a justificativa e a nota interna nunca saem."""
 
     codigo: str
     orgao: Orgao
@@ -34,6 +36,8 @@ class EncaminhamentoPublicoResposta(BaseModel):
     encaminhado_em: datetime
     prazo_de_resposta: date
     protocolo_do_orgao: str | None
+    resposta_do_orgao: str | None
+    previsao: date | None
     etapas: list[EtapaPublicaResposta]
 
     @classmethod
@@ -47,6 +51,8 @@ class EncaminhamentoPublicoResposta(BaseModel):
             encaminhado_em=item.criado_em,
             prazo_de_resposta=item.prazo_de_resposta,
             protocolo_do_orgao=item.protocolo_do_orgao,
+            resposta_do_orgao=item.resposta_ao_cidadao,
+            previsao=item.previsao,
             etapas=[EtapaPublicaResposta.model_validate(evento) for evento in item.eventos],
         )
 
