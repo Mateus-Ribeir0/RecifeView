@@ -97,8 +97,9 @@ O cabeçalho diz em que área a pessoa está, antes de qualquer texto. Os dois t
 |---|---|---|
 | `cabecalho-da-cidade` | `azul-principal` (`#0F62FE`) | Entrada do cidadão (`/entrar`, `/cadastrar`, `/recuperar-senha`) e área do cidadão (`/cidade`) |
 | `cabecalho-da-gestao` | `azul-marinho` (`#062A5F`) | Entrada da gestão (`/entrar/gestao`, `/entrar/ajuda`), painel e a faixa "Trabalha na gestão pública?" no fim da página inicial |
+| `cabecalho-corporativo` | `azul-escuro` (`#0043CE`) | Entrada corporativa (`/entrar/corporativo`), convite (`/convite/:token`) e área corporativa (`/corporativo`). Texto branco com contraste de 7:1 |
 
-Cor nunca é o único sinal: as duas áreas mostram um selo com borda branca ao lado do logo ("Área do cidadão" ou "Área da gestão"), e a entrada da gestão tem título e texto próprios. Em tela estreita (abaixo de 720px no painel e de 900px na área do cidadão) o selo sai, e o tom do cabeçalho segue marcando a área. As telas de entrada também mudam o fundo do painel lateral: foto do Recife na do cidadão e malha dos bairros sobre azul-marinho na da gestão.
+Cor nunca é o único sinal: as três áreas mostram um selo com borda branca ao lado do logo ("Área do cidadão", "Área da gestão" ou "Área corporativa", seguido do nome do órgão), e a entrada da gestão tem título e texto próprios. Em tela estreita (abaixo de 720px no painel e de 900px na área do cidadão) o selo sai, e o tom do cabeçalho segue marcando a área. As telas de entrada também mudam o fundo do painel lateral: foto do Recife na do cidadão e malha dos bairros sobre azul-marinho na da gestão.
 
 ### Seleção (derivada)
 
@@ -209,9 +210,24 @@ Quem tem conta de cidadão vê os relatos da cidade e os números do próprio ba
 - **Selo de situação:** texto sempre escrito, com a cor como reforço. Recebido em `cinza-fundo`; Em análise em `alerta-fundo` com `alerta-texto`; No painel da gestão em `azul-claro` com `azul-escuro`; Coberto por pedido oficial em `sucesso-fundo` com `sucesso`. A explicação de cada situação fica na própria tela.
 - **Andamento em Meus relatos:** três etapas lado a lado (Recebido, Em análise pela gestão e No painel da gestão, ou Já tem pedido oficial no lugar da última), cada uma com borda superior de 3px e um círculo: etapa feita em `azul-principal` com marca de confirmado, etapa atual em `azul-principal` com o miolo branco e etapa que falta em `cinza` (`borda-de-campo`). O nome da etapa vem sempre escrito, e abaixo vai a explicação da situação atual. No desktop, uma coluna em `azul-claro` explica as quatro situações.
 - **Escolha do bairro no mapa:** o mapa marca só se o bairro tem relato ou não (sem escala graduada) e o bairro escolhido fica em `selecao`.
-- **Andamento de um pedido** (`/acompanhar` e Meus pedidos): cartão com a fonte, o protocolo, o assunto e a situação na fonte. Se a gestão encaminhou, uma faixa em `azul-claro` diz para qual órgão, com o selo da etapa e as etapas lado a lado (borda superior de 3px em `azul-principal`). A justificativa da gestão e a observação do órgão nunca aparecem para o cidadão.
+- **Andamento de um pedido** (`/acompanhar` e Meus pedidos): cartão com a fonte, o protocolo, o assunto e a situação na fonte. Se a gestão encaminhou, uma faixa em `azul-claro` diz para qual órgão, com o selo da etapa e as etapas lado a lado (borda superior de 3px em `azul-principal`). A resposta do órgão ao cidadão aparece como citação, com borda esquerda de 3px em `azul-principal` e o nome do órgão em `azul-escuro`, seguida da previsão quando houver. A justificativa da gestão e a nota interna do órgão nunca aparecem para o cidadão.
 - **Selo do encaminhamento:** Enviado, sem resposta em `alerta-fundo` com `alerta-texto`; Recebido pelo órgão em `azul-claro` com `azul-escuro`; Resolvido em `sucesso-fundo` com `sucesso`; Falha no envio em `erro-fundo`; Devolvido em `cinza-fundo`. "Prazo vencido" vem escrito no selo, nunca só pela cor.
 - **Celular primeiro:** ao contrário do painel, esta área é desenhada para 390px e alargada até 1280px.
+
+## Área corporativa
+
+Para a pessoa de um órgão que responde às ocorrências encaminhadas ([ADR 0013](adr/0013-acesso-corporativo-dos-orgaos.md)). Como o painel, é desenhada primeiro para 1280px.
+
+- **Navegação:** abas no cabeçalho `cabecalho-corporativo` (Visão geral, Ocorrências, Resolvidas, Dados do órgão), sem barra lateral e sem linha de filtros global.
+- **Etapas com o nome do lado do órgão:** "A responder", "Em atendimento", "Resolvida", "Devolvida à gestão". O selo usa as mesmas cores do selo do encaminhamento.
+- **Cartão da ocorrência:** borda esquerda de 4px em `azul-principal` quando aberta e em `alerta-texto` com prazo vencido. Mostra código, selo, prazo escrito ("vence em 3 dias", "venceu há 2 dias", em `alerta-texto` na última semana e em `erro` depois), tema e serviço, bairro e rua oficial com a faixa, e marcas em `fundo-alternativo`: mesmo problema (em `azul-claro` com `azul-escuro`), quantas pessoas acompanham e a previsão.
+- **Abas da fila:** botões com a contagem ao lado; a de prazo vencido usa `alerta-fundo` quando não é zero. A aba escolhida fica em `azul-claro` com borda `azul-principal`.
+- **Formulário de resposta:** opções como cartões selecionáveis (borda `azul-principal` e fundo `azul-claro` na escolhida), a resposta ao cidadão com contador de caracteres e a dica de que o texto sai, a nota interna separada e, quando houver, "Aplicar a mesma resposta ao mesmo problema" com as certas já marcadas. Antes do botão, uma faixa em `fundo-alternativo` diz quem fica sabendo.
+- **Mapa das ocorrências:** todos os bairros entram; zero fica sempre na cor mais clara e as contagens positivas vão de `mapa-2` a `mapa-5`, com a legenda escrevendo os limites de cada cor. Não há hachura, porque zero não é falta de dado.
+
+## Sino de notificações
+
+No cabeçalho das três áreas com conta, ao lado do menu da conta. O ícone fica em branco; com notificação nova, um contador em `alerta-fundo` com `alerta-texto` e borda branca, e o rótulo para leitor de tela diz quantas são ("Notificações, 2 novas"). O painel abre por baixo, em branco com `sombra-flutuante`: cada item não lido tem borda esquerda de 3px em `azul-principal` e fundo `azul-claro`, título em 600, texto em `texto-secundario` e há quanto tempo chegou. Fecha com Esc ou clique fora. Sem notificações, uma frase diz o que vai aparecer ali.
 
 ## Gráficos (Recharts)
 
