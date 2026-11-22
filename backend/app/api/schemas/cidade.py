@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import date, datetime
 from uuid import UUID
 
@@ -52,7 +53,10 @@ class MeuRelatoResposta(BaseModel):
             if relato.encaminhamento
             else None
         )
-        return cls.model_validate(relato).model_copy(update={"encaminhamento": encaminhamento})
+        sem_encaminhamento = replace(relato, encaminhamento=None)
+        return cls.model_validate(sem_encaminhamento).model_copy(
+            update={"encaminhamento": encaminhamento}
+        )
 
 
 class ComparacaoResposta(BaseModel):
