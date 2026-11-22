@@ -5,6 +5,7 @@ import type {
   ServicoDeRetornoDoOrgao,
 } from '../application/encaminhamentos/servico'
 import type {
+  DetalheDoEncaminhamento,
   Encaminhamento,
   EncaminhamentoParaOOrgao,
   OcorrenciaEncaminhavel,
@@ -45,6 +46,8 @@ export const PREPARO: PreparoDoEncaminhamento = {
   ],
   encaminhamentos: [],
   podeEncaminhar: true,
+  mesmoProblema: [],
+  registrosDoMesmoLocal: 0,
 }
 
 export const ENCAMINHAMENTO: Encaminhamento = {
@@ -67,7 +70,16 @@ export const ENCAMINHAMENTO: Encaminhamento = {
   protocoloDoOrgao: null,
   lembreteEnviadoEm: null,
   contribuicaoId: null,
+  respostaAoCidadao: null,
+  previsao: null,
+  mesmoProblema: 0,
   eventos: [{ situacao: 'enviado', autor: 'gestao', ocorridoEm: '2026-11-11T15:00:00Z' }],
+}
+
+export const DETALHE: DetalheDoEncaminhamento = {
+  ...ENCAMINHAMENTO,
+  mesmoProblemaDetalhado: [],
+  registrosDoMesmoLocal: 0,
 }
 
 export const PARA_O_ORGAO: EncaminhamentoParaOOrgao = {
@@ -97,7 +109,13 @@ export function criarEncaminhamentosFalsos(
       itens: [ENCAMINHAMENTO],
       total: 1,
     }),
-    consultar: vi.fn().mockResolvedValue(ENCAMINHAMENTO),
+    consultar: vi.fn().mockResolvedValue(DETALHE),
+    desempenho: vi.fn().mockResolvedValue({
+      hoje: '2026-11-19',
+      orgaos: [],
+      semanas: [],
+      gruposDoMesmoProblema: [],
+    }),
     registrarRetorno: vi.fn().mockResolvedValue({ ...ENCAMINHAMENTO, situacao: 'recebido' }),
     reenviar: vi.fn().mockResolvedValue(ENCAMINHAMENTO),
     pendencias: vi.fn().mockResolvedValue({

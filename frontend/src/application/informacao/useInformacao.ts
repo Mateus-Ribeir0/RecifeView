@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import type { IndicadoresDoBairro } from '../../domain/cidade'
 import type { PedidoAcompanhado } from '../../domain/pedidos'
 import { useCarregamento, type Carregamento } from '../carregamento/useCarregamento'
+import { useAtualizacaoAutomatica } from '../notificacoes/useAtualizacaoAutomatica'
 import { useServicoDeInformacao } from './contexto'
 
 export function useIndicadoresDoBairro(bairro: string): Carregamento<IndicadoresDoBairro> {
@@ -14,5 +15,7 @@ export function useIndicadoresDoBairro(bairro: string): Carregamento<Indicadores
 export function useMeusPedidos(): Carregamento<readonly PedidoAcompanhado[]> {
   const servico = useServicoDeInformacao()
   const buscar = useCallback(() => servico.meusPedidos(), [servico])
-  return useCarregamento('meus-pedidos', buscar)
+  const carregamento = useCarregamento('meus-pedidos', buscar)
+  useAtualizacaoAutomatica(carregamento.recarregar)
+  return carregamento
 }

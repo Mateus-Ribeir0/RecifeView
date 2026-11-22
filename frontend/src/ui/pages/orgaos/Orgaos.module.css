@@ -1,0 +1,32 @@
+.pagina {
+  display: grid;
+  gap: var(--espaco-5);
+}
+
+.nota {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+.alerta {
+  font-weight: 700;
+  color: var(--cor-alerta-texto);
+}
+
+.grupos {
+  display: grid;
+  list-style: none;
+}
+
+.grupos li {
+  display: grid;
+  gap: var(--espaco-1);
+  padding-block: var(--espaco-3);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.grupos li span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+}

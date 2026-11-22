@@ -15,7 +15,7 @@ export type Orgao =
 
 export type SituacaoDoEncaminhamento = 'enviado' | 'falhou' | 'recebido' | 'resolvido' | 'devolvido'
 export type RespostaPossivel = 'recebido' | 'resolvido' | 'devolvido'
-export type CanalDeEnvio = 'local' | 'email' | 'webhook'
+export type CanalDeEnvio = 'local' | 'email' | 'webhook' | 'plataforma'
 export type MotivoDaSugestao = 'apontado_no_registro' | 'mais_citado_no_tema' | 'sem_sugestao'
 export type AutorDoEvento = 'gestao' | 'orgao' | 'sistema'
 
@@ -46,6 +46,20 @@ export interface EventoDoEncaminhamento {
   ocorridoEm: string
   observacao?: string | null
   protocoloDoOrgao?: string | null
+  respostaAoCidadao?: string | null
+  previsao?: string | null
+}
+
+export interface MesmoProblema {
+  id: number | null
+  codigo: string | null
+  orgao: Orgao
+  nomeDoOrgao: string
+  situacao: SituacaoDoEncaminhamento
+  atrasado: boolean
+  dataAbertura: string | null
+  certo: boolean
+  motivos: readonly string[]
 }
 
 export interface Encaminhamento {
@@ -68,7 +82,15 @@ export interface Encaminhamento {
   protocoloDoOrgao: string | null
   lembreteEnviadoEm: string | null
   contribuicaoId: string | null
+  respostaAoCidadao: string | null
+  previsao: string | null
+  mesmoProblema: number
   eventos: readonly EventoDoEncaminhamento[]
+}
+
+export interface DetalheDoEncaminhamento extends Encaminhamento {
+  mesmoProblemaDetalhado: readonly MesmoProblema[]
+  registrosDoMesmoLocal: number
 }
 
 export interface EncaminhamentoNaFila {
@@ -100,6 +122,8 @@ export interface PreparoDoEncaminhamento {
   orgaos: readonly OrgaoDoCatalogo[]
   encaminhamentos: readonly Encaminhamento[]
   podeEncaminhar: boolean
+  mesmoProblema: readonly MesmoProblema[]
+  registrosDoMesmoLocal: number
 }
 
 export interface ResumoDosEncaminhamentos {
@@ -145,6 +169,53 @@ export interface RespostaAoEncaminhamento {
   situacao: RespostaPossivel
   protocoloDoOrgao: string
   observacao: string
+  respostaAoCidadao: string
+  previsao: string | null
+}
+
+export interface IndicadoresDoOrgao {
+  orgao: Orgao
+  nomeDoOrgao: string
+  encaminhados: number
+  falhas: number
+  abertas: number
+  novas: number
+  emAtendimento: number
+  vencidas: number
+  resolvidas: number
+  resolvidasNoPrazo: number
+  pctNoPrazo: number | null
+  resolvidasEm30Dias: number
+  devolvidas: number
+  medianaDeDiasAteResolver: number | null
+  voltaramASerPedidas: number
+}
+
+export interface DesempenhoDoOrgao extends IndicadoresDoOrgao {
+  canal: CanalDeEnvio
+  acessosAtivos: number
+}
+
+export interface SemanaDoCiclo {
+  inicio: string
+  recebidas: number
+  resolvidas: number
+}
+
+export interface GrupoDoMesmoProblema {
+  bairroOficial: string | null
+  categoria: string | null
+  servico: string | null
+  ids: readonly number[]
+  codigos: readonly string[]
+  orgaos: readonly string[]
+}
+
+export interface DesempenhoDosOrgaos {
+  hoje: string
+  orgaos: readonly DesempenhoDoOrgao[]
+  semanas: readonly SemanaDoCiclo[]
+  gruposDoMesmoProblema: readonly GrupoDoMesmoProblema[]
 }
 
 export interface EncaminhamentoParaOOrgao {
@@ -160,6 +231,8 @@ export interface EncaminhamentoParaOOrgao {
   respostasPossiveis: readonly RespostaPossivel[]
   eventos: readonly EventoDoEncaminhamento[]
 }
+
+export const TAMANHO_MAXIMO_DA_RESPOSTA_AO_CIDADAO = 500
 
 export const FILTRO_INICIAL_DE_ENCAMINHAMENTOS: FiltroDeEncaminhamentos = {
   situacao: null,
@@ -195,6 +268,7 @@ export const ROTULOS_DOS_CANAIS: Readonly<Record<CanalDeEnvio, string>> = {
   local: 'caixa de saída local',
   email: 'e-mail',
   webhook: 'sistema do órgão',
+  plataforma: 'área corporativa',
 }
 
 export const ROTULOS_DOS_AUTORES: Readonly<Record<AutorDoEvento, string>> = {
@@ -215,7 +289,7 @@ const RESPOSTAS_POR_SITUACAO: Readonly<
   Record<SituacaoDoEncaminhamento, readonly RespostaPossivel[]>
 > = {
   enviado: ['recebido', 'resolvido', 'devolvido'],
-  recebido: ['resolvido', 'devolvido'],
+  recebido: ['recebido', 'resolvido', 'devolvido'],
   falhou: [],
   resolvido: [],
   devolvido: [],
@@ -225,6 +299,18 @@ export function respostasPossiveis(
   situacao: SituacaoDoEncaminhamento,
 ): readonly RespostaPossivel[] {
   return RESPOSTAS_POR_SITUACAO[situacao]
+}
+
+export function rotuloDaResposta(
+  resposta: RespostaPossivel,
+  atual: SituacaoDoEncaminhamento,
+): string {
+  if (resposta === 'recebido' && atual === 'recebido') return 'Atualizar o andamento'
+  return ROTULOS_DAS_RESPOSTAS[resposta]
+}
+
+export function precisaExplicarAoCidadao(resposta: RespostaPossivel): boolean {
+  return resposta !== 'recebido'
 }
 
 export function podeEncaminharDeNovo(situacao: SituacaoDoEncaminhamento): boolean {

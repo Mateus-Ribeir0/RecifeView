@@ -1,7 +1,10 @@
 import type { ServicoDeAutenticacao } from '../../application/autenticacao/servico'
+import type { ConviteDeAcesso } from '../../domain/acessos'
+import type { Orgao } from '../../domain/encaminhamentos'
 import { ErroDoRecifeView } from '../../domain/erros'
 import type { Perfil, Usuario } from '../../domain/usuario'
 import type { ClienteHttp } from './cliente'
+import { converterChaves } from './conversao'
 
 interface UsuarioJson {
   id: string
@@ -11,6 +14,8 @@ interface UsuarioJson {
   deve_trocar_senha: boolean
   bairro_oficial: string | null
   recebe_avisos?: boolean
+  orgao?: Orgao | null
+  nome_do_orgao?: string | null
 }
 
 interface PedidoRecebidoJson {
@@ -34,6 +39,8 @@ const CAMINHOS = {
   minhaConta: '/contas/eu',
   avisosDaConta: '/contas/eu/avisos',
   excluir: '/contas/eu/excluir',
+  abrirConvite: '/convites/abrir',
+  aceitarConvite: '/convites/aceitar',
 } as const
 
 function paraUsuario(json: UsuarioJson): Usuario {
@@ -45,6 +52,8 @@ function paraUsuario(json: UsuarioJson): Usuario {
     deveTrocarSenha: json.deve_trocar_senha,
     bairroOficial: json.bairro_oficial ?? null,
     recebeAvisos: json.recebe_avisos ?? true,
+    orgao: json.orgao ?? null,
+    nomeDoOrgao: json.nome_do_orgao ?? null,
   }
 }
 
@@ -105,6 +114,21 @@ export function criarServicoDeAutenticacao(cliente: ClienteHttp): ServicoDeAuten
       }
       return guardarAcesso(
         await cliente.enviar<AcessoJson>(CAMINHOS.contas, { metodo: 'POST', corpo }),
+      )
+    },
+    async abrirConvite(token) {
+      const convite = await cliente.enviar<unknown>(CAMINHOS.abrirConvite, {
+        metodo: 'POST',
+        corpo: { token },
+      })
+      return converterChaves<ConviteDeAcesso>(convite)
+    },
+    async aceitarConvite({ token, senha }) {
+      return guardarAcesso(
+        await cliente.enviar<AcessoJson>(CAMINHOS.aceitarConvite, {
+          metodo: 'POST',
+          corpo: { token, senha },
+        }),
       )
     },
     async pedirNovaSenha(email) {

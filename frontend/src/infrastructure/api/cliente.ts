@@ -32,6 +32,14 @@ const CODIGOS_CONHECIDOS: ReadonlySet<string> = new Set<CodigoDeErro>([
   'link_de_retorno_invalido',
   'origem_recusada',
   'origem_indisponivel',
+  'area_corporativa_negada',
+  'so_da_administracao',
+  'acesso_nao_encontrado',
+  'acesso_desativado',
+  'convite_invalido',
+  'convite_ja_aceito',
+  'notificacao_nao_encontrada',
+  'encaminhamento_nao_encontrado',
 ])
 
 export interface Requisicao {

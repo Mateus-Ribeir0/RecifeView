@@ -95,6 +95,19 @@ const COLUNAS: readonly ColunaDaTabela<Encaminhamento>[] = [
     valor: (item) => <SeloDoEncaminhamento situacao={item.situacao} atrasado={item.atrasado} />,
   },
   {
+    titulo: 'Mesmo problema',
+    ajuda:
+      'Outros encaminhamentos da mesma fonte, bairro e tema, com menos de 30 dias de diferença e o mesmo local.',
+    valor: (item) =>
+      item.mesmoProblema > 0 ? (
+        <span className={estilos.marcaDoMesmoProblema}>
+          mais {formatarNumero(item.mesmoProblema)}
+        </span>
+      ) : (
+        'nenhum'
+      ),
+  },
+  {
     titulo: 'Como saiu',
     ajuda: 'Quem encaminhou e por qual canal a mensagem foi.',
     valor: (item) =>

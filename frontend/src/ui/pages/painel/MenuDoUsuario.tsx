@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
-import { iniciaisDoNome, rotuloDoPerfil, type Usuario } from '../../../domain/usuario'
+import { iniciaisDoNome, rotuloDaConta, type Usuario } from '../../../domain/usuario'
 import estilos from './MenuDoUsuario.module.css'
 
 interface Propriedades {
@@ -49,7 +49,7 @@ export function MenuDoUsuario({ usuario, aoSair }: Propriedades) {
         </span>
         <span className={estilos.identificacao}>
           <span className={estilos.nome}>{usuario.nome}</span>
-          <span className={estilos.perfil}>{rotuloDoPerfil(usuario.perfil)}</span>
+          <span className={estilos.perfil}>{rotuloDaConta(usuario)}</span>
         </span>
       </button>
       {aberto && (

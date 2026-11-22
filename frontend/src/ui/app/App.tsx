@@ -6,6 +6,7 @@ import { ContextoDaCidade } from '../../application/cidade/contexto'
 import { ContextoDasContribuicoes } from '../../application/contribuicoes/contexto'
 import { ContextoDoRetornoDoOrgao } from '../../application/encaminhamentos/contexto'
 import { ContextoDaInformacao } from '../../application/informacao/contexto'
+import { ContextoDasNotificacoes } from '../../application/notificacoes/contexto'
 import { PaginaAjudaDeAcesso } from '../pages/ajuda-de-acesso/PaginaAjudaDeAcesso'
 import { PaginaCadastrar } from '../pages/cadastrar/PaginaCadastrar'
 import { LayoutDaCidade } from '../pages/cidade/LayoutDaCidade'
@@ -21,9 +22,11 @@ import {
   servicoDeAutenticacao,
   servicoDeContribuicoes,
   servicoDeInformacao,
+  servicoDeNotificacoes,
   servicoDeRetornoDoOrgao,
 } from './servicos'
 import { SoParaCidadaos } from './SoParaCidadaos'
+import { SoParaCorporativos } from './SoParaCorporativos'
 import { SoParaGestao } from './SoParaGestao'
 import { SoParaVisitantes } from './SoParaVisitantes'
 
@@ -83,6 +86,7 @@ const roteador = createBrowserRouter([
         children: [
           { path: 'entrar', element: <PaginaEntrar area="cidade" /> },
           { path: 'entrar/gestao', element: <PaginaEntrar area="gestao" /> },
+          { path: 'entrar/corporativo', element: <PaginaEntrar area="corporativo" /> },
           { path: 'cadastrar', element: <PaginaCadastrar /> },
         ],
       },
@@ -103,6 +107,12 @@ const roteador = createBrowserRouter([
             }),
           },
         ],
+      },
+      {
+        path: 'convite/:token',
+        lazy: async () => ({
+          Component: (await import('../pages/convite/PaginaConvite')).PaginaConvite,
+        }),
       },
       { path: 'recuperar-senha', element: <PaginaRecuperarSenha /> },
       {
@@ -159,6 +169,54 @@ const roteador = createBrowserRouter([
                     lazy: async () => ({
                       Component: (await import('../pages/cidade/PaginaMinhaConta'))
                         .PaginaMinhaConta,
+                    }),
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            path: 'corporativo',
+            element: <SoParaCorporativos />,
+            children: [
+              {
+                lazy: async () => ({
+                  Component: (await import('./MontagemCorporativa')).MontagemCorporativa,
+                }),
+                children: [
+                  {
+                    index: true,
+                    lazy: async () => ({
+                      Component: (await import('../pages/corporativo/PaginaVisaoGeralDoOrgao'))
+                        .PaginaVisaoGeralDoOrgao,
+                    }),
+                  },
+                  {
+                    path: 'ocorrencias',
+                    lazy: async () => ({
+                      Component: (await import('../pages/corporativo/PaginaOcorrenciasDoOrgao'))
+                        .PaginaOcorrenciasDoOrgao,
+                    }),
+                  },
+                  {
+                    path: 'ocorrencias/:id',
+                    lazy: async () => ({
+                      Component: (await import('../pages/corporativo/PaginaOcorrenciaDoOrgao'))
+                        .PaginaOcorrenciaDoOrgao,
+                    }),
+                  },
+                  {
+                    path: 'resolvidas',
+                    lazy: async () => ({
+                      Component: (await import('../pages/corporativo/PaginaResolvidas'))
+                        .PaginaResolvidas,
+                    }),
+                  },
+                  {
+                    path: 'dados',
+                    lazy: async () => ({
+                      Component: (await import('../pages/corporativo/PaginaDadosDoOrgao'))
+                        .PaginaDadosDoOrgao,
                     }),
                   },
                 ],
@@ -251,6 +309,20 @@ const roteador = createBrowserRouter([
                     }),
                   },
                   {
+                    path: 'orgaos',
+                    lazy: async () => ({
+                      Component: (await import('../pages/orgaos/PaginaDesempenhoDosOrgaos'))
+                        .PaginaDesempenhoDosOrgaos,
+                    }),
+                  },
+                  {
+                    path: 'acessos',
+                    lazy: async () => ({
+                      Component: (await import('../pages/acessos/PaginaAcessosCorporativos'))
+                        .PaginaAcessosCorporativos,
+                    }),
+                  },
+                  {
                     path: 'importacoes',
                     lazy: async () => ({
                       Component: (await import('../pages/importacoes/PaginaHistorico'))
@@ -287,7 +359,9 @@ export function App() {
     <ProvedorDeSessao servico={servicoDeAutenticacao}>
       <ContextoDasContribuicoes value={servicoDeContribuicoes}>
         <ContextoDaInformacao value={servicoDeInformacao}>
-          <RouterProvider router={roteador} />
+          <ContextoDasNotificacoes value={servicoDeNotificacoes}>
+            <RouterProvider router={roteador} />
+          </ContextoDasNotificacoes>
         </ContextoDaInformacao>
       </ContextoDasContribuicoes>
     </ProvedorDeSessao>

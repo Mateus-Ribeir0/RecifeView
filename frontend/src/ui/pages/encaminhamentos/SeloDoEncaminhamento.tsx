@@ -15,12 +15,13 @@ const CLASSES: Readonly<Record<SituacaoDoEncaminhamento, string | undefined>> = 
 interface Propriedades {
   situacao: SituacaoDoEncaminhamento
   atrasado?: boolean
+  rotulo?: string
 }
 
-export function SeloDoEncaminhamento({ situacao, atrasado = false }: Propriedades) {
+export function SeloDoEncaminhamento({ situacao, atrasado = false, rotulo }: Propriedades) {
   return (
     <span className={`${estilos.selo} ${CLASSES[situacao] ?? ''}`}>
-      {ROTULOS_DAS_SITUACOES[situacao]}
+      {rotulo ?? ROTULOS_DAS_SITUACOES[situacao]}
       {atrasado && <strong className={estilos.atraso}>, prazo vencido</strong>}
     </span>
   )

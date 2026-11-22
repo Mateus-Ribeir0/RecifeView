@@ -34,6 +34,19 @@ function SeloDaFonte({ fonte, registros }: { fonte: CodigoDaFonte; registros?: n
   )
 }
 
+/** Só o painel tem o catálogo das fontes: a consulta acontece quando a tela mostra os selos. */
+function SelosDasFontes({ fontes }: { fontes: readonly CodigoDaFonte[] }) {
+  const { dados: catalogo } = useCatalogo()
+  const registros = new Map(catalogo?.fontes.map((fonte) => [fonte.codigo, fonte.registros]))
+  return (
+    <ul className={estilos.fontes} aria-label="Fontes desta tela">
+      {fontes.map((fonte) => (
+        <SeloDaFonte key={fonte} fonte={fonte} registros={registros.get(fonte)} />
+      ))}
+    </ul>
+  )
+}
+
 export function CabecalhoDaTela({
   titulo,
   children,
@@ -45,8 +58,6 @@ export function CabecalhoDaTela({
   useTituloDaPagina(titulo)
   const [notasAbertas, definirNotasAbertas] = useState(false)
   const idDasNotas = useId()
-  const { dados: catalogo } = useCatalogo()
-  const registros = new Map(catalogo?.fontes.map((fonte) => [fonte.codigo, fonte.registros]))
 
   return (
     <header className={estilos.cabecalho}>
@@ -59,13 +70,7 @@ export function CabecalhoDaTela({
       </div>
       {(fontes.length > 0 || notas.length > 0) && (
         <div className={estilos.apoio}>
-          {fontes.length > 0 && (
-            <ul className={estilos.fontes} aria-label="Fontes desta tela">
-              {fontes.map((fonte) => (
-                <SeloDaFonte key={fonte} fonte={fonte} registros={registros.get(fonte)} />
-              ))}
-            </ul>
-          )}
+          {fontes.length > 0 && <SelosDasFontes fontes={fontes} />}
           {notas.length > 0 && (
             <button
               type="button"

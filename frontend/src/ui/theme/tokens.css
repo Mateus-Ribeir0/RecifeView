@@ -38,6 +38,7 @@
 
   --cor-cabecalho-da-cidade: var(--cor-azul-principal);
   --cor-cabecalho-da-gestao: var(--cor-azul-marinho);
+  --cor-cabecalho-corporativo: var(--cor-azul-escuro);
 
   --altura-do-topo-do-painel: 56px;
   --largura-da-lateral: 248px;

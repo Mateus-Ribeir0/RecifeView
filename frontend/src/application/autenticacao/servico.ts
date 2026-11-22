@@ -1,3 +1,4 @@
+import type { ConviteDeAcesso } from '../../domain/acessos'
 import type { AreaDeAcesso, Usuario } from '../../domain/usuario'
 
 export interface Credenciais {
@@ -31,6 +32,11 @@ export interface TrocaDeSenha {
   novaSenha: string
 }
 
+export interface AceiteDoConvite {
+  token: string
+  senha: string
+}
+
 export interface ServicoDeAutenticacao {
   entrar(credenciais: Credenciais): Promise<Usuario>
   restaurarSessao(): Promise<Usuario | null>
@@ -43,4 +49,6 @@ export interface ServicoDeAutenticacao {
   atualizarConta(dados: DadosDaConta): Promise<Usuario>
   definirAvisos(recebeAvisos: boolean): Promise<Usuario>
   excluirConta(senha: string): Promise<void>
+  abrirConvite(token: string): Promise<ConviteDeAcesso>
+  aceitarConvite(aceite: AceiteDoConvite): Promise<Usuario>
 }

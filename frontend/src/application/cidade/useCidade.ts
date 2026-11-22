@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { FiltroDaCidade, MeuRelato, OcorrenciaDaCidade } from '../../domain/cidade'
+import { useCarregamento, type Carregamento } from '../carregamento/useCarregamento'
+import { useAtualizacaoAutomatica } from '../notificacoes/useAtualizacaoAutomatica'
 import { useServicoDaCidade } from './contexto'
 
 interface Resultado<T> {
@@ -52,8 +54,10 @@ export function useOcorrenciasDaCidade(
   return useConsultaDaCidade(`${bairro}|${tema}`, buscar)
 }
 
-export function useMeusRelatos(): Resultado<readonly MeuRelato[]> {
+export function useMeusRelatos(): Carregamento<readonly MeuRelato[]> {
   const servico = useServicoDaCidade()
   const buscar = useCallback(() => servico.meusRelatos(), [servico])
-  return useConsultaDaCidade('meus-relatos', buscar)
+  const carregamento = useCarregamento('meus-relatos', buscar)
+  useAtualizacaoAutomatica(carregamento.recarregar)
+  return carregamento
 }

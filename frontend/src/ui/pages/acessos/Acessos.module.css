@@ -1,0 +1,155 @@
+.pagina {
+  display: grid;
+  gap: var(--espaco-5);
+}
+
+.formulario {
+  display: grid;
+  gap: var(--espaco-4);
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-azul-principal);
+  border-radius: var(--raio-de-cartao);
+  background: var(--cor-branco);
+}
+
+.formulario h3 {
+  font-size: var(--texto-subtitulo);
+  font-weight: 700;
+}
+
+.campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--espaco-4);
+}
+
+.campo {
+  display: grid;
+  align-content: start;
+  gap: var(--espaco-1);
+}
+
+.campo label {
+  font-size: var(--texto-apoio);
+  font-weight: 600;
+}
+
+.campo select {
+  min-height: 44px;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-branco);
+  font: inherit;
+}
+
+.campo select[aria-invalid='true'] {
+  border-color: var(--cor-erro);
+}
+
+.erro {
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  color: var(--cor-erro);
+}
+
+.nota {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-terciario);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--espaco-3);
+}
+
+.filtros label {
+  display: grid;
+  gap: var(--espaco-1);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+}
+
+.filtros select,
+.filtros input {
+  min-width: 220px;
+  min-height: 40px;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--cor-borda-de-campo);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-branco);
+  font: inherit;
+  font-size: var(--texto-apoio);
+}
+
+.selo {
+  display: inline-block;
+  padding: 2px var(--espaco-2);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-fundo-alternativo);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.seloAtivo {
+  background: var(--cor-sucesso-fundo);
+  color: var(--cor-sucesso);
+}
+
+.seloConvite {
+  background: var(--cor-azul-claro);
+  color: var(--cor-azul-escuro);
+}
+
+.seloVencido {
+  background: var(--cor-alerta-fundo);
+  color: var(--cor-alerta-texto);
+}
+
+.acoesDaLinha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1);
+}
+
+.acaoDaLinha {
+  padding: var(--espaco-1) var(--espaco-2);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-branco);
+  color: var(--cor-azul-principal);
+  font: inherit;
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acaoDaLinha:hover {
+  border-color: var(--cor-azul-principal);
+}
+
+.acaoPerigosa {
+  color: var(--cor-erro);
+}
+
+.acaoPerigosa:hover {
+  border-color: var(--cor-erro);
+}
+
+.confirmacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}

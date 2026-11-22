@@ -85,6 +85,7 @@ function Retorno({ token, item }: { token: string; item: EncaminhamentoParaOOrga
       {atual.respostasPossiveis.length > 0 ? (
         <FormularioDeRetorno
           respostas={atual.respostasPossiveis}
+          situacaoAtual={atual.situacao}
           rotuloDoBotao="Enviar a resposta"
           aoResponder={responder}
         />
