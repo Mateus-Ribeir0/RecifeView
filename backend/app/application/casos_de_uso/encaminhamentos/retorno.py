@@ -12,12 +12,12 @@ from app.domain.encaminhamento.encaminhamento import (
     SITUACOES_DE_RETORNO,
     TAMANHO_MAXIMO_DA_OBSERVACAO,
     TAMANHO_MAXIMO_DA_RESPOSTA_AO_CIDADAO,
-    TAMANHO_MAXIMO_DO_PROTOCOLO_DO_ORGAO,
     AutorDoEvento,
     Encaminhamento,
     SituacaoDoEncaminhamento,
     exigir_previsao_valida,
     exigir_transicao,
+    limpar_protocolo_do_orgao,
     limpar_texto_curto,
 )
 from app.domain.erros import LinkDeRetornoInvalido, TransicaoInvalida
@@ -57,9 +57,7 @@ def validar_resposta(
         observacao=limpar_texto_curto(
             "observacao", resposta.observacao, TAMANHO_MAXIMO_DA_OBSERVACAO
         ),
-        protocolo_do_orgao=limpar_texto_curto(
-            "protocolo_do_orgao", resposta.protocolo_do_orgao, TAMANHO_MAXIMO_DO_PROTOCOLO_DO_ORGAO
-        ),
+        protocolo_do_orgao=limpar_protocolo_do_orgao(resposta.protocolo_do_orgao),
         resposta_ao_cidadao=limpar_texto_curto(
             "resposta_ao_cidadao",
             resposta.resposta_ao_cidadao,
