@@ -1,19 +1,28 @@
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import cast
 from uuid import uuid4
 
+from app.api.schemas.cidade import MeuRelatoResposta
 from app.application.casos_de_uso.cidade.meu_bairro import ConsultarMeuBairro
-from app.application.casos_de_uso.cidade.meus_relatos import ListarMeusRelatos
+from app.application.casos_de_uso.cidade.meus_relatos import ListarMeusRelatos, MeuRelato
 from app.application.casos_de_uso.cidade.ocorrencias import ListarOcorrenciasDaCidade
 from app.application.portas.contribuicoes import OcorrenciaDaCidade, RelatoDoCidadao
 from app.domain.catalogos import BairroDoCatalogo
 from app.domain.cidade import DIAS_DA_VISAO_DO_CIDADAO, SituacaoPublica
+from app.domain.encaminhamento.encaminhamento import (
+    AutorDoEvento,
+    CanalDeEnvio,
+    Encaminhamento,
+    EventoDoEncaminhamento,
+    SituacaoDoEncaminhamento,
+)
+from app.domain.encaminhamento.orgaos import Orgao
 from app.domain.filtros import Filtros
 from app.domain.territorio import VolumeDoBairro
 from app.domain.usuario import Perfil
 from app.domain.visao_geral import PercentisDePrazo
 from tests.fakes import INICIO_DOS_TESTES, RelogioFixo, criar_usuario
-from tests.fakes_encaminhamento import EncaminhamentosEmMemoria
+from tests.fakes_encaminhamento import EncaminhamentosEmMemoria, ocorrencia_de_teste
 from tests.fakes_importacao import ContribuicoesEmMemoria
 
 
@@ -164,3 +173,45 @@ def test_quem_nao_relatou_nao_ve_relato_de_ninguem() -> None:
     contribuicoes = ContribuicoesEmMemoria(do_cidadao={dona.id: [relato_meu()]})
 
     assert ListarMeusRelatos(contribuicoes, EncaminhamentosEmMemoria()).executar(outra) == []
+
+
+def test_relato_encaminhado_volta_com_a_resposta_do_orgao() -> None:
+    evento = EventoDoEncaminhamento(
+        SituacaoDoEncaminhamento.RESOLVIDO,
+        AutorDoEvento.ORGAO,
+        datetime(2026, 11, 20, tzinfo=UTC),
+        observacao="Equipe B",
+        resposta_ao_cidadao="Lâmpada trocada",
+    )
+    encaminhamento = Encaminhamento(
+        id=6,
+        ocorrencia=ocorrencia_de_teste(6, fonte="FORMULARIO_PUBLICO"),
+        orgao=Orgao.EMLURB,
+        orgao_sugerido=None,
+        canal=CanalDeEnvio.PLATAFORMA,
+        situacao=SituacaoDoEncaminhamento.RESOLVIDO,
+        criado_em=datetime(2026, 11, 19, tzinfo=UTC),
+        prazo_de_resposta=date(2026, 12, 19),
+        atualizado_em=datetime(2026, 11, 20, tzinfo=UTC),
+        eventos=(evento,),
+    )
+    relato = MeuRelato(
+        id=uuid4(),
+        recebido_em=datetime(2026, 11, 18, tzinfo=UTC),
+        servico="Lâmpada apagada",
+        tema="Iluminação",
+        bairro="IPUTINGA",
+        endereco="RUA X, 120",
+        detalhe=None,
+        endereco_apagado=False,
+        somado=False,
+        relatos=1,
+        situacao=SituacaoPublica.NO_PAINEL,
+        encaminhamento=encaminhamento,
+    )
+
+    resposta = MeuRelatoResposta.de_relato(relato, date(2026, 11, 22))
+
+    assert resposta.encaminhamento is not None
+    assert resposta.encaminhamento.resposta_do_orgao == "Lâmpada trocada"
+    assert "Equipe B" not in resposta.model_dump_json()
