@@ -181,6 +181,24 @@ function FormularioDeEncaminhamento({
   )
 }
 
+function MesmoProblemaAberto({ preparo }: { preparo: PreparoDoEncaminhamento }) {
+  const abertos = preparo.mesmoProblema.filter(
+    (item) => item.situacao === 'enviado' || item.situacao === 'recebido',
+  )
+  const primeiro = abertos[0]
+  if (!primeiro || primeiro.id === null) return null
+  return (
+    <Aviso tipo="alerta" titulo="O mesmo problema já está com um órgão">
+      <p>
+        {primeiro.codigo} foi para {primeiro.nomeDoOrgao} e ainda está aberto
+        {abertos.length > 1 && `, e há mais ${formatarNumero(abertos.length - 1)} em aberto`}. Se
+        encaminhar de novo, o órgão vê as duas juntas e pode responder a ambas de uma vez.{' '}
+        <Link to={`/painel/encaminhamentos/${primeiro.id}`}>Ver {primeiro.codigo}</Link>
+      </p>
+    </Aviso>
+  )
+}
+
 function EncaminhamentoAberto({ preparo }: { preparo: PreparoDoEncaminhamento }) {
   const aberto = preparo.encaminhamentos[0]
   if (!aberto) return null
@@ -230,6 +248,7 @@ export function PainelDeEncaminhamento({
         {(dados) => (
           <>
             <ResumoDaOcorrencia preparo={dados} />
+            <MesmoProblemaAberto preparo={dados} />
             <Evidencia sugestao={dados.sugestao} />
             {dados.podeEncaminhar ? (
               <FormularioDeEncaminhamento

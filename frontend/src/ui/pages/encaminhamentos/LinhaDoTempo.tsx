@@ -3,7 +3,7 @@ import {
   ROTULOS_DOS_AUTORES,
   type EventoDoEncaminhamento,
 } from '../../../domain/encaminhamentos'
-import { formatarDataEHora } from '../../../domain/formatacao'
+import { formatarData, formatarDataEHora } from '../../../domain/formatacao'
 import estilos from './Encaminhamentos.module.css'
 
 interface Propriedades {
@@ -21,7 +21,13 @@ export function LinhaDoTempo({ eventos, comObservacao = false }: Propriedades) {
             {ROTULOS_DAS_ETAPAS[evento.situacao]}, {ROTULOS_DOS_AUTORES[evento.autor]}
           </strong>
           {evento.protocoloDoOrgao && <span>Protocolo no órgão: {evento.protocoloDoOrgao}</span>}
-          {comObservacao && evento.observacao && <span>{evento.observacao}</span>}
+          {evento.previsao && <span>Previsão de conclusão: {formatarData(evento.previsao)}</span>}
+          {evento.respostaAoCidadao && (
+            <span className={estilos.respostaAoCidadao}>
+              Resposta ao cidadão: {evento.respostaAoCidadao}
+            </span>
+          )}
+          {comObservacao && evento.observacao && <span>Nota interna: {evento.observacao}</span>}
         </li>
       ))}
     </ol>

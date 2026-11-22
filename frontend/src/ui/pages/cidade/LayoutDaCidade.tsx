@@ -4,6 +4,7 @@ import { useSessao } from '../../../application/autenticacao/useSessao'
 import { eDaGestao } from '../../../domain/usuario'
 import { Logo } from '../../components/Logo'
 import { ID_DO_CONTEUDO_PRINCIPAL, PularParaConteudo } from '../../components/PularParaConteudo'
+import { Sino } from '../../components/Sino'
 import { MenuDoUsuario } from '../painel/MenuDoUsuario'
 import estilos from './LayoutDaCidade.module.css'
 
@@ -45,7 +46,10 @@ export function LayoutDaCidade() {
               Painel da gestão
             </Link>
           )}
-          <MenuDoUsuario usuario={usuario} aoSair={() => void sair()} />
+          <div className={estilos.ferramentas}>
+            <Sino />
+            <MenuDoUsuario usuario={usuario} aoSair={() => void sair()} />
+          </div>
         </div>
       </header>
       <main id={ID_DO_CONTEUDO_PRINCIPAL} tabIndex={-1} className={estilos.principal}>

@@ -6,7 +6,7 @@ import { explicarSugestao, podeReenviar, respostasPossiveis } from './encaminham
 describe('encaminhamentos', () => {
   it('só aceita a resposta seguinte do ciclo', () => {
     expect(respostasPossiveis('enviado')).toEqual(['recebido', 'resolvido', 'devolvido'])
-    expect(respostasPossiveis('recebido')).toEqual(['resolvido', 'devolvido'])
+    expect(respostasPossiveis('recebido')).toEqual(['recebido', 'resolvido', 'devolvido'])
     expect(respostasPossiveis('resolvido')).toEqual([])
   })
 

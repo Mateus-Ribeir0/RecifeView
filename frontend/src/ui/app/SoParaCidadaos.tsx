@@ -1,12 +1,12 @@
 import { Navigate, Outlet } from 'react-router'
 
 import { useSessao } from '../../application/autenticacao/useSessao'
-import { eDaGestao, ROTA_INICIAL_DA_GESTAO } from '../../domain/usuario'
+import { inicioDoPerfil } from '../../domain/usuario'
 
 export function SoParaCidadaos() {
   const { estado } = useSessao()
-  if (estado.situacao === 'autenticada' && eDaGestao(estado.usuario.perfil)) {
-    return <Navigate to={ROTA_INICIAL_DA_GESTAO} replace />
+  if (estado.situacao === 'autenticada' && estado.usuario.perfil !== 'CIDADAO') {
+    return <Navigate to={inicioDoPerfil(estado.usuario.perfil)} replace />
   }
   return <Outlet />
 }

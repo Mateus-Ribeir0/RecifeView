@@ -179,6 +179,24 @@ fieldset.campo {
   color: var(--cor-texto-terciario);
 }
 
+.respostaAoCidadao {
+  padding: var(--espaco-2) var(--espaco-3);
+  border-left: 3px solid var(--cor-azul-principal);
+  background: var(--cor-azul-claro);
+  font-size: var(--texto-apoio);
+}
+
+.marcaDoMesmoProblema {
+  display: inline-block;
+  padding: 2px var(--espaco-2);
+  border-radius: var(--raio-de-campo);
+  background: var(--cor-azul-claro);
+  color: var(--cor-azul-escuro);
+  font-size: var(--texto-legenda);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .filtros {
   display: flex;
   flex-wrap: wrap;

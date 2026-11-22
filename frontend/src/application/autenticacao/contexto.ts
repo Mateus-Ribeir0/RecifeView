@@ -1,7 +1,9 @@
 import { createContext } from 'react'
 
+import type { ConviteDeAcesso } from '../../domain/acessos'
 import type { Usuario } from '../../domain/usuario'
 import type {
+  AceiteDoConvite,
   Credenciais,
   DadosDaConta,
   NovaConta,
@@ -27,6 +29,8 @@ export interface Sessao {
   criarConta(conta: NovaConta): Promise<Usuario>
   pedirNovaSenha(email: string): Promise<string>
   criarNovaSenha(pedido: NovaSenhaComCodigo): Promise<void>
+  abrirConvite(token: string): Promise<ConviteDeAcesso>
+  aceitarConvite(aceite: AceiteDoConvite): Promise<Usuario>
 }
 
 export const ContextoDaSessao = createContext<Sessao | null>(null)

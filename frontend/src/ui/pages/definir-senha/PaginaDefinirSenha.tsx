@@ -3,14 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router'
 
 import { useSessao } from '../../../application/autenticacao/useSessao'
 import { avaliarNovaSenha, novaSenhaEstaValida } from '../../../domain/senha'
-import type { Usuario } from '../../../domain/usuario'
+import { inicioDoPerfil, type Usuario } from '../../../domain/usuario'
 import estilos from '../../components/Acesso.module.css'
 import { Aviso } from '../../components/Aviso'
 import { Botao } from '../../components/Botao'
 import { CampoDeSenha } from '../../components/CampoDeSenha'
 import { LayoutDeAcesso } from '../../components/LayoutDeAcesso'
 import { mensagemDeFalha } from '../../components/mensagemDeFalha'
-import { lerEstadoDeNavegacao, ROTA_INICIAL_DO_PAINEL } from '../../components/navegacao'
+import { lerEstadoDeNavegacao } from '../../components/navegacao'
 import { useTituloDaPagina } from '../../components/useTituloDaPagina'
 import { ListaDeRequisitos } from './ListaDeRequisitos'
 
@@ -54,7 +54,7 @@ function FormularioDeSenha({ usuario }: { usuario: Usuario }) {
     definirSalvando(true)
     try {
       await trocarSenha({ senhaAtual, novaSenha })
-      navegar(destino ?? ROTA_INICIAL_DO_PAINEL, { replace: true })
+      navegar(destino ?? inicioDoPerfil(usuario.perfil), { replace: true })
     } catch (erro) {
       definirFalha(mensagemDeFalha(erro))
       definirSalvando(false)
@@ -119,7 +119,7 @@ function FormularioDeSenha({ usuario }: { usuario: Usuario }) {
             Sair sem trocar a senha
           </button>
         ) : (
-          <Link to={ROTA_INICIAL_DO_PAINEL}>Cancelar e voltar ao painel</Link>
+          <Link to={inicioDoPerfil(usuario.perfil)}>Cancelar e voltar</Link>
         )}
       </div>
     </>

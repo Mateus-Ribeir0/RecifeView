@@ -7,6 +7,8 @@ const FORMATO_DO_PROTOCOLO = /^[A-Z0-9./-]+$/
 export interface EtapaPublica {
   situacao: SituacaoDoEncaminhamento
   ocorridoEm: string
+  respostaAoCidadao?: string | null
+  previsao?: string | null
 }
 
 export interface EncaminhamentoPublico {
@@ -18,6 +20,8 @@ export interface EncaminhamentoPublico {
   encaminhadoEm: string
   prazoDeResposta: string
   protocoloDoOrgao: string | null
+  respostaDoOrgao?: string | null
+  previsao?: string | null
   etapas: readonly EtapaPublica[]
 }
 

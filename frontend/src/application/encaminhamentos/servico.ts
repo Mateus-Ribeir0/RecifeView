@@ -1,4 +1,6 @@
 import type {
+  DesempenhoDosOrgaos,
+  DetalheDoEncaminhamento,
   Encaminhamento,
   EncaminhamentoParaOOrgao,
   FiltroDeEncaminhamentos,
@@ -15,7 +17,8 @@ export interface ServicoDeEncaminhamentos {
   preparar(chaveRegistro: string): Promise<PreparoDoEncaminhamento>
   encaminhar(pedido: PedidoDeEncaminhamento): Promise<Encaminhamento>
   listar(filtro: FiltroDeEncaminhamentos): Promise<QuadroDeEncaminhamentos>
-  consultar(id: number): Promise<Encaminhamento>
+  consultar(id: number): Promise<DetalheDoEncaminhamento>
+  desempenho(): Promise<DesempenhoDosOrgaos>
   registrarRetorno(id: number, resposta: RespostaAoEncaminhamento): Promise<Encaminhamento>
   reenviar(id: number): Promise<Encaminhamento>
   pendencias(): Promise<PendenciasDoPainel>

@@ -96,6 +96,25 @@ export const GRUPOS_DE_TELAS: readonly GrupoDeTelas[] = [
     ],
   },
   {
+    grupo: 'Administração',
+    telas: [
+      {
+        nome: 'Órgãos',
+        caminho: '/painel/orgaos',
+        mostra: 'Quem recebe, responde e resolve no prazo, e o que voltou a ser pedido.',
+        icone: 'predio',
+        filtros: SEM_FILTROS,
+      },
+      {
+        nome: 'Acessos corporativos',
+        caminho: '/painel/acessos',
+        mostra: 'Contas dos órgãos: convite, situação e último acesso.',
+        icone: 'chave',
+        filtros: SEM_FILTROS,
+      },
+    ],
+  },
+  {
     grupo: 'Dados',
     telas: [
       {

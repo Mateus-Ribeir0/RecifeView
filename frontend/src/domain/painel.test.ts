@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { classeDoValor, faixasIguais, faixasPorQuantis } from './classes'
+import {
+  classeDaContagem,
+  classeDoValor,
+  faixasDaContagem,
+  faixasIguais,
+  faixasPorQuantis,
+} from './classes'
 import { FILTROS_PADRAO, estaNoPadrao, temTerritorio } from './filtros'
 import {
   formatarData,
@@ -105,6 +111,22 @@ describe('classes do mapa', () => {
 
     expect(classeDoValor(0, faixas)).toBe(4)
     expect(classeDoValor(10, faixas)).toBe(5)
+  })
+
+  it('contagem zero fica na cor mais clara e o maior valor na mais escura', () => {
+    expect(classeDaContagem(0, 4)).toBe(1)
+    expect(classeDaContagem(1, 4)).toBe(2)
+    expect(classeDaContagem(4, 4)).toBe(5)
+    expect(classeDaContagem(1, 1)).toBe(5)
+  })
+
+  it('faixas da contagem juntam os valores da mesma classe', () => {
+    expect(faixasDaContagem(2)).toEqual([
+      { classe: 1, inicio: 0, fim: 0 },
+      { classe: 2, inicio: 1, fim: 1 },
+      { classe: 5, inicio: 2, fim: 2 },
+    ])
+    expect(faixasDaContagem(10).at(-1)).toEqual({ classe: 5, inicio: 9, fim: 10 })
   })
 
   it('sem valor não tem classe', () => {

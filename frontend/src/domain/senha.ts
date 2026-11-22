@@ -1,5 +1,6 @@
 export const TAMANHO_MINIMO_DA_SENHA = 12
 const TAMANHO_MINIMO_DO_NOME_DE_USUARIO_COMPARADO = 4
+const DIFERENTE_DA_ATUAL = 'Diferente da senha atual'
 
 export interface DadosDaNovaSenha {
   novaSenha: string
@@ -28,7 +29,7 @@ export function avaliarNovaSenha(dados: DadosDaNovaSenha): RequisitoDaSenha[] {
       atendido: novaSenha.length >= TAMANHO_MINIMO_DA_SENHA && new Set(novaSenha).size > 1,
     },
     {
-      descricao: 'Diferente da senha atual',
+      descricao: DIFERENTE_DA_ATUAL,
       atendido: novaSenha.length > 0 && novaSenha !== senhaAtual,
     },
     {
@@ -44,4 +45,13 @@ export function avaliarNovaSenha(dados: DadosDaNovaSenha): RequisitoDaSenha[] {
 
 export function novaSenhaEstaValida(dados: DadosDaNovaSenha): boolean {
   return avaliarNovaSenha(dados).every((requisito) => requisito.atendido)
+}
+
+export type DadosDaPrimeiraSenha = Omit<DadosDaNovaSenha, 'senhaAtual'>
+
+/** No convite ainda não existe senha atual: a regra de ser diferente dela não se aplica. */
+export function avaliarPrimeiraSenha(dados: DadosDaPrimeiraSenha): RequisitoDaSenha[] {
+  return avaliarNovaSenha({ ...dados, senhaAtual: '' }).filter(
+    (requisito) => requisito.descricao !== DIFERENTE_DA_ATUAL,
+  )
 }

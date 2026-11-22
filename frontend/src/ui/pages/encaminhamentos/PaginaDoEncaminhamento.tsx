@@ -7,7 +7,9 @@ import {
   podeEncaminharDeNovo,
   podeReenviar,
   respostasPossiveis,
+  ROTULOS_DAS_SITUACOES,
   ROTULOS_DOS_CANAIS,
+  type DetalheDoEncaminhamento,
   type Encaminhamento,
   type RespostaAoEncaminhamento,
 } from '../../../domain/encaminhamentos'
@@ -22,6 +24,7 @@ import { consultaDoCarregamento } from '../../components/consultaDoCarregamento'
 import { EstadoDaConsulta } from '../../components/EstadoDaConsulta'
 import { mensagemDeFalha } from '../../components/mensagemDeFalha'
 import { Colunas } from '../../components/Secao'
+import { ListaDoMesmoProblema } from '../corporativo/ListaDoMesmoProblema'
 import estilos from './Encaminhamentos.module.css'
 import { FormularioDeRetorno } from './FormularioDeRetorno'
 import { LinhaDoTempo } from './LinhaDoTempo'
@@ -201,8 +204,26 @@ function AcoesDoEncaminhamento({ item, aoAtualizar }: AcoesProps) {
       </p>
       <FormularioDeRetorno
         respostas={respostas}
+        situacaoAtual={item.situacao}
         rotuloDoBotao="Registrar o retorno"
         aoResponder={responder}
+      />
+    </Cartao>
+  )
+}
+
+function MesmoProblema({ item }: { item: DetalheDoEncaminhamento }) {
+  return (
+    <Cartao
+      titulo="Mesmo problema"
+      ajuda="Outros encaminhamentos da mesma fonte, bairro e tema, com menos de 30 dias de diferença e o mesmo local, pela regra do pente fino."
+    >
+      <ListaDoMesmoProblema
+        parecidos={item.mesmoProblemaDetalhado}
+        registrosDoMesmoLocal={item.registrosDoMesmoLocal}
+        fonte={item.ocorrencia.fonte}
+        caminhoDoDetalhe={(id) => `/painel/encaminhamentos/${id}`}
+        rotulosDasEtapas={ROTULOS_DAS_SITUACOES}
       />
     </Cartao>
   )
@@ -237,6 +258,7 @@ export function PaginaDoEncaminhamento() {
                 <DadosDaOcorrencia item={item} />
               </Cartao>
               <AcoesDoEncaminhamento item={item} aoAtualizar={encaminhamento.recarregar} />
+              <MesmoProblema item={item} />
             </div>
             <Cartao titulo="Etapas">
               <LinhaDoTempo eventos={item.eventos} comObservacao />

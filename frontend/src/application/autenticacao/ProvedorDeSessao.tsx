@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 
 import { ContextoDaSessao, type EstadoDaSessao } from './contexto'
 import type {
+  AceiteDoConvite,
   Credenciais,
   DadosDaConta,
   NovaConta,
@@ -75,6 +76,17 @@ export function ProvedorDeSessao({ servico, children }: Propriedades) {
     [servico],
   )
 
+  const abrirConvite = useCallback((token: string) => servico.abrirConvite(token), [servico])
+
+  const aceitarConvite = useCallback(
+    async (aceite: AceiteDoConvite) => {
+      const usuario = await servico.aceitarConvite(aceite)
+      definirEstado({ situacao: 'autenticada', usuario })
+      return usuario
+    },
+    [servico],
+  )
+
   const atualizarConta = useCallback(
     async (dados: DadosDaConta) => {
       const usuario = await servico.atualizarConta(dados)
@@ -113,6 +125,8 @@ export function ProvedorDeSessao({ servico, children }: Propriedades) {
       excluirConta,
       pedirNovaSenha: (email: string) => servico.pedirNovaSenha(email),
       criarNovaSenha: (pedido: NovaSenhaComCodigo) => servico.criarNovaSenha(pedido),
+      abrirConvite,
+      aceitarConvite,
     }),
     [
       servico,
@@ -124,6 +138,8 @@ export function ProvedorDeSessao({ servico, children }: Propriedades) {
       atualizarConta,
       definirAvisos,
       excluirConta,
+      abrirConvite,
+      aceitarConvite,
     ],
   )
 

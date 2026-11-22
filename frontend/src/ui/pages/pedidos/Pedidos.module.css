@@ -103,3 +103,20 @@
   align-items: center;
   gap: var(--espaco-2);
 }
+
+.resposta {
+  margin: 0;
+  padding: var(--espaco-3) var(--espaco-4);
+  border-left: 3px solid var(--cor-azul-principal);
+  background: var(--cor-branco);
+  font-size: var(--texto-apoio);
+}
+
+.resposta cite {
+  display: block;
+  margin-bottom: var(--espaco-1);
+  font-size: var(--texto-legenda);
+  font-style: normal;
+  font-weight: 600;
+  color: var(--cor-azul-escuro);
+}

@@ -6,6 +6,7 @@ import { Icone } from '../../components/Icone'
 import { Logo } from '../../components/Logo'
 import { ROTA_INICIAL_DO_PAINEL } from '../../components/navegacao'
 import { ID_DO_CONTEUDO_PRINCIPAL, PularParaConteudo } from '../../components/PularParaConteudo'
+import { Sino } from '../../components/Sino'
 import { filtrosDaRota } from '../../conteudo/telasDoPainel'
 import { BarraDeFiltros } from './BarraDeFiltros'
 import { BarraLateral } from './BarraLateral'
@@ -52,7 +53,10 @@ export function LayoutDoPainel() {
           <Logo variante="branco" altura={26} />
         </Link>
         <span className={estilos.selo}>Área da gestão</span>
-        <MenuDoUsuario usuario={estado.usuario} aoSair={sair} />
+        <div className={estilos.ferramentas}>
+          <Sino />
+          <MenuDoUsuario usuario={estado.usuario} aoSair={sair} />
+        </div>
       </header>
       <div className={estilos.corpo}>
         {gavetaAberta && (

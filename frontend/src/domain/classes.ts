@@ -44,3 +44,30 @@ export function classeDoValor(
   const deslocamento = Math.max(QUANTIDADE_DE_CLASSES - faixas.length, 0)
   return (posicao === -1 ? faixas.length - 1 : posicao) + 1 + deslocamento
 }
+
+export interface FaixaDaContagem {
+  classe: number
+  inicio: number
+  fim: number
+}
+
+const PRIMEIRA_CLASSE_COM_REGISTRO = 2
+
+/** Contagem de ocorrências: zero fica sempre na cor mais clara, e quem tem registro vai de 2 a 5. */
+export function classeDaContagem(valor: number, maximo: number): number {
+  if (valor <= 0) return 1
+  if (maximo <= 1) return QUANTIDADE_DE_CLASSES
+  const degraus = QUANTIDADE_DE_CLASSES - PRIMEIRA_CLASSE_COM_REGISTRO
+  return PRIMEIRA_CLASSE_COM_REGISTRO + Math.round((degraus * (valor - 1)) / (maximo - 1))
+}
+
+export function faixasDaContagem(maximo: number): FaixaDaContagem[] {
+  const faixas: FaixaDaContagem[] = [{ classe: 1, inicio: 0, fim: 0 }]
+  for (let valor = 1; valor <= maximo; valor += 1) {
+    const classe = classeDaContagem(valor, maximo)
+    const ultima = faixas.at(-1)
+    if (ultima && ultima.classe === classe) ultima.fim = valor
+    else faixas.push({ classe, inicio: valor, fim: valor })
+  }
+  return faixas
+}

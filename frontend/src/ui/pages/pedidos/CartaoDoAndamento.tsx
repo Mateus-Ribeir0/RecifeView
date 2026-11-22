@@ -20,6 +20,18 @@ export function EtapasDoEncaminhamento({ item }: { item: EncaminhamentoPublico }
           </li>
         ))}
       </ol>
+      {item.respostaDoOrgao && (
+        <blockquote className={estilos.resposta}>
+          <cite>Resposta de {item.nomeDoOrgao}</cite>
+          {item.respostaDoOrgao}
+        </blockquote>
+      )}
+      {item.previsao && (
+        <p>
+          Previsão de conclusão informada pelo órgão: <strong>{formatarData(item.previsao)}</strong>
+          .
+        </p>
+      )}
       <p className={estilos.nota}>
         {item.protocoloDoOrgao
           ? `Protocolo no órgão: ${item.protocoloDoOrgao}.`

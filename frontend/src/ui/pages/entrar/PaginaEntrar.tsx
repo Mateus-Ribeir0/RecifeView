@@ -25,6 +25,11 @@ const TEXTOS: Readonly<Record<AreaDeAcesso, { titulo: string; subtitulo: string 
     titulo: 'Entrar na área da gestão',
     subtitulo: 'Acesso restrito a gestores cadastrados pela administração.',
   },
+  corporativo: {
+    titulo: 'Entrar na área corporativa',
+    subtitulo:
+      'Para Emlurb, Compesa, Neoenergia e os demais órgãos que recebem ocorrências da Prefeitura. O acesso chega por convite da administração.',
+  },
 }
 
 const AVISOS_DE_SAIDA: Readonly<Record<MotivoDaSaida, { tipo: 'info' | 'alerta'; texto: string }>> =
@@ -47,11 +52,25 @@ function AvisoDeSaida({ motivo }: { motivo: MotivoDaSaida | null | undefined }) 
 }
 
 function LinksDaArea({ area }: { area: AreaDeAcesso }) {
+  if (area === 'corporativo') {
+    return (
+      <div className={estilos.links}>
+        <Link to="/recuperar-senha">Esqueci minha senha</Link>
+        <p className={estilos.chamadaDeCadastro}>
+          Ainda não tem acesso? Peça à administração da Prefeitura um convite para o e-mail do seu
+          órgão.
+        </p>
+        <Link to="/entrar/gestao">Trabalha na Prefeitura? Entre pela área da gestão</Link>
+        <Link to="/">Voltar para a página inicial</Link>
+      </div>
+    )
+  }
   if (area === 'gestao') {
     return (
       <div className={estilos.links}>
         <Link to="/entrar/ajuda">Não consegue entrar?</Link>
         <Link to="/entrar">É cidadão? Entre pela área do cidadão</Link>
+        <Link to="/entrar/corporativo">Trabalha num órgão que recebe ocorrências? Entre aqui</Link>
         <Link to="/">Voltar para a página inicial</Link>
       </div>
     )

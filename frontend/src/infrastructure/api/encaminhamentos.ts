@@ -3,6 +3,8 @@ import type {
   ServicoDeRetornoDoOrgao,
 } from '../../application/encaminhamentos/servico'
 import type {
+  DesempenhoDosOrgaos,
+  DetalheDoEncaminhamento,
   Encaminhamento,
   EncaminhamentoParaOOrgao,
   FiltroDeEncaminhamentos,
@@ -30,11 +32,13 @@ function paramsDoFiltro(filtro: FiltroDeEncaminhamentos): URLSearchParams {
   return params
 }
 
-function respostaEmJson(resposta: RespostaAoEncaminhamento) {
+export function respostaEmJson(resposta: RespostaAoEncaminhamento) {
   return {
     situacao: resposta.situacao,
     protocolo_do_orgao: resposta.protocoloDoOrgao.trim() || null,
     observacao: resposta.observacao.trim() || null,
+    resposta_ao_cidadao: resposta.respostaAoCidadao.trim() || null,
+    previsao: resposta.situacao === 'recebido' ? resposta.previsao : null,
   }
 }
 
@@ -60,7 +64,8 @@ export function criarServicoDeEncaminhamentos(cliente: ClienteHttp): ServicoDeEn
         },
       }),
     listar: (filtro) => enviar<QuadroDeEncaminhamentos>(`${BASE}?${paramsDoFiltro(filtro)}`),
-    consultar: (id) => enviar<Encaminhamento>(`${BASE}/${id}`),
+    consultar: (id) => enviar<DetalheDoEncaminhamento>(`${BASE}/${id}`),
+    desempenho: () => enviar<DesempenhoDosOrgaos>(`${BASE}/desempenho`),
     registrarRetorno: (id, resposta) =>
       enviar<Encaminhamento>(`${BASE}/${id}/retorno`, {
         metodo: 'POST',

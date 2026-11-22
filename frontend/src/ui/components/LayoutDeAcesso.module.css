@@ -20,6 +20,10 @@
   background: var(--cor-cabecalho-da-gestao);
 }
 
+[data-tom='corporativo'] .painel {
+  background: var(--cor-cabecalho-corporativo);
+}
+
 .foto {
   position: absolute;
   inset: 0;

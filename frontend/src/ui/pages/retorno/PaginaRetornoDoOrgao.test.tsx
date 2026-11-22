@@ -44,6 +44,8 @@ describe('retorno do órgão pelo link', () => {
       situacao: 'resolvido',
       protocoloDoOrgao: 'CMP-55',
       observacao: '',
+      respostaAoCidadao: '',
+      previsao: null,
     })
     expect(await screen.findByText('Resposta registrada')).toBeInTheDocument()
   })

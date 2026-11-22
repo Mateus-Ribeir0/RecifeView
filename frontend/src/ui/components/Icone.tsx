@@ -76,6 +76,14 @@ const DESENHOS = {
       <path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M16 5.2a3.5 3.5 0 0 1 0 5.6M18 14.5c1.9.8 3 2.8 3 5.5" />
     </>
   ),
+  sino: <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4" />,
+  predio: <path d="M4 21V5l8-2v18M12 7l8 3v11M3 21h18M7 8h2M7 12h2M7 16h2M15 13h2M15 17h2" />,
+  chave: (
+    <>
+      <circle cx="8" cy="15" r="4" />
+      <path d="M11 12l9-9M16 7l3 3M14 9l2 2" />
+    </>
+  ),
 } as const satisfies Readonly<Record<string, ReactNode>>
 
 export type NomeDoIcone = keyof typeof DESENHOS

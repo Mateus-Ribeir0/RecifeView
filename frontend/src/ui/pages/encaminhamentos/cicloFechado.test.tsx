@@ -12,7 +12,7 @@ import type { OcorrenciaDoPainel } from '../../../domain/contribuicoes'
 import {
   CHAVE_LONGA,
   criarEncaminhamentosFalsos,
-  ENCAMINHAMENTO,
+  DETALHE,
 } from '../../../testes/encaminhamentoFalso'
 import { ListaDeOcorrencias } from '../contribuicoes/ListaDeOcorrencias'
 import { BarraLateral } from '../painel/BarraLateral'
@@ -62,7 +62,7 @@ describe('ciclo fechado', () => {
   })
 
   it('o detalhe do devolvido leva a outro órgão', async () => {
-    const devolvido = { ...ENCAMINHAMENTO, situacao: 'devolvido' as const }
+    const devolvido = { ...DETALHE, situacao: 'devolvido' as const }
     const servico = criarEncaminhamentosFalsos({ consultar: vi.fn().mockResolvedValue(devolvido) })
     const roteador = createMemoryRouter(
       [{ path: '/painel/encaminhamentos/:id', element: <PaginaDoEncaminhamento /> }],

@@ -7,7 +7,7 @@ import estilos from './LayoutDeAcesso.module.css'
 import { Logo } from './Logo'
 import { ID_DO_CONTEUDO_PRINCIPAL, PularParaConteudo } from './PularParaConteudo'
 
-export type TomDoAcesso = 'cidade' | 'gestao' | 'orgao'
+export type TomDoAcesso = 'cidade' | 'gestao' | 'corporativo' | 'orgao'
 
 const APRESENTACAO: Readonly<
   Record<TomDoAcesso, { selo: string; frase: string; detalhe: string }>
@@ -23,6 +23,12 @@ const APRESENTACAO: Readonly<
     frase: 'Onde as demandas do Recife se repetem, demoram ou ficam sem resposta.',
     detalhe:
       'Painel, pente fino dos relatos e importação de arquivos, só para contas criadas pela administração.',
+  },
+  corporativo: {
+    selo: 'Área corporativa',
+    frase: 'As ocorrências que a Prefeitura do Recife encaminhou ao seu órgão.',
+    detalhe:
+      'Veja onde fica cada ocorrência, responda dentro do prazo e conte a quem pediu o que foi feito. Só para contas criadas pela administração da Prefeitura.',
   },
   orgao: {
     selo: 'Retorno do órgão',
