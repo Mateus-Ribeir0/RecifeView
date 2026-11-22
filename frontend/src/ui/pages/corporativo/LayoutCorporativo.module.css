@@ -81,6 +81,7 @@
 
 .ferramentas {
   display: flex;
+  flex: none;
   align-items: center;
   gap: var(--espaco-1);
   margin-left: auto;
@@ -109,8 +110,10 @@
   }
 
   .navegacao {
+    flex: 1 1 0;
     order: 0;
     width: auto;
+    min-width: 0;
     margin-left: var(--espaco-4);
   }
 }

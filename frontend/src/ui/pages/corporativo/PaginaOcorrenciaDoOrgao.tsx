@@ -88,12 +88,14 @@ function Onde({ item }: { item: OcorrenciaDoOrgao }) {
       </dl>
       {item.bairroOficial && (
         <Suspense fallback={<p className={estilos.nota}>Carregando o mapa...</p>}>
-          <MapaDeEscolhaDoBairro
-            marcados={new Set([item.bairroOficial])}
-            escolhido={item.bairroOficial}
-            aoEscolher={() => undefined}
-            descricao={`Mapa do Recife com o bairro ${bairro} em destaque.`}
-          />
+          <div className={estilos.mapaDoBairro}>
+            <MapaDeEscolhaDoBairro
+              marcados={new Set([item.bairroOficial])}
+              escolhido={item.bairroOficial}
+              aoEscolher={() => undefined}
+              descricao={`Mapa do Recife com o bairro ${bairro} em destaque.`}
+            />
+          </div>
         </Suspense>
       )}
       <p className={estilos.nota}>

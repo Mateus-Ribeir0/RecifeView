@@ -182,8 +182,8 @@ export function PaginaOcorrenciasDoOrgao() {
         {(dados) => (
           <>
             <p className={estilos.nota}>
-              {contar(dados.total, 'ocorrência', 'ocorrências')} em{' '}
-              {ROTULOS_DAS_ABAS[pedido.aba].toLowerCase()}
+              {contar(dados.total, 'ocorrência', 'ocorrências')} na aba{' '}
+              {ROTULOS_DAS_ABAS[pedido.aba]}
               {pedido.bairro && `, ${nomeDoBairro(pedido.bairro)}`}
               {pedido.categoria && `, ${nomeDaCategoria(pedido.categoria).toLowerCase()}`}.
             </p>

@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useCatalogoDoFormulario } from '../../../application/contribuicoes/useFormulario'
 import { useDesempenhoDosOrgaos } from '../../../application/encaminhamentos/useEncaminhamentos'
 import {
-  ROTULOS_DOS_CANAIS,
+  type CanalDeEnvio,
   type DesempenhoDoOrgao,
   type DesempenhoDosOrgaos,
 } from '../../../domain/encaminhamentos'
@@ -28,6 +28,15 @@ import { Colunas } from '../../components/Secao'
 import { Tabela, type ColunaDaTabela } from '../../components/Tabela'
 import { useTituloDaPagina } from '../../components/useTituloDaPagina'
 import estilos from './Orgaos.module.css'
+
+const CANAIS_CURTOS: Readonly<Record<CanalDeEnvio, string>> = {
+  plataforma: 'Área corporativa',
+  local: 'Caixa local',
+  email: 'E-mail',
+  webhook: 'Sistema do órgão',
+}
+const ALTURA_POR_ORGAO = 44
+const ALTURA_DO_EIXO = 72
 
 const FONTE =
   'Fonte: encaminhamentos registrados no RecifeView, todos os períodos. No prazo: resolvido até 30 dias depois do envio (Lei 13.460/2017, art. 16).'
@@ -103,6 +112,7 @@ function SituacaoPorOrgao({ desempenho }: { desempenho: DesempenhoDosOrgaos }) {
       ]}
       formatar={(valor) => formatarNumero(valor)}
       larguraDoRotulo={180}
+      altura={ALTURA_DO_EIXO + ALTURA_POR_ORGAO * comEnvio.length}
     />
   )
 }
@@ -130,7 +140,8 @@ const COLUNAS: readonly ColunaDaTabela<DesempenhoDoOrgao>[] = [
   { titulo: 'Encaminhados', numerica: true, valor: (item) => formatarNumero(item.encaminhados) },
   { titulo: 'Abertos', numerica: true, valor: (item) => formatarNumero(item.abertas) },
   {
-    titulo: 'Prazo vencido',
+    titulo: 'Vencidos',
+    ajuda: 'Abertos há mais de 30 dias.',
     numerica: true,
     valor: (item) => (
       <span className={item.vencidas > 0 ? estilos.alerta : undefined}>
@@ -146,7 +157,6 @@ const COLUNAS: readonly ColunaDaTabela<DesempenhoDoOrgao>[] = [
     numerica: true,
     valor: (item) => formatarDias(item.medianaDeDiasAteResolver),
   },
-  { titulo: 'Devolvidos', numerica: true, valor: (item) => formatarNumero(item.devolvidas) },
   {
     titulo: 'Voltaram',
     ajuda: VOLTOU,
@@ -155,10 +165,15 @@ const COLUNAS: readonly ColunaDaTabela<DesempenhoDoOrgao>[] = [
   },
   {
     titulo: 'Como recebe',
-    valor: (item) =>
-      item.acessosAtivos > 0
-        ? `${ROTULOS_DOS_CANAIS[item.canal]}, ${contar(item.acessosAtivos, 'acesso ativo', 'acessos ativos')}`
-        : `${ROTULOS_DOS_CANAIS[item.canal]}, sem acesso`,
+    ajuda: 'Canal da mensagem e quantas contas corporativas do órgão estão ativas.',
+    valor: (item) => (
+      <span className={estilos.canal}>
+        {CANAIS_CURTOS[item.canal]}
+        <small>
+          {item.acessosAtivos > 0 ? contar(item.acessosAtivos, 'acesso', 'acessos') : 'sem acesso'}
+        </small>
+      </span>
+    ),
   },
 ]
 

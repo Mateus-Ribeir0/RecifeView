@@ -274,6 +274,9 @@
 .campo {
   display: grid;
   gap: var(--espaco-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
   border: 0;
 }
 
@@ -283,7 +286,7 @@
   font-weight: 600;
 }
 
-.campo input,
+.campo input:not([type='radio'], [type='checkbox']),
 .campo textarea {
   width: 100%;
   min-height: 40px;
@@ -340,7 +343,11 @@
 }
 
 .escolha input {
-  margin-top: 3px;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--cor-azul-principal);
 }
 
 .escolha span {
@@ -387,4 +394,8 @@
 .notaInterna {
   font-size: var(--texto-apoio);
   color: var(--cor-texto-secundario);
+}
+
+.mapaDoBairro {
+  max-width: 320px;
 }

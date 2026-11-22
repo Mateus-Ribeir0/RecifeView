@@ -30,3 +30,13 @@
   flex-wrap: wrap;
   gap: var(--espaco-3);
 }
+
+.canal {
+  display: grid;
+  white-space: nowrap;
+}
+
+.canal small {
+  font-size: var(--texto-legenda);
+  color: var(--cor-texto-secundario);
+}
