@@ -1,3 +1,4 @@
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -18,6 +19,7 @@ DIAS_MAXIMOS_DA_PREVISAO = 365
 TAMANHO_MAXIMO_DO_PROTOCOLO_DO_ORGAO = 40
 DIGITOS_DO_CODIGO = 6
 AVISO_DE_DADO_PESSOAL = "Retire CPF, telefone ou e-mail do texto."
+FORMATO_DO_PROTOCOLO_DO_ORGAO = re.compile(r"^[0-9A-Za-z./ -]+$")
 
 
 class SituacaoDoEncaminhamento(StrEnum):
@@ -181,6 +183,22 @@ def exigir_previsao_valida(
         raise EncaminhamentoInvalido("previsao", "A previsão só vale para o atendimento em curso.")
     if not hoje <= previsao <= hoje + timedelta(days=DIAS_MAXIMOS_DA_PREVISAO):
         raise EncaminhamentoInvalido("previsao", "Informe uma data entre hoje e daqui a um ano.")
+
+
+def limpar_protocolo_do_orgao(protocolo: str | None) -> str | None:
+    """Protocolo é identificador: números com hífen passam, e o @ de um e-mail não."""
+    limpo = (protocolo or "").strip()
+    if not limpo:
+        return None
+    if len(limpo) > TAMANHO_MAXIMO_DO_PROTOCOLO_DO_ORGAO:
+        raise EncaminhamentoInvalido(
+            "protocolo_do_orgao", f"Use até {TAMANHO_MAXIMO_DO_PROTOCOLO_DO_ORGAO} caracteres."
+        )
+    if not FORMATO_DO_PROTOCOLO_DO_ORGAO.match(limpo):
+        raise EncaminhamentoInvalido(
+            "protocolo_do_orgao", "Use só letras, números, ponto, barra, hífen e espaço."
+        )
+    return limpo
 
 
 def descrever_local_aproximado(via_reconhecida: str | None, numero: str | None) -> str | None:

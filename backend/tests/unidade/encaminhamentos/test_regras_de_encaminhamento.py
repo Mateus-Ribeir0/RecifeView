@@ -8,6 +8,7 @@ from app.domain.encaminhamento.encaminhamento import (
     SituacaoDoEncaminhamento,
     calcular_prazo_de_resposta,
     exigir_transicao,
+    limpar_protocolo_do_orgao,
     limpar_texto_curto,
     tem_encaminhamento_aberto,
 )
@@ -153,3 +154,16 @@ def test_mensagem_leva_protocolo_de_origem_prazo_e_link() -> None:
     assert "Nota de prioridade: 8,2 de 10" in mensagem.corpo
     assert mensagem.corpo.endswith(link)
     assert mensagem.dados["link_de_retorno"] == link
+
+
+def test_protocolo_do_orgao_aceita_numeros_com_hifen() -> None:
+    assert limpar_protocolo_do_orgao(" EML-2026-4410 ") == "EML-2026-4410"
+    assert limpar_protocolo_do_orgao("2026/0001.3") == "2026/0001.3"
+    assert limpar_protocolo_do_orgao("  ") is None
+
+
+def test_protocolo_do_orgao_recusa_email_e_texto_livre() -> None:
+    with pytest.raises(EncaminhamentoInvalido):
+        limpar_protocolo_do_orgao("fulana@exemplo.com")
+    with pytest.raises(EncaminhamentoInvalido):
+        limpar_protocolo_do_orgao("x" * 41)
