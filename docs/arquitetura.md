@@ -63,6 +63,7 @@ flowchart TB
 | Mapa coroplético | Leaflet com o GeoJSON dos 94 bairros oficiais ([ADR 0002](adr/0002-leaflet-para-mapa-coropletico.md)) |
 | Sessão e cliente da API | Login, token e renovação, chamadas à API e cache de consultas (hook próprio `useConsulta`, porque o TanStack Query segue como proposta) |
 | Importações | Envio, passos de decisão, histórico e detalhe, com o estado salvo no servidor |
+| Notificações | Sino no cabeçalho das três áreas com conta. Uma notificação nova dispara a recarga das telas do ciclo (`useAtualizacaoAutomatica`) |
 
 ### Telas e rotas da API
 
@@ -73,7 +74,8 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 | Página pública (`/`, `/como-funciona`, `/a-cidade-em-numeros`) | O que a plataforma é para quem mora no Recife, o caminho de um pedido até o órgão e de volta, os níveis de acesso, o pente fino, a privacidade e os achados da base aberta | Nenhum (conteúdo estático e a malha dos bairros) |
 | Acompanhar um pedido (`/acompanhar`, pública) | Andamento pelo protocolo, com o encaminhamento e a resposta do órgão, e os números de um bairro ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) | Acesso à informação (`/publico`) |
 | Relatar um problema (`/contribuir`, pública) | Formulário em três passos, sem identificação | Contribuições |
-| Entrar, ajuda e definir senha (`/entrar`, `/entrar/gestao`, `/entrar/ajuda`, `/definir-senha`) | Entrada do cidadão e da gestão, orientação de acesso, troca da senha | Autenticação |
+| Entrar, ajuda e definir senha (`/entrar`, `/entrar/gestao`, `/entrar/corporativo`, `/entrar/ajuda`, `/definir-senha`) | Entrada do cidadão, da gestão e do órgão, orientação de acesso, troca da senha | Autenticação |
+| Convite (`/convite/:token`, sem login) | Para quem é o acesso corporativo e a definição da senha, que já abre a sessão ([ADR 0013](adr/0013-acesso-corporativo-dos-orgaos.md)) | Convites |
 | Criar conta e recuperar senha (`/cadastrar`, `/recuperar-senha`) | Cadastro do cidadão, que já abre a sessão, e nova senha com código por e-mail | Contas |
 | Área do cidadão (`/cidade`, `/cidade/meus-relatos`, `/cidade/meus-pedidos`, `/cidade/meu-bairro`, `/cidade/relatar`, `/cidade/conta`), só para conta de cidadão | Relatos da cidade sem endereço exato, os próprios relatos com o andamento, os protocolos guardados com o andamento, números do bairro comparados com o Recife, formulário e dados da conta | Cidade, Acesso à informação, Contribuições e Contas |
 | Início (`/painel`) | KPIs-síntese e volume por fonte | Indicadores |
@@ -85,6 +87,10 @@ Cada tela tem um router correspondente na API. Essa correspondência deve ser ma
 | Prioridade (`/painel/prioridade`) | Abas: índice AHP com seis comparações, mapa e ranking; fila de ocorrências, com o botão Encaminhar; método e sensibilidade | Prioridade e Encaminhamentos |
 | Encaminhamentos (`/painel/encaminhamentos` e `/:id`) | Para qual órgão cada ocorrência foi, prazo, retorno do órgão, etapas e reenvio ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) | Encaminhamentos |
 | Retorno do órgão (`/retorno/:token`, sem login) | O que chegou ao órgão e o formulário de resposta. O token do link é a credencial | Retorno do órgão |
+| Órgãos (`/painel/orgaos`) | Desempenho de cada órgão: encaminhados, vencidos, resolvidos no prazo, mediana até resolver, devolvidos, o que voltou a ser pedido, canal e acessos ativos; grupos do mesmo problema ([ADR 0013](adr/0013-acesso-corporativo-dos-orgaos.md)) | Encaminhamentos (`/encaminhamentos/desempenho`) |
+| Acessos corporativos (`/painel/acessos`) | Contas dos órgãos com a situação do convite e o último acesso; criar, editar, reenviar convite, desativar, reativar e excluir, só para o perfil Administração | Acessos corporativos |
+| Área corporativa (`/corporativo`, `/corporativo/ocorrencias` e `/:id`, `/corporativo/resolvidas`, `/corporativo/dados`), só para conta corporativa | Visão geral do órgão com mapa e semanas, fila por etapa, detalhe com o mesmo problema e a resposta (inclusive em grupo), o que já resolveu e os dados da base com o nome do órgão | Área corporativa |
+| (cabeçalho das áreas com conta) | Sino de notificações, consultado a cada 30 segundos | Notificações |
 | Sobre os dados (`/painel/sobre-os-dados`) | Abas: fontes e cobertura, correções, cuidados e privacidade, glossário | Sobre |
 | Contribuições (`/painel/contribuicoes`) | Pente fino dos relatos parecidos, ocorrências e geração do pacote | Contribuições |
 | Importações (`/painel/importacoes`, `/nova` e `/:id`) | Histórico, envio de arquivo, decisões, relatório e desfazer | Importações |
@@ -103,7 +109,8 @@ Componentes do C3:
 6. **Contribuições:** recebe os relatos do formulário público numa quarentena, aplica o pente fino e gera o pacote que segue pela importação. É a única rota de escrita sem sessão, e nada do que chega por ela aparece no painel sem revisão ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md)).
 
 7. **Encaminhamento:** sugere o órgão de destino a partir dos dados, grava o encaminhamento e despacha a mensagem pelo canal configurado do órgão (caixa local, e-mail ou webhook), com um link de retorno. O órgão responde pelo link, sem conta, e o andamento volta para a consulta pública pelo protocolo, para "Meus pedidos" e para "Meus relatos". A ocorrência do formulário também pode ser encaminhada, com a rua oficial e a faixa de numeração ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)).
-8. **Avisos:** cada mudança do encaminhamento avisa por e-mail quem precisa saber (quem encaminhou, quando o órgão responde; o cidadão com conta que acompanha o pedido ou o relato). O comando `recifeview lembrar-orgaos` lembra o órgão quando o prazo vence. Dentro do painel, `GET /avisos/painel` alimenta os contadores do menu. A entrega usa a porta `EnvioDeEmail` e não desfaz a mudança se falhar.
+8. **Avisos:** cada mudança do encaminhamento avisa quem precisa saber, no sino (`app.notificacao`) e por e-mail para quem não desligou: quem encaminhou, quando o órgão responde; o cidadão com conta que acompanha o pedido ou o relato, com a resposta ao cidadão e a previsão; as contas do órgão, quando chega ocorrência nova ou o prazo vence. O comando `recifeview lembrar-orgaos` dispara o lembrete. Dentro do painel, `GET /avisos/painel` alimenta os contadores do menu. A entrega de e-mail usa a porta `EnvioDeEmail` e não desfaz a mudança se falhar.
+9. **Área corporativa e acessos:** o perfil `CORPORATIVO` fica preso a um órgão. A administração cria a conta e o convite (token de 32 bytes, só o hash, 7 dias, uso único); o órgão vê os próprios encaminhamentos, responde com a resposta ao cidadão, aplica a mesma resposta ao mesmo problema e consulta a view `mv_demanda_por_orgao`. O mesmo problema usa a regra do pente fino sobre o pseudônimo do local guardado no encaminhamento ([ADR 0013](adr/0013-acesso-corporativo-dos-orgaos.md)).
 
 Esses componentes se distribuem nas camadas da Clean Architecture (`api`, `application`, `domain`, `infrastructure`). A correspondência está em [clean-architecture.md](clean-architecture.md#backend-fastapi).
 
@@ -131,14 +138,15 @@ O Processor é a versão de produção do pipeline que já existe no Drive (`Dad
 
 ## Segurança
 
-- O app real exige login. Só contas da gestão veem o painel, o pente fino e a importação: a dependência `exigir_gestao` devolve 403 para conta de cidadão, e um teste cobra isso em cada rota da gestão.
+- O app real exige login. Só contas da gestão veem o painel, o pente fino e a importação: a dependência `exigir_gestao` devolve 403 para conta de cidadão e corporativa, e um teste cobra isso em cada rota da gestão. `exigir_corporativo` fecha `/corporativo` para os outros perfis e `exigir_cidadao` fecha `/cidade` para quem não é cidadão. Só o perfil Administração altera acessos corporativos.
+- A conta corporativa vê só os encaminhamentos do próprio órgão (outro órgão recebe 404), o bairro e a rua oficial com a faixa de numeração, a contagem de quem acompanha e, do mesmo problema em outro órgão, só o nome dele e a etapa. A conta desativada perde a sessão na hora.
 - Contas de cidadão entram logo depois do cadastro, recuperam a senha com código de 6 dígitos por e-mail (hash, 15 minutos, 5 tentativas), têm limite de operações por origem e nunca recebem número exato nem texto de relato ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)).
 - Senhas com hash Argon2; bloqueio de 15 minutos depois de 5 tentativas erradas seguidas; senha temporária trocada no primeiro acesso.
 - Token de acesso de 15 minutos só na memória do navegador; sessão de 12 horas num cookie `httpOnly` e `SameSite=Strict`, revogável no servidor. Detalhes e alternativas na [ADR 0005](adr/0005-autenticacao-com-jwt-proprio.md) (proposta).
 - O texto da SEDEC não tem rota, não entra em resposta e não vai para log.
 - O formulário público não pede identificação, recusa CPF, telefone e e-mail no texto, tem limite de envios por origem e um campo-armadilha para robôs. O endereço e o detalhe do relato só aparecem para a gestão autenticada, com auditoria, e são apagados em 90 dias.
-- O link de retorno do órgão leva um token aleatório de 32 bytes, guardado só como hash, válido por 60 dias e aceito só para a resposta seguinte do ciclo. O token e o protocolo da consulta pública vão no corpo da requisição, nunca no caminho, para não ficarem em log de acesso. As rotas sem sessão (`/retornos` e `/publico`) têm limite por origem.
-- Os avisos ao cidadão levam só a etapa e o órgão, nunca o endereço, o texto do relato, a justificativa da gestão nem a observação do órgão. A gestão não sabe quem acompanha um pedido: a lista de e-mails só existe dentro do envio. Cada conta pode desligar os avisos.
+- O link de retorno do órgão leva um token aleatório de 32 bytes, guardado só como hash, válido por 60 dias e aceito só para a resposta seguinte do ciclo. O token e o protocolo da consulta pública vão no corpo da requisição, nunca no caminho, para não ficarem em log de acesso. O convite do acesso corporativo segue a mesma regra, com 7 dias e uso único. As rotas sem sessão (`/retornos`, `/convites` e `/publico`) têm limite por origem.
+- Os avisos ao cidadão levam a etapa, o órgão, a resposta escrita para ele e a previsão, nunca o endereço, o texto do relato, a justificativa da gestão nem a nota interna do órgão. A gestão não sabe quem acompanha um pedido: a lista de e-mails só existe dentro do envio. Cada conta pode desligar os avisos.
 - A importação por endereço só baixa por `https` e dos hosts de `API_HOSTS_DE_IMPORTACAO`, e recusa redirecionamento para outro host. A importação por banco só usa as conexões de `API_BANCOS_DE_ORIGEM`, em transação só de leitura e com tempo limite.
 - O sal do `id_local` fica no gerenciador de segredos (proposta: AWS Secrets Manager) e nunca no repositório nem no banco.
 - Os acessos são auditados (entrada, recusa, bloqueio, saída, troca de senha) sem IP e sem o e-mail digitado. As consultas aos dados também são auditadas, com usuário, rota, filtros e horário.

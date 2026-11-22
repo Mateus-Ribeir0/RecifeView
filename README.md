@@ -108,20 +108,24 @@ Abra http://localhost:5173, clique em **Entrar** e use o e-mail e a senha tempor
 
 ### Conta de demonstração
 
-Para apresentar o painel, o grupo usa sempre a mesma conta de gestão:
+Para apresentar, o grupo usa sempre as mesmas contas, todas com a senha `1234@abcD@12`:
 
-| E-mail | Senha |
-|---|---|
-| `gestora.demo@recifeview.dev` | `1234@abcD@12` |
+| Conta | E-mail | Entrada |
+|---|---|---|
+| Administração (gestão) | `gestora.demo@recifeview.dev` | `/entrar/gestao` |
+| Órgão (Emlurb) | `emlurb.demo@recifeview.dev` | `/entrar/corporativo` |
+| Cidadã | `cidada.demo@recifeview.dev` | `/entrar` |
 
-A conta existe só no banco de quem a criou. Para ter a mesma conta na sua máquina:
+As contas existem só no banco de quem as criou. Para ter as mesmas na sua máquina:
 
 ```bash
 cd backend
-uv run recifeview cadastrar-usuario --email gestora.demo@recifeview.dev --nome "Gestora de Demonstração"
+uv run recifeview cadastrar-usuario --email gestora.demo@recifeview.dev --nome "Gestora de Demonstração" --perfil ADMINISTRADOR
 ```
 
-Entre com a senha temporária que o comando mostrar e, no primeiro acesso, defina `1234@abcD@12`.
+Entre com a senha temporária que o comando mostrar e, no primeiro acesso, defina `1234@abcD@12`. Se a conta já existia como `GESTOR`, troque com `uv run recifeview mudar-perfil --email gestora.demo@recifeview.dev --perfil ADMINISTRADOR`.
+
+A conta do órgão nasce pelo painel, como em uso real: em **Acessos corporativos**, crie o acesso de `emlurb.demo@recifeview.dev` para a Emlurb. Sem servidor de e-mail, o convite fica num arquivo em `data/emails`: abra o link `/convite/...` dele e defina a senha. A cidadã se cadastra em `/cadastrar`.
 
 > **Só para desenvolvimento local.** O repositório é público, então esta senha também é. Nunca crie esta conta num banco compartilhado ou num ambiente publicado.
 

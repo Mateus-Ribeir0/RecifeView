@@ -2,7 +2,7 @@
 
 O que cada pessoa consegue fazer no RecifeView, de ponta a ponta: quem começa, o que o sistema faz, quem fica sabendo e onde o fluxo termina. Os diagramas são desenhados pelo GitHub a partir do texto (Mermaid). Clique em "Detalhes" para abrir as regras de cada passo.
 
-Retrato de 13/11/2026. As decisões por trás de cada fluxo estão nas ADRs citadas, quase todas ainda como **proposta**. Os números de prazo e limite são a configuração atual do código e podem mudar por decisão do grupo.
+Retrato de 22/11/2026. As decisões por trás de cada fluxo estão nas ADRs citadas, quase todas ainda como **proposta**. Os números de prazo e limite são a configuração atual do código e podem mudar por decisão do grupo.
 
 ## Sumário
 
@@ -13,7 +13,7 @@ Retrato de 13/11/2026. As decisões por trás de cada fluxo estão nas ADRs cita
 5. [Relato pelo formulário e pente fino](#5-relato-pelo-formulário-e-pente-fino)
 6. [Entrada de dados: a importação](#6-entrada-de-dados-a-importação)
 7. [Análise e prioridade no painel](#7-análise-e-prioridade-no-painel)
-8. [Encaminhamento ao órgão](#8-encaminhamento-ao-órgão)
+8. [Encaminhamento ao órgão](#8-encaminhamento-ao-órgão), com a [área corporativa](#85-pela-área-corporativa), o [mesmo problema](#86-o-mesmo-problema) e os [acessos corporativos](#87-acessos-corporativos-criados-pela-administração)
 9. [Avisos: quem fica sabendo do quê](#9-avisos-quem-fica-sabendo-do-quê)
 10. [Área do cidadão](#10-área-do-cidadão)
 11. [Tarefas agendadas e terminal](#11-tarefas-agendadas-e-terminal)
@@ -29,8 +29,9 @@ Retrato de 13/11/2026. As decisões por trás de cada fluxo estão nas ADRs cita
 |---|---|---|
 | **Visitante** | Site público, sem conta | Consulta um pedido pelo protocolo, vê os números da cidade e do bairro, relata um problema |
 | **Cidadão com conta** | `/entrar` | Tudo do visitante, mais os relatos da cidade, "Meus relatos", "Meus pedidos" e avisos por e-mail |
-| **Gestão** | `/entrar/gestao`, conta criada pela administração | Painel, prioridade, encaminhamento, pente fino e importação |
-| **Órgão responsável** | Link único que chega na mensagem, sem conta | Diz se recebeu, se resolveu ou se a ocorrência não é com ele |
+| **Gestão** | `/entrar/gestao`, conta criada pela administração | Painel, prioridade, encaminhamento, pente fino, importação e comparação entre órgãos. O perfil Administração também cria os acessos corporativos |
+| **Órgão com acesso corporativo** | `/entrar/corporativo`, conta criada pela administração e aberta por convite | Vê as ocorrências do órgão, onde ficam e o prazo; responde com a resposta ao cidadão; vê o que já resolveu e os dados da base com o nome do órgão |
+| **Órgão sem conta** | Link único que chega na mensagem | Diz se recebeu, se resolveu ou se a ocorrência não é com ele |
 | **Agendador** | Comandos de terminal (cron ou EventBridge) | Importa dados, encaminha as ocorrências de nota alta e lembra os órgãos do prazo |
 
 ```mermaid
@@ -38,7 +39,8 @@ flowchart LR
     visitante([Visitante])
     cidadao([Cidadão com conta])
     gestao([Gestão])
-    orgao([Órgão responsável])
+    corporativo([Órgão com acesso])
+    orgao([Órgão sem conta])
     agendador([Agendador])
 
     subgraph publico [Site público]
@@ -57,6 +59,13 @@ flowchart LR
         encaminhamentos[Encaminhamentos]
         contribuicoes[Contribuições]
         importacoes[Importações]
+        orgaos[Órgãos e acessos]
+    end
+    subgraph areaCorporativa [Área corporativa]
+        visao[Visão geral]
+        ocorrencias[Ocorrências]
+        resolvidas[Resolvidas]
+        dados[Dados do órgão]
     end
     retorno["Página de retorno<br/><small>/retorno/token</small>"]
 
@@ -64,12 +73,13 @@ flowchart LR
     cidadao --> publico
     cidadao --> areaCidadao
     gestao --> painel
+    corporativo --> areaCorporativa
     orgao --> retorno
     agendador -.comandos.-> importacoes
     agendador -.comandos.-> encaminhamentos
 ```
 
-Cada perfil vê só a sua área: as rotas da gestão recusam a conta de cidadão, e as da área do cidadão recusam a conta da gestão ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)).
+Cada perfil vê só a sua área: as rotas da gestão recusam o cidadão e o órgão, as da área corporativa recusam a gestão e o cidadão, e as da área do cidadão exigem a conta de cidadão ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md) e [ADR 0013](adr/0013-acesso-corporativo-dos-orgaos.md)). Todos os perfis com conta têm o sino de notificações no cabeçalho.
 
 ---
 
@@ -86,16 +96,18 @@ flowchart TD
     base[("Base analítica")]
     painel["Painel e fila de prioridade"]
     encaminhar["Encaminhamento<br/><small>órgão sugerido pelos dados</small>"]
-    orgao(["Órgão responsável"])
-    avisos["Avisos<br/><small>e-mail e contador do menu</small>"]
-    consulta["Consulta pelo protocolo<br/><small>Meus pedidos e Meus relatos</small>"]
+    orgao(["Órgão<br/><small>área corporativa ou link</small>"])
+    avisos["Avisos<br/><small>sino, e-mail e contador do menu</small>"]
+    consulta["Quem pediu<br/><small>resposta do órgão em Meus pedidos e Meus relatos</small>"]
+    paineis["Painéis do ciclo<br/><small>gestão, órgão e Órgãos</small>"]
 
     canais --> importacao
     formulario --> pente --> importacao
     importacao --> base --> painel --> encaminhar --> orgao
-    orgao -->|responde pelo link| avisos
+    orgao -->|resolve, atende ou devolve| avisos
     avisos --> consulta
-    avisos --> painel
+    avisos --> paineis
+    paineis --> painel
 ```
 
 | Etapa | Quem age | Onde | Seção |
@@ -104,8 +116,8 @@ flowchart TD
 | 2. Os dados entram | Gestão ou agendador | Importações | [6](#6-entrada-de-dados-a-importação) |
 | 3. O que se repete ou demora aparece | Gestão | Telas do painel | [7](#7-análise-e-prioridade-no-painel) |
 | 4. A ocorrência vai para quem resolve | Gestão ou agendador | Fila de prioridade, Contribuições | [8](#8-encaminhamento-ao-órgão) |
-| 5. O órgão responde | Órgão | Página de retorno | [8.4](#84-o-órgão-responde) |
-| 6. Todos ficam sabendo | Sistema | E-mail, menu, telas | [9](#9-avisos-quem-fica-sabendo-do-quê) |
+| 5. O órgão responde, inclusive ao mesmo problema de uma vez | Órgão | Área corporativa ou página de retorno | [8.4](#84-o-órgão-responde) a [8.6](#86-o-mesmo-problema) |
+| 6. Todos ficam sabendo | Sistema | Sino, e-mail, menu, telas | [9](#9-avisos-quem-fica-sabendo-do-quê) |
 | 7. Quem pediu acompanha | Cidadão | Acompanhar um pedido, área do cidadão | [4.1](#41-acompanhar-um-pedido-pelo-protocolo) e [10](#10-área-do-cidadão) |
 
 ---
@@ -119,20 +131,23 @@ flowchart TD
     inicio([Abre a entrada]) --> porta{Qual porta?}
     porta -->|/entrar| cidadaoPorta[Entrada do cidadão]
     porta -->|/entrar/gestao| gestaoPorta[Entrada da gestão]
+    porta -->|/entrar/corporativo| corporativaPorta[Entrada corporativa]
     cidadaoPorta --> credenciais[Digita e-mail e senha]
     gestaoPorta --> credenciais
+    corporativaPorta --> credenciais
     credenciais --> confere{Senha confere?}
     confere -->|não| conta{"5 erros seguidos?"}
     conta -->|sim| bloqueio["Conta bloqueada por 15 minutos"]
     conta -->|não| credenciais
-    confere -->|sim| perfilPorta{"Conta de cidadão<br/>pela porta da gestão?"}
-    perfilPorta -->|sim| recusa["Recusa: entre pela área do cidadão"]
+    confere -->|sim| perfilPorta{"A porta é<br/>de outro perfil?"}
+    perfilPorta -->|sim| recusa["Recusa: entre pela porta certa"]
     perfilPorta -->|não| primeiro{"Primeiro acesso<br/>com senha temporária?"}
     primeiro -->|sim| trocar["Define uma senha nova<br/><small>/definir-senha</small>"]
     primeiro -->|não| area
     trocar --> area{Perfil}
     area -->|cidadão| cidade["Área do cidadão<br/><small>/cidade</small>"]
     area -->|gestão| painelGestao["Painel<br/><small>/painel</small>"]
+    area -->|órgão| areaOrgao["Área corporativa<br/><small>/corporativo</small>"]
 ```
 
 <details>
@@ -486,9 +501,12 @@ A tela sempre mostra a distribuição do tema como evidência, com fonte e n. A 
 
 | Canal | Quando | O que acontece |
 |---|---|---|
-| Caixa de saída local | Órgão sem canal combinado (hoje, todos) | A mensagem vira um arquivo no servidor |
+| Área corporativa | Órgão sem canal combinado que tem acesso corporativo ativo | Nenhuma mensagem externa: as pessoas do órgão recebem no sino e por e-mail e respondem em `/corporativo` |
+| Caixa de saída local | Órgão sem canal combinado e sem acesso | A mensagem vira um arquivo no servidor |
 | E-mail | Órgão com endereço configurado | Sai pelo servidor de e-mail |
 | Webhook | Órgão com sistema próprio | O sistema dele recebe os dados em JSON |
+
+O órgão com canal configurado e com acesso corporativo recebe pelos dois: a mensagem pelo canal e a ocorrência na área corporativa.
 
 Se o canal falhar, o encaminhamento fica como "Falha no envio", o contador do menu sobe e o detalhe oferece "Reenviar", com um link novo.
 
@@ -511,6 +529,7 @@ stateDiagram-v2
     Enviado --> Recebido
     Enviado --> Resolvido
     Enviado --> Devolvido
+    Recebido --> Recebido: atualiza o andamento e a previsão
     Recebido --> Resolvido
     Recebido --> Devolvido
     Devolvido --> Novo: a gestão escolhe outro órgão
@@ -528,7 +547,7 @@ flowchart LR
     escolhe -->|Recebemos e vamos tratar| recebido[Recebido]
     escolhe -->|Resolvido| resolvido[Resolvido]
     escolhe -->|Não é com o nosso órgão| devolvido[Devolvido]
-    recebido --> protocolo["Protocolo do órgão e observação<br/><small>opcionais</small>"]
+    recebido --> protocolo["Resposta ao cidadão, previsão,<br/>protocolo do órgão e nota interna<br/><small>opcionais pelo link</small>"]
     resolvido --> protocolo
     devolvido --> protocolo
     protocolo --> avisa["Avisos à gestão e a quem acompanha<br/><small>seção 9</small>"]
@@ -539,9 +558,110 @@ flowchart LR
 
 - O link vale só para aquele encaminhamento, por 60 dias, e só aceita a resposta seguinte do ciclo. O token fica guardado apenas como hash.
 - O sistema do órgão pode responder pelo mesmo endereço, em JSON.
-- A observação aceita até 280 caracteres e recusa CPF, telefone e e-mail.
+- A nota interna aceita até 280 caracteres e a resposta ao cidadão até 500; as duas recusam CPF, telefone e e-mail. Só a resposta ao cidadão chega a quem pediu; a nota fica com a gestão e o órgão.
+- A previsão de conclusão só vale com "recebido", entre hoje e um ano. "Recebido" pode ser repetido para atualizar o andamento.
 - Se a resposta chegou por telefone ou ofício, a gestão registra pelo detalhe do encaminhamento.
 - O órgão tem 30 dias para resolver ou devolver (Lei 13.460/2017, art. 16). Vencido o prazo, o encaminhamento conta como "prazo vencido" e o órgão recebe um lembrete com link novo, que substitui o anterior. Sai um lembrete por encaminhamento.
+
+</details>
+
+### 8.5 Pela área corporativa
+
+O órgão que tem acesso entra em `/corporativo` e trabalha ali, sem depender do link de cada mensagem ([ADR 0013](adr/0013-acesso-corporativo-dos-orgaos.md)).
+
+```mermaid
+flowchart TD
+    entra([Pessoa do órgão entra]) --> visao["Visão geral<br/><small>a responder, em atendimento, prazo vencido,<br/>resolvidas em 30 dias, mapa e semanas</small>"]
+    visao --> fila["Ocorrências<br/><small>abas por etapa, bairro e tema</small>"]
+    fila --> detalhe["Detalhe<br/><small>o que foi pedido, onde fica, mesmo problema, etapas</small>"]
+    detalhe --> responde{O que o órgão informa}
+    responde -->|Em atendimento| atende["Previsão e resposta ao cidadão<br/><small>pode ser atualizado</small>"]
+    responde -->|Resolvida| resolve["Resposta ao cidadão<br/><small>obrigatória</small>"]
+    responde -->|Devolver à gestão| devolve["Por que não é do órgão<br/><small>obrigatória</small>"]
+    atende --> juntar{"Há o mesmo problema<br/>no órgão?"}
+    resolve --> juntar
+    devolve --> juntar
+    juntar -->|sim| todas["A mesma resposta vale<br/>para as escolhidas"]
+    juntar -->|não| uma["Vale para esta"]
+    todas --> avisos["Sino e e-mail para a gestão<br/>e para quem acompanha"]
+    uma --> avisos
+    avisos --> paineis["Visão geral, Resolvidas, Encaminhamentos<br/>e Órgãos se atualizam"]
+```
+
+| Tela | Pergunta que responde |
+|---|---|
+| Visão geral | O que chegou para o órgão, onde estão as abertas e o que vence primeiro |
+| Ocorrências | Cada ocorrência por etapa, da que vence antes para a que vence depois |
+| Detalhe | O que foi pedido, onde fica, quem mais pediu o mesmo e como responder |
+| Resolvidas | O que o órgão já resolveu, quanto saiu no prazo e o que respondeu a quem pediu |
+| Dados do órgão | O que a base aberta registra com o nome do órgão, por ano, fonte, bairro, tema e situação |
+
+<details>
+<summary>O que o órgão vê e o que não vê</summary>
+
+- Vê só os encaminhamentos feitos ao próprio órgão, menos os que falharam no envio (esses voltam para a gestão reenviar). A ocorrência de outro órgão responde "não encontrada".
+- Vê o bairro, a RPA e, no relato do formulário, a rua da lista oficial com a faixa de numeração de 100 em 100. Nunca o número exato nem o texto de quem relatou.
+- De quem acompanha o pedido, só a contagem. O protocolo de origem aparece no detalhe, como já ia na mensagem ao órgão, e não na lista.
+- Da ocorrência de outro órgão com o mesmo problema, só o nome do órgão e a etapa.
+- Dados do órgão: só contagens da view `ouro.mv_demanda_por_orgao`, sem as ações proativas da Defesa Civil e nunca o texto da SEDEC.
+- As telas se recarregam sozinhas quando o sino recebe uma notificação nova.
+
+</details>
+
+### 8.6 O mesmo problema
+
+Dois encaminhamentos tratam do mesmo problema pela regra do pente fino ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md)): mesma fonte, mesmo bairro, mesmo tema, menos de 30 dias entre as aberturas e o mesmo local pelo pseudônimo do endereço. "Mesma ocorrência" quando o endereço, o serviço e a semana batem; "provável" quando a pontuação passa de 0,72.
+
+```mermaid
+flowchart LR
+    novo([Ocorrência a encaminhar]) --> compara{"Mesmo problema<br/>já encaminhado e aberto?"}
+    compara -->|sim| aviso["A gestão vê o aviso antes de enviar"]
+    compara -->|não| segue[Encaminha normalmente]
+    aviso --> decide{Encaminha mesmo assim?}
+    decide -->|sim| juntos["O órgão vê as duas juntas<br/>e responde de uma vez"]
+    decide -->|não| abre["Abre o encaminhamento que já existe"]
+    automatico([Envio automático]) --> pula["Pula a ocorrência<br/><small>mesmo problema aberto</small>"]
+```
+
+| Onde aparece | Como |
+|---|---|
+| Antes de encaminhar | Aviso "O mesmo problema já está com um órgão", com o link |
+| Lista e detalhe dos Encaminhamentos | Coluna "Mesmo problema" e a lista no detalhe, com os motivos |
+| Fila e detalhe do órgão | Marca no cartão e a opção de aplicar a mesma resposta (as certas já vêm marcadas) |
+| Visão geral do órgão e tela Órgãos | Grupos de encaminhamentos abertos do mesmo problema |
+| Detalhe, na gestão e no órgão | Quantos registros da base têm o mesmo local e tema em até 30 dias, encaminhados ou não |
+| `recifeview encaminhar-prioritarias` | Não envia de novo o que já tem o mesmo problema aberto |
+
+A resposta em grupo é tudo ou nada: se uma das escolhidas mudou de etapa ou não é do mesmo problema, nenhuma é gravada. Cabem até 20 por vez.
+
+### 8.7 Acessos corporativos, criados pela administração
+
+```mermaid
+sequenceDiagram
+    actor A as Administração
+    participant RV as RecifeView
+    actor R as Responsável do órgão
+
+    A->>RV: Novo acesso: nome, e-mail e órgão
+    RV->>R: E-mail com o convite (link de uso único, 7 dias)
+    R->>RV: Abre o link e define a senha
+    RV-->>R: Já entra na área corporativa
+    alt Convite venceu
+        A->>RV: Reenvia o convite (o anterior deixa de valer)
+    else Pessoa saiu do órgão
+        A->>RV: Desativa (as sessões caem na hora) ou exclui
+    end
+```
+
+<details>
+<summary>Regras dos acessos</summary>
+
+- Só o perfil Administração cria, edita, reenvia convite, desativa, reativa e exclui. A Gestão pública vê a lista.
+- Situações: convite enviado, convite vencido, ativo e desativado. A tela mostra o último acesso de cada pessoa.
+- O e-mail não muda: ele é o acesso. Editar corrige o nome e o órgão.
+- Excluir apaga o nome e o e-mail e mantém a linha para a auditoria. Sem provedor de e-mail, o convite fica em `data/emails`.
+- Quem esqueceu a senha cria outra em "Esqueci minha senha", como o cidadão.
+- Só a conta com convite aceito (ou criada pela linha de comando) recebe os avisos do órgão.
 
 </details>
 
@@ -549,16 +669,19 @@ flowchart LR
 
 ## 9. Avisos: quem fica sabendo do quê
 
-### 9.1 Por e-mail
+### 9.1 Sino e e-mail
+
+Cada aviso vira uma notificação no sino de quem recebe e, se a pessoa não desligou os avisos, também um e-mail com o mesmo texto.
 
 | Quando | Gestão que encaminhou | Órgão | Cidadão com conta que acompanha | Quem pediu sem conta |
 |---|---|---|---|---|
-| A gestão encaminha | Não (ela mesma fez) | Recebe a mensagem com o link | E-mail: encaminhado para o órgão | Vê na consulta pelo protocolo |
+| A gestão encaminha | Não (ela mesma fez) | Sino e e-mail das contas do órgão; mensagem pelo canal, se houver | Encaminhado para o órgão | Vê na consulta pelo protocolo |
 | O canal falha | Vê na tela e no contador | Nada chega | Nada (ainda não foi) | Nada |
-| O órgão responde pelo link | E-mail: o órgão respondeu | Não | E-mail: a etapa mudou | Vê na consulta |
-| A gestão registra a resposta | Não (ela mesma fez) | Não | E-mail: a etapa mudou | Vê na consulta |
-| O prazo vence | Vê no contador | Lembrete com link novo | Não | Não |
-| A gestão manda a outro órgão | Não | O novo órgão recebe a mensagem | E-mail: novo destino | Vê na consulta |
+| O órgão responde (área corporativa ou link) | O órgão respondeu | Não | A etapa mudou, com a resposta ao cidadão e a previsão | Vê na consulta, com a resposta |
+| O órgão atualiza o andamento | O órgão respondeu | Não | Nova previsão e resposta | Vê na consulta |
+| A gestão registra a resposta | Não (ela mesma fez) | Não | A etapa mudou | Vê na consulta |
+| O prazo vence | Vê no contador | Sino e e-mail das contas do órgão; lembrete com link novo pelo canal, se houver | Não | Não |
+| A gestão manda a outro órgão | Não | O novo órgão recebe | Novo destino | Vê na consulta |
 
 <details>
 <summary>Quem conta como "cidadão que acompanha"</summary>
@@ -567,7 +690,7 @@ flowchart LR
 - Quem enviou, com a conta aberta, um relato que virou ou foi somado à ocorrência encaminhada.
 - Desde que a conta esteja ativa e com os avisos ligados em "Minha conta".
 
-O e-mail ao cidadão traz só a etapa, o órgão e o link da própria área. Nunca leva o endereço, o texto do relato, a justificativa da gestão nem a observação do órgão. A gestão não sabe quem acompanha um pedido.
+O aviso ao cidadão traz a etapa, o órgão, a resposta escrita para ele e a previsão, e o link da própria área. Nunca leva o endereço, o texto do relato, a justificativa da gestão nem a nota interna do órgão. A gestão e o órgão não sabem quem acompanha um pedido: veem só quantas pessoas.
 
 Hoje não há provedor de e-mail escolhido. Sem ele, os avisos ficam em arquivos na pasta `data/emails` do servidor. Com o servidor de e-mail configurado (`API_SMTP_*`), eles saem de verdade.
 
@@ -575,9 +698,12 @@ Hoje não há provedor de e-mail escolhido. Sem ele, os avisos ficam em arquivos
 
 ### 9.2 Dentro da plataforma
 
+O sino fica no cabeçalho das três áreas com conta. Ele consulta as notificações a cada 30 segundos com a aba aberta, mostra quantas são novas e leva à tela certa ao clicar. Quando chega uma nova, as telas do ciclo (fila e visão do órgão, encaminhamentos, Órgãos, Meus pedidos e Meus relatos) se recarregam sozinhas.
+
 ```mermaid
 flowchart LR
-    resposta([O órgão responde]) --> lista["Lista de Encaminhamentos<br/><small>selo da etapa</small>"]
+    resposta([O órgão responde]) --> sino["Sino de quem encaminhou<br/>e de quem acompanha"]
+    resposta --> lista["Lista de Encaminhamentos<br/><small>selo da etapa</small>"]
     resposta --> detalhe["Detalhe<br/><small>etapas com data, protocolo e observação</small>"]
     resposta --> fila["Fila de prioridade<br/><small>órgão e etapa ao lado da ocorrência</small>"]
     resposta --> pede{"Pede ação?"}
@@ -604,7 +730,8 @@ flowchart TD
     abas --> relatar["Relatar um problema"]
     abas --> conta["Minha conta<br/><small>dados, avisos, senha, exclusão</small>"]
     pedidos --> guardar["Guarda um protocolo"] --> andamento["Situação, órgão e etapas"]
-    relatos --> etapas["Recebido, em análise, no painel<br/>e, se houver, o órgão"]
+    relatos --> etapas["Recebido, em análise, no painel<br/>e, se houver, o órgão e a resposta dele"]
+    entrada --> sino["Sino<br/><small>cada mudança de etapa</small>"]
 ```
 
 <details>
@@ -613,7 +740,7 @@ flowchart TD
 | Aba | Mostra | Não mostra |
 |---|---|---|
 | Relatos da cidade | Serviço, bairro, rua (só se estiver na lista oficial), faixa de numeração de 100 em 100, quantas pessoas relataram, quantas não tiveram retorno, situação | Número exato, texto, quem relatou |
-| Meus relatos | O relato completo da própria pessoa, a situação e, se a ocorrência foi encaminhada, o órgão e as etapas | Nada de outras pessoas |
+| Meus relatos | O relato completo da própria pessoa, a situação e, se a ocorrência foi encaminhada, o órgão, as etapas, a resposta do órgão e a previsão | Nada de outras pessoas |
 | Meus pedidos | Cada protocolo guardado com o andamento, como na consulta pública, e se os avisos por e-mail estão ligados | Endereço e texto do pedido |
 | Meu bairro | Os quatro indicadores do bairro comparados com o Recife, com a opção de salvar o bairro na conta | Números de pessoas |
 | Minha conta | Nome, bairro, avisos por e-mail, troca de senha e exclusão da conta | |
@@ -636,15 +763,17 @@ flowchart LR
     importar --> base[(Base)]
     encaminharP --> orgaos([Órgãos])
     lembrar --> orgaos
+    lembrar --> sinoOrgao["Sino das contas do órgão"]
 ```
 
 | Comando | Para que serve |
 |---|---|
 | `recifeview importar` | Importa um arquivo, um endereço permitido ou uma consulta a um banco configurado. Para com aviso se houver algo para decidir |
-| `recifeview encaminhar-prioritarias` | Encaminha ao órgão sugerido as ocorrências de nota alta sem encaminhamento aberto |
-| `recifeview lembrar-orgaos` | Manda o lembrete dos encaminhamentos com prazo vencido |
+| `recifeview encaminhar-prioritarias` | Encaminha ao órgão sugerido as ocorrências de nota alta sem encaminhamento aberto e sem o mesmo problema aberto |
+| `recifeview lembrar-orgaos` | Lembra o órgão dos encaminhamentos com prazo vencido, no sino e pelo canal |
 | `recifeview carregar-logradouros` | Monta a lista de vias que o formulário sugere e o pente fino usa |
-| `recifeview cadastrar-usuario` | Cria uma conta da gestão com senha temporária |
+| `recifeview cadastrar-usuario` | Cria uma conta da gestão (ou corporativa, com `--orgao`) com senha temporária |
+| `recifeview mudar-perfil` | Troca uma conta da gestão entre Gestão pública e Administração |
 | `recifeview redefinir-senha` | Gera uma nova senha temporária para uma conta da gestão |
 
 Como rodar cada um está no [README do backend](../backend/README.md#comandos).
@@ -653,19 +782,22 @@ Como rodar cada um está no [README do backend](../backend/README.md#comandos).
 
 ## 12. Quem vê o quê
 
-| Recurso | Visitante | Cidadão | Gestão | Órgão |
-|---|---|---|---|---|
-| Números da cidade e do bairro | Sim | Sim | Sim | |
-| Consulta de pedido pelo protocolo | Sim | Sim | Sim | |
-| Relatar um problema | Sim | Sim | Sim | |
-| Relatos da cidade (rua oficial e faixa) | | Sim | Sim | |
-| Meus relatos e Meus pedidos | | Sim | | |
-| Avisos por e-mail do andamento | | Sim | Quando o órgão responde | Mensagem e lembrete |
-| Número exato e texto do relato | | | Sim | |
-| Painel, prioridade e fila | | | Sim | |
-| Encaminhamentos e retorno registrado pela gestão | | | Sim | |
-| Pente fino e importação | | | Sim | |
-| A ocorrência que recebeu e o formulário de resposta | | | | Pelo link |
+| Recurso | Visitante | Cidadão | Gestão | Órgão com acesso | Órgão sem conta |
+|---|---|---|---|---|---|
+| Números da cidade e do bairro | Sim | Sim | Sim | | |
+| Consulta de pedido pelo protocolo, com a resposta do órgão | Sim | Sim | Sim | | |
+| Relatar um problema | Sim | Sim | Sim | | |
+| Relatos da cidade (rua oficial e faixa) | | Sim | Sim | | |
+| Meus relatos e Meus pedidos | | Sim | | | |
+| Sino de notificações | | Sim | Sim | Sim | |
+| Avisos por e-mail | | Sim | Quando o órgão responde | Ocorrência nova e prazo vencido | Mensagem e lembrete |
+| Número exato e texto do relato | | | Sim | | |
+| Painel, prioridade e fila | | | Sim | | |
+| Encaminhamentos e comparação entre órgãos | | | Sim | | |
+| Criar e alterar acessos corporativos | | | Só Administração | | |
+| Pente fino e importação | | | Sim | | |
+| Ocorrências do próprio órgão, com o mesmo problema | | | | Sim | Uma por link |
+| Dados da base com o nome do órgão | | | Sim | Sim | |
 
 ---
 
@@ -678,13 +810,18 @@ Como rodar cada um está no [README do backend](../backend/README.md#comandos).
 | Código de nova senha | 6 dígitos, 15 minutos, 5 tentativas, um por minuto | Recuperar senha |
 | Operações de conta por origem | 10 a cada 10 minutos | Cadastro e recuperação |
 | Relatos por origem | 12 a cada 10 minutos | Formulário |
-| Consultas sem conta por origem | 30 a cada 10 minutos | Consulta pelo protocolo e link do órgão |
+| Consultas sem conta por origem | 30 a cada 10 minutos | Consulta pelo protocolo, link do órgão e convite |
 | Guarda do endereço do relato | 90 dias | Quarentena do formulário |
 | Protocolos por conta | 20 | Meus pedidos |
 | Prazo do órgão | 30 dias | Encaminhamento |
 | Validade do link do órgão | 60 dias | Página de retorno |
 | Lembrete ao órgão | Um por encaminhamento | Prazo vencido |
-| Texto de justificativa e observação | Até 280 caracteres, sem CPF, telefone e e-mail | Encaminhamento e retorno |
+| Texto de justificativa e nota interna | Até 280 caracteres, sem CPF, telefone e e-mail | Encaminhamento e retorno |
+| Resposta ao cidadão | Até 500 caracteres, sem CPF, telefone e e-mail; obrigatória para resolver e devolver na área corporativa | Retorno do órgão |
+| Previsão de conclusão | Entre hoje e um ano, só com "em atendimento" | Retorno do órgão |
+| Resposta em grupo | Até 20 ocorrências do mesmo problema, tudo ou nada | Área corporativa |
+| Convite do acesso corporativo | Uso único, 7 dias; um novo invalida o anterior | Acessos corporativos |
+| Consulta do sino | A cada 30 segundos, com a aba aberta | Toda área com conta |
 
 ---
 
@@ -693,8 +830,10 @@ Como rodar cada um está no [README do backend](../backend/README.md#comandos).
 | Lacuna | Efeito hoje | Depende de |
 |---|---|---|
 | Provedor de e-mail | Os avisos e a recuperação de senha viram arquivos no servidor | Decisão do grupo ([ADR 0010](adr/0010-contas-de-cidadao-e-niveis-de-acesso.md)) |
-| Canal real de cada órgão | Toda mensagem fica na caixa de saída local | Acordo com cada órgão ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) |
-| Aviso dentro do painel para "recebido" e "resolvido" | A gestão só vê ao abrir a lista; o contador conta só o que pede ação | Uma central de avisos, ainda não feita |
+| Canal real de cada órgão | Quem não tem acesso corporativo recebe pela caixa de saída local | Acordo com cada órgão ([ADR 0011](adr/0011-encaminhamento-ao-orgao-e-retorno.md)) |
+| Endereço exato para o órgão | O órgão vê o bairro e, no relato, a rua oficial com a faixa de numeração | Acordo formal com a Prefeitura ([ADR 0013](adr/0013-acesso-corporativo-dos-orgaos.md)) |
+| Órgão novo no catálogo | Exige mudança de código | Tabela de órgãos editável, se o grupo quiser |
+| Pesos da regra de mesmo problema | Vêm do pente fino, sem calibração com dados rotulados | Amostra rotulada ([ADR 0009](adr/0009-formulario-publico-e-pente-fino.md)) |
 | Protocolo da Central 156 | A consulta pública só acha pedidos da Ouvidoria | Integração com o sistema da Prefeitura ou o pedido LAI ao SGDE |
 | Quem pede sem conta | Não recebe aviso, por não deixar contato | É escolha de privacidade: acompanha pela consulta |
 | Processor | Os dados entram pela importação e pelos comandos | Decisões sobre a camada bruta e onde ele roda ([ADRs em aberto](adr/README.md#decisões-em-aberto)) |
