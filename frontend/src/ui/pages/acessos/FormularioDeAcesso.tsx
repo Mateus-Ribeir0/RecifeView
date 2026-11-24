@@ -63,11 +63,7 @@ export function FormularioDeAcesso({ orgaos, editando, aoSalvar, aoCancelar }: P
           disabled={Boolean(editando)}
           onChange={(evento) => definirEmail(evento.target.value)}
           erro={tentou ? erros.email : null}
-          dica={
-            editando
-              ? 'O e-mail não muda: é com ele que a pessoa entra.'
-              : 'O convite vai para este e-mail.'
-          }
+          aria-describedby={`${id}-nota`}
           autoComplete="off"
         />
         <div className={estilos.campo}>
@@ -89,12 +85,11 @@ export function FormularioDeAcesso({ orgaos, editando, aoSalvar, aoCancelar }: P
           {tentou && erros.orgao && <p className={estilos.erro}>{erros.orgao}</p>}
         </div>
       </div>
-      {!editando && (
-        <p className={estilos.nota}>
-          A pessoa recebe um link de uso único, válido por 7 dias, para definir a senha. Ninguém da
-          administração vê essa senha.
-        </p>
-      )}
+      <p id={`${id}-nota`} className={estilos.nota}>
+        {editando
+          ? 'O e-mail não muda: é com ele que a pessoa entra. Para usar outro e-mail, crie outro acesso.'
+          : 'O convite vai para esse e-mail: um link de uso único, válido por 7 dias, para a pessoa definir a senha. Ninguém da administração vê essa senha.'}
+      </p>
       {falha !== null && (
         <Aviso tipo="erro" titulo="O acesso não foi salvo">
           <p>{mensagemDeFalha(falha)}</p>

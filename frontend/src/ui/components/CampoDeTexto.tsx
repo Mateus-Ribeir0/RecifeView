@@ -9,11 +9,18 @@ export interface PropriedadesDeCampo extends InputHTMLAttributes<HTMLInputElemen
   ref?: Ref<HTMLInputElement>
 }
 
-export function CampoDeTexto({ rotulo, erro, dica, className, ...entrada }: PropriedadesDeCampo) {
+export function CampoDeTexto({
+  rotulo,
+  erro,
+  dica,
+  className,
+  'aria-describedby': descricaoDeFora,
+  ...entrada
+}: PropriedadesDeCampo) {
   const id = useId()
   const idDaDica = dica ? `${id}-dica` : undefined
   const idDoErro = erro ? `${id}-erro` : undefined
-  const descricoes = [idDaDica, idDoErro].filter(Boolean).join(' ') || undefined
+  const descricoes = [idDaDica, descricaoDeFora, idDoErro].filter(Boolean).join(' ') || undefined
 
   return (
     <div className={estilos.campo}>
