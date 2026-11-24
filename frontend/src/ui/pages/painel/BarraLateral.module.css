@@ -72,6 +72,16 @@
   color: var(--cor-preto);
 }
 
+@media (max-height: 860px) {
+  .lateral {
+    gap: var(--espaco-3);
+  }
+
+  .item {
+    height: 36px;
+  }
+}
+
 .recolhida {
   gap: var(--espaco-2);
   padding-inline: var(--espaco-2);
