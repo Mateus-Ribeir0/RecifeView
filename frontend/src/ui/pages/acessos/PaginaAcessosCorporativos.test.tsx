@@ -46,6 +46,22 @@ describe('acessos corporativos', () => {
     ).toBeInTheDocument()
   })
 
+  it('o campo de e-mail explica para onde vai o convite', async () => {
+    const usuario = await montar(criarAcessosFalsos())
+
+    await usuario.click(await screen.findByRole('button', { name: 'Novo acesso' }))
+
+    expect(screen.getByLabelText('E-mail do responsável')).toHaveAccessibleDescription(
+      /O convite vai para esse e-mail: um link de uso único, válido por 7 dias/,
+    )
+  })
+
+  it('conta os órgãos com acesso ativo sobre o catálogo que a API devolve', async () => {
+    await montar(criarAcessosFalsos())
+
+    expect(await screen.findByText('0 de 2')).toBeInTheDocument()
+  })
+
   it('a lista mostra a situação do convite e permite reenviar', async () => {
     const servico = criarAcessosFalsos()
     const usuario = await montar(servico)

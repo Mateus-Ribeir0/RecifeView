@@ -33,7 +33,6 @@ const CLASSES_DO_SELO: Readonly<Record<SituacaoDoAcesso, string>> = {
   convite_vencido: estilos.seloVencido ?? '',
   desativado: '',
 }
-const TOTAL_DE_ORGAOS_NO_CATALOGO = 10
 
 type Edicao = { modo: 'novo' } | { modo: 'editar'; acesso: AcessoCorporativo } | null
 
@@ -122,12 +121,33 @@ function AcoesDoAcesso({ acesso, aoEditar, aoAgir }: AcoesProps) {
   )
 }
 
+function EmailQueQuebraNoArroba({ email }: { email: string }) {
+  const arroba = email.indexOf('@')
+  if (arroba < 0) return email
+  return (
+    <>
+      {email.slice(0, arroba)}
+      <wbr />
+      {email.slice(arroba)}
+    </>
+  )
+}
+
 function colunas(
   acoes: ((acesso: AcessoCorporativo) => React.ReactNode) | null,
 ): ColunaDaTabela<AcessoCorporativo>[] {
   const base: ColunaDaTabela<AcessoCorporativo>[] = [
-    { titulo: 'Nome', valor: (item) => item.nome },
-    { titulo: 'E-mail', valor: (item) => item.email },
+    {
+      titulo: 'Responsável',
+      valor: (item) => (
+        <div className={estilos.responsavel}>
+          <span className={estilos.nomeDoResponsavel}>{item.nome}</span>
+          <span className={estilos.emailDoResponsavel}>
+            <EmailQueQuebraNoArroba email={item.email} />
+          </span>
+        </div>
+      ),
+    },
     { titulo: 'Órgão', valor: (item) => item.nomeDoOrgao },
     {
       titulo: 'Situação',
@@ -150,7 +170,7 @@ function colunas(
   return acoes ? [...base, { titulo: 'Ações', valor: acoes }] : base
 }
 
-function Indicadores({ lista }: { lista: ListaDeAcessos }) {
+function Indicadores({ lista, totalDeOrgaos }: { lista: ListaDeAcessos; totalDeOrgaos: number }) {
   const contagem = contarPorSituacao(lista.itens)
   return (
     <GradeDeKpis>
@@ -172,7 +192,7 @@ function Indicadores({ lista }: { lista: ListaDeAcessos }) {
       />
       <KpiCard
         rotulo="Órgãos com acesso ativo"
-        valor={`${formatarNumero(orgaosComAcessoAtivo(lista.itens))} de ${TOTAL_DE_ORGAOS_NO_CATALOGO}`}
+        valor={`${formatarNumero(orgaosComAcessoAtivo(lista.itens))} de ${formatarNumero(totalDeOrgaos)}`}
         contexto="os outros recebem pelo link da mensagem"
       />
     </GradeDeKpis>
@@ -241,7 +261,7 @@ export function PaginaAcessosCorporativos() {
       <EstadoDaConsulta consulta={consultaDoCarregamento(acessos)}>
         {(lista) => (
           <>
-            <Indicadores lista={lista} />
+            {orgaos && <Indicadores lista={lista} totalDeOrgaos={orgaos.length} />}
             {!lista.podeAlterar && (
               <Aviso tipo="info">
                 Só o perfil Administração cria e altera acessos. A Gestão pública vê a lista.
