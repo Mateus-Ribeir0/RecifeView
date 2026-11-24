@@ -127,6 +127,14 @@ Entre com a senha temporária que o comando mostrar e, no primeiro acesso, defin
 
 A conta do órgão nasce pelo painel, como em uso real: em **Acessos corporativos**, crie o acesso de `emlurb.demo@recifeview.dev` para a Emlurb. Sem servidor de e-mail, o convite fica num arquivo em `data/emails`: abra o link `/convite/...` dele e defina a senha. A cidadã se cadastra em `/cadastrar`.
 
+Para ter um acesso de cada órgão do catálogo, siga o padrão `<órgão>.demo@recifeview.dev` com o nome "Equipe <órgão>": `emlurb`, `compesa`, `neoenergia`, `cttu`, `defesacivil`, `seinfra`, `urb`, `saude`, `meioambiente` e `ordempublica`. A linha de comando cria a conta sem passar pelo convite:
+
+```bash
+uv run recifeview cadastrar-usuario --email compesa.demo@recifeview.dev --nome "Equipe Compesa" --perfil CORPORATIVO --orgao COMPESA
+```
+
+Entre em `/entrar/corporativo` com a senha temporária e defina `1234@abcD@12`.
+
 > **Só para desenvolvimento local.** O repositório é público, então esta senha também é. Nunca crie esta conta num banco compartilhado ou num ambiente publicado.
 
 ### Dados
